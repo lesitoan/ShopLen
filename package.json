@@ -1,0 +1,29 @@
+{
+  "name": "tiemLenShop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Root command runner for Tiệm Len Nhà Kiều independent sources.",
+  "scripts": {
+    "dev": "concurrently -n api,client,admin -c blue,magenta,cyan \"npm --prefix api run dev\" \"npm --prefix fe-client run dev\" \"npm --prefix fe-admin run dev\"",
+    "dev:api": "npm --prefix api run dev",
+    "dev:client": "npm --prefix fe-client run dev",
+    "dev:admin": "npm --prefix fe-admin run dev",
+    "build": "npm run build:api && npm run build:client && npm run build:admin",
+    "build:api": "npm --prefix api run build",
+    "build:client": "npm --prefix fe-client run build",
+    "build:admin": "npm --prefix fe-admin run build",
+    "start:api": "npm --prefix api run start",
+    "start:client": "npm --prefix fe-client run start",
+    "start:admin": "npm --prefix fe-admin run start",
+    "typeCheck": "npm --prefix api run typeCheck",
+    "lint:client": "npm --prefix fe-client run lint",
+    "lint:admin": "npm --prefix fe-admin run lint",
+    "install:apps": "npm run install:api && npm run install:client && npm run install:admin",
+    "install:api": "npm --prefix api install",
+    "install:client": "npm --prefix fe-client install",
+    "install:admin": "npm --prefix fe-admin install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Build and coverage
+build/
+dist/
+coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Cache
+.cache/
+.turbo/
+.eslintcache
+*.tsbuildinfo
+
+# Local generated files
+tmp/
+temp/

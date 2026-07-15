@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Heart, ShoppingCart, Star } from "lucide-react";
-import Badge from "./badge";
-import Button from "./button";
+import Badge from "./Badge";
+import Button from "./Button";
 
 interface ProductCardProps {
   name: string;

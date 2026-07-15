@@ -57,3 +57,45 @@ export const INITIAL_CART_ITEMS: CartItem[] = [
     image: "/images/products/tui-hoa-cuc.png",
   },
 ];
+
+export const FOOTER_ABOUT_LINKS = [
+  { name: "Giới thiệu", href: "/gioi-thieu" },
+  { name: "Câu chuyện thương hiệu", href: "/cau-chuyen" },
+  { name: "Chính sách chất lượng", href: "/chat-luong" },
+  { name: "Tuyển dụng", href: "/tuyen-dung" },
+  { name: "Liên hệ", href: "/lien-he" },
+];
+
+export const FOOTER_PRODUCT_LINKS = [
+  { name: "Móc khóa len", href: "/san-pham?category=moc-khoa" },
+  { name: "Gấu bông len", href: "/san-pham?category=thu-bong" },
+  { name: "Đồ trang trí", href: "/san-pham?category=do-decor" },
+  { name: "Phụ kiện len", href: "/san-pham?category=phu-kien" },
+  { name: "Sản phẩm khác", href: "/san-pham?category=khac" },
+  { name: "Quà tặng handmade", href: "/san-pham?category=qua-tang" },
+];
+
+export const FOOTER_SUPPORT_LINKS = [
+  { name: "Hướng dẫn đặt hàng", href: "/ho-tro/dat-hang" },
+  { name: "Chính sách thanh toán", href: "/ho-tro/thanh-toan" },
+  { name: "Chính sách vận chuyển", href: "/ho-tro/van-chuyen" },
+  { name: "Chính sách đổi trả", href: "/ho-tro/doi-tra" },
+  { name: "Câu hỏi thường gặp (FAQ)", href: "/ho-tro/faq" },
+  { name: "Hướng dẫn bảo quản", href: "/ho-tro/bao-quan" },
+];
+
+export const FOOTER_CONTACT_INFO = {
+  address: "Đà Nẵng, Việt Nam",
+  phone: "Đang cập nhật",
+  email: "Đang cập nhật",
+  hours: "08:00 - 22:00 (T2 - CN)",
+};
+
+export const SOCIAL_LINKS = {
+  facebook: "https://facebook.com",
+  instagram: "https://instagram.com",
+  tiktok: "https://tiktok.com",
+  youtube: "https://youtube.com",
+  pinterest: "https://pinterest.com",
+};
+

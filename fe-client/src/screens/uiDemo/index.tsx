@@ -13,23 +13,23 @@ import {
 } from "lucide-react";
 
 // Import custom UI components
-import Button from "@/components/ui/button";
-import Input from "@/components/ui/input";
-import Badge from "@/components/ui/badge";
-import Checkbox from "@/components/ui/checkbox";
-import Radio from "@/components/ui/radio";
-import Switch from "@/components/ui/switch";
-import Alert from "@/components/ui/alert";
-import ProductCard from "@/components/ui/productCard";
-import Select from "@/components/ui/select";
-import Toast, { ToastType } from "@/components/ui/toast";
-import Tooltip from "@/components/ui/tooltip";
-import Tabs from "@/components/ui/tabs";
-import Pagination from "@/components/ui/pagination";
-import Breadcrumb from "@/components/ui/breadcrumb";
-import EmptyState from "@/components/ui/emptyState";
-import UploadFile from "@/components/ui/uploadFile";
-import Modal from "@/components/ui/modal";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Badge from "@/components/ui/Badge";
+import Checkbox from "@/components/ui/Checkbox";
+import Radio from "@/components/ui/Radio";
+import Switch from "@/components/ui/Switch";
+import Alert from "@/components/ui/Alert";
+import ProductCard from "@/components/ui/ProductCard";
+import Select from "@/components/ui/Select";
+import Toast, { ToastType } from "@/components/ui/Toast";
+import Tooltip from "@/components/ui/Tooltip";
+import Tabs from "@/components/ui/Tabs";
+import Pagination from "@/components/ui/Pagination";
+import Breadcrumb from "@/components/ui/Breadcrumb";
+import EmptyState from "@/components/ui/EmptyState";
+import UploadFile from "@/components/ui/UploadFile";
+import Modal from "@/components/ui/Modal";
 
 export default function UiDemoScreen() {
   // States for interactive components

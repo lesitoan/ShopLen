@@ -25,7 +25,7 @@ api/           → backend, theo MVC (routes/controllers/services/models)
 
 ## Quy tắc bất biến (áp dụng mọi lúc, không cần mở references)
 
-1. **Đặt tên: camelCase cho tất cả** thư mục, file, biến, hàm — không dùng kebab-case, không dùng snake_case (trừ tên cột DB, ORM tự map). Component React vẫn export tên PascalCase nhưng **tên file** chứa nó là camelCase (vd file `productCard.tsx` chứa `export default function ProductCard()`).
+1. **Đặt tên**: Sử dụng **camelCase** cho tất cả thư mục, biến, hàm, và các tệp tin không chứa giao diện UI (như helper, service, controller, route, constants) — không dùng kebab-case hay snake_case (trừ tên cột DB). Đối với các **tệp tin component UI (React components)**, bắt buộc phải đặt tên tệp theo định dạng **PascalCase** (ví dụ: `Button.tsx`, `Header.tsx`, `SearchModal.tsx`).
 2. **API theo MVC rõ ràng**: `routes/` chỉ định nghĩa endpoint → `controllers/` nhận request/validate cơ bản → `services/` chứa business logic thật → `models/` là entity/schema. Controller không tự viết logic, route không tự gọi DB.
 3. **Tách biệt Constants khỏi Component**: Không khai báo các biến hằng số (constants), cấu hình tĩnh, hoặc dữ liệu mock lớn trực tiếp trong component. Nếu dùng riêng cho component ở thư mục đó, đặt trong file `constants.ts` cùng cấp. Nếu là hằng số dùng chung toàn web, đặt tại `src/constants/index.ts` (hoặc các file con thuộc thư mục `constants/` nếu dữ liệu nhiều).
 4. **Trong FE, `app/**/page.tsx` chỉ làm 2 việc**: định nghĩa route + render component từ `screens/`. Toàn bộ logic/state/sub-component riêng 1 màn nằm trong `screens/<tenMan>/`. Cái gì dùng chung ≥ 2 màn mới đưa lên `components/`, `hooks/` gốc.

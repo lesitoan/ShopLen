@@ -14,10 +14,10 @@ import {
   LogIn, 
   UserPlus
 } from "lucide-react";
-import Button from "@/components/ui/button";
+import Button from "@/components/ui/Button";
 
-import SearchModal from "@/components/modals/searchModal";
-import CartModal from "@/components/modals/cartModal";
+import SearchModal from "@/components/modals/SearchModal";
+import CartModal from "@/components/modals/CartModal";
 
 import { 
   CartItem, 

@@ -1,14 +1,13 @@
 import React from "react";
-import Button from "@/components/ui/button";
-import Header from "@/components/layout/header";
+import Button from "@/components/ui/Button";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
 export default function HomeScreen() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
       <Header />
 
-      {/* Main Content */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 flex flex-col items-center justify-center text-center">
         <div className="max-w-xl">
           <span className="text-sm font-semibold text-secondary uppercase tracking-widest bg-primary-light px-3 py-1 rounded-full">
@@ -34,10 +33,7 @@ export default function HomeScreen() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-surface border-t border-border py-6 text-center text-[13px] text-text-secondary">
-        <p>© 2026 Tiệm Len Nhà Kiều. Cửa hàng móc khóa len handmade.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

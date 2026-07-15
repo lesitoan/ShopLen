@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { UploadCloud, File, X } from "lucide-react";
-import Button from "./button";
+import Button from "./Button";
 
 interface UploadFileProps {
   onFileSelect?: (file: File) => void;

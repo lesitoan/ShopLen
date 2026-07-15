@@ -17,7 +17,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   // Base classes for transitions, rounded corners, flex items alignment
-  const baseClasses = "inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none select-none active:scale-[0.98]";
+  const baseClasses = "inline-flex items-center justify-center font-medium transition-all duration-200 outline-none focus:outline-none focus-visible:outline-none select-none active:scale-[0.98]";
 
   // Variant classes mapped from designSystem.md
   const variantClasses = {

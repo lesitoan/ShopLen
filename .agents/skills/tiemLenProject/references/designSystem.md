@@ -87,6 +87,12 @@ colors: {
 - `8px`: button chuẩn, card nhỏ
 - `10-12px`: card lớn, modal
 
+**Quy tắc Bo góc (Border Radius)**:
+- Luôn ưu tiên sử dụng trị số bo góc (border radius) nhỏ nhất có thể cho phù hợp với từng component (ví dụ: `rounded-md` hoặc `rounded-lg` cho card/modal). Tránh lạm dụng bo góc quá lớn (như `rounded-2xl`, `rounded-3xl` hoặc `rounded-full` cho các khung/modal bao ngoài lớn) nếu không có yêu cầu cụ thể từ bản thiết kế. Thiết kế hướng tới sự tinh tế, tối giản, vuông vắn vừa phải thay vì tròn trịa quá đà.
+
+**Quy tắc đổ bóng (Shadow)**:
+- Tuyệt đối không sử dụng hiệu ứng đổ bóng (box shadow) như các class `shadow-sm`, `shadow`, `shadow-md`, `shadow-lg`, `shadow-xl`, `shadow-2xl` trong Tailwind cho bất kỳ UI component hay layout nào (Header, Dropdown, Modal, Drawer...), trừ khi có yêu cầu cụ thể rõ ràng từ phía khách hàng. Giao diện ưu tiên thiết kế phẳng, sắc nét, tối giản, sử dụng border rõ ràng để phân cấp thay vì dùng shadow.
+
 ---
 
 ## 4. Buttons
@@ -246,6 +252,10 @@ Vùng kéo-thả bo nét đứt (dashed border), icon upload cloud, text "Kéo &
 Overlay tối phía sau, card trắng bo góc lớn ở giữa, có nút đóng (×) góc phải trên, tiêu đề in đậm, nội dung mô tả, 2 nút hành động cuối modal: nút "Hủy" (secondary/outline) bên trái, nút hành động chính (vd "Xóa" — màu `error` nếu là hành động phá hủy) bên phải.
 
 Ví dụ: modal "Xác nhận xóa sản phẩm" — "Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác." → [Hủy] [Xóa]
+
+**Quy tắc Responsive cho Modal/Drawer**:
+- Trên di động (mobile, < 768px): Các modal/drawer phụ (như Tìm kiếm, Giỏ hàng) bắt buộc chiếm 100% chiều ngang (full width), xuất hiện từ dưới lên (kiểu Bottom Sheet) có thanh kéo drag handle ở đầu và có lớp phủ làm mờ nền (backdrop).
+- Trên máy tính (desktop, >= 768px): Các modal/drawer này hiển thị dưới dạng Popover nổi nằm ngay dưới/bên cạnh icon bấm mà không làm mờ nền (không dùng backdrop).
 
 ---
 

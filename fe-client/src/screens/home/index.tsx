@@ -1,22 +1,12 @@
 import React from "react";
 import Button from "@/components/ui/button";
+import Header from "@/components/layout/header";
 
 export default function HomeScreen() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="bg-surface border-b border-border py-4 px-6 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-secondary">🌸 Tiệm Len Nhà Kiều</span>
-          </div>
-          <a href="/ui-demo">
-            <Button variant="outline" size="sm">
-              Xem UI Catalog
-            </Button>
-          </a>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 flex flex-col items-center justify-center text-center">

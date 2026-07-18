@@ -14,7 +14,7 @@ interface ToastProps {
 export default function Toast({ type, message, onClose, onUndo, className = "" }: ToastProps) {
   const styles = {
     success: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-success/30",
       text: "text-text-primary",
       icon: (
@@ -24,7 +24,7 @@ export default function Toast({ type, message, onClose, onUndo, className = "" }
       ),
     },
     error: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-error/30",
       text: "text-text-primary",
       icon: (
@@ -34,7 +34,7 @@ export default function Toast({ type, message, onClose, onUndo, className = "" }
       ),
     },
     warning: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-warning/30",
       text: "text-text-primary",
       icon: (
@@ -44,7 +44,7 @@ export default function Toast({ type, message, onClose, onUndo, className = "" }
       ),
     },
     info: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-info/30",
       text: "text-text-primary",
       icon: (
@@ -54,13 +54,13 @@ export default function Toast({ type, message, onClose, onUndo, className = "" }
       ),
     },
     loading: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-primary/30",
       text: "text-text-primary",
       icon: <Loader2 size={18} className="animate-spin text-primary stroke-[3]" />,
     },
     undo: {
-      bg: "bg-white",
+      bg: "bg-surface",
       border: "border-primary/20",
       text: "text-text-primary",
       icon: (

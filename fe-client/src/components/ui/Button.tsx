@@ -23,7 +23,7 @@ export default function Button({
   const variantClasses = {
     primary: "bg-primary text-white hover:bg-primary-hover active:bg-primary-active disabled:bg-primary-light disabled:text-text-secondary/40 disabled:active:scale-100",
     outline: "border border-primary text-primary bg-transparent hover:bg-primary-light active:bg-primary-light/50 active:border-primary-active disabled:border-border disabled:text-text-secondary/40 disabled:active:scale-100",
-    secondary: "bg-white border border-border text-text-primary hover:bg-background active:bg-border/40 disabled:opacity-50 disabled:active:scale-100",
+    secondary: "bg-surface border border-border text-text-primary hover:bg-background active:bg-border/40 disabled:opacity-50 disabled:active:scale-100",
     ghost: "bg-transparent text-primary hover:bg-primary-light active:bg-primary-light/50 disabled:text-text-secondary/40 disabled:bg-transparent disabled:active:scale-100",
     danger: "bg-error text-white hover:bg-error/90 active:bg-error/80 disabled:opacity-50 disabled:active:scale-100",
   };

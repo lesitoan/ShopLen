@@ -70,7 +70,7 @@ export default function SearchModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full rounded-t-2xl border-t border-border max-h-[85vh] overflow-y-auto pb-6 flex flex-col animate-in slide-in-from-bottom duration-300"
+        className="bg-surface w-full rounded-t-2xl border-t border-border max-h-[85vh] overflow-y-auto pb-6 flex flex-col animate-in slide-in-from-bottom duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
@@ -90,7 +90,7 @@ export default function SearchModal({
         {/* Body */}
         <div className="p-4 flex flex-col gap-6 text-left">
           {/* Input container */}
-          <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-white">
+          <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-surface">
             <div className="flex items-center pl-3 text-text-secondary">
               <Search size={18} />
             </div>
@@ -182,7 +182,7 @@ export default function SearchModal({
                   }}
                   className="flex flex-col bg-background/50 border border-border/30 p-2 rounded-xl shrink-0 w-36 cursor-pointer"
                 >
-                  <div className="relative aspect-square w-full rounded-md overflow-hidden bg-white border border-border/50">
+                  <div className="relative aspect-square w-full rounded-md overflow-hidden bg-surface border border-border/50">
                     <Image 
                       src={product.image}
                       alt={product.name}
@@ -234,7 +234,7 @@ export default function SearchModal({
         </div>
 
         {/* Input field */}
-        <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-white">
+        <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-surface">
           <input
             type="text"
             placeholder="Gõ và nhấn nút enter"

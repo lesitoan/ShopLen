@@ -54,7 +54,7 @@ export default function Select({
         type="button"
         disabled={disabled}
         onClick={handleToggle}
-        className={`w-full flex items-center justify-between border bg-white py-2 px-3 rounded-md transition-all duration-200 outline-none select-none text-left ${
+        className={`w-full flex items-center justify-between border bg-surface py-2 px-3 rounded-md transition-all duration-200 outline-none select-none text-left ${
           isOpen ? "border-primary ring-1 ring-primary/20" : "border-border"
         } ${error ? "border-error focus:ring-error/20" : ""} ${
           disabled ? "bg-background text-text-secondary/50 cursor-not-allowed border-border" : "text-text-primary"
@@ -71,7 +71,7 @@ export default function Select({
 
       {/* Options Dropdown */}
       {isOpen && (
-        <ul className="absolute z-10 w-full mt-1.5 bg-white border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+        <ul className="absolute z-10 w-full mt-1.5 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-150">
           {options.map((option) => (
             <li
               key={option.value}

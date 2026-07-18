@@ -24,7 +24,7 @@ export default function Radio({ label, className = "", disabled, checked, onChan
           {...props}
         />
         {/* Unchecked state style: viền tròn rỗng */}
-        <div className="w-5 h-5 rounded-full border border-border bg-white transition-all peer-checked:border-primary flex items-center justify-center">
+        <div className="w-5 h-5 rounded-full border border-border bg-surface transition-all peer-checked:border-primary flex items-center justify-center">
           {/* Checked state: chấm tròn primary ở giữa */}
           <div className="w-2.5 h-2.5 rounded-full bg-primary scale-0 peer-checked:scale-100 transition-transform duration-200" />
         </div>

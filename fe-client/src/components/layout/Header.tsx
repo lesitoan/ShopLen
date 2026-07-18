@@ -57,6 +57,18 @@ export default function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   const toggleDropdown = (name: string) => {
     if (activeDropdown === name) {
       setActiveDropdown(null);
@@ -91,7 +103,15 @@ export default function Header() {
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    if (isDarkMode) {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    } else {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
   };
 
   const handleRemoveItem = (id: number) => {
@@ -115,7 +135,7 @@ export default function Header() {
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="w-full flex flex-col sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-border">
+    <div className="w-full flex flex-col sticky top-0 z-50 bg-surface/90 backdrop-blur-md">
       <header className="w-full">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between transition-all duration-300">
           <Link href="/" className="flex items-center gap-3 group shrink-0">

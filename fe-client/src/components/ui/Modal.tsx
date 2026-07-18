@@ -50,7 +50,7 @@ export default function Modal({
       />
 
       {/* Modal Card */}
-      <div className="relative bg-white w-full max-w-md rounded-3xl border border-border shadow-2xl z-10 overflow-hidden flex flex-col transition-all duration-300 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-surface w-full max-w-md rounded-3xl border border-border shadow-2xl z-10 overflow-hidden flex flex-col transition-all duration-300 animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h3 className="text-[18px] font-bold text-text-primary">{title}</h3>

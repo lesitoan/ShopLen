@@ -80,7 +80,7 @@ export default function CartModal({
       onClick={onClose}
     >
       <div 
-        className="bg-white w-full rounded-t-2xl border-t border-border max-h-[90vh] overflow-y-auto pb-6 flex flex-col animate-in slide-in-from-bottom duration-300"
+        className="bg-surface w-full rounded-t-2xl border-t border-border max-h-[90vh] overflow-y-auto pb-6 flex flex-col animate-in slide-in-from-bottom duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
@@ -320,7 +320,7 @@ export default function CartModal({
 
               <div className="grid grid-cols-2 gap-2 mt-1">
                 <Link href="/gio-hang" onClick={onClose}>
-                  <Button variant="outline" size="sm" className="w-full text-xs font-semibold rounded-md border-primary/50 text-secondary hover:bg-primary-light/50 bg-white">
+                  <Button variant="outline" size="sm" className="w-full text-xs font-semibold rounded-md border-primary/50 text-secondary hover:bg-primary-light/50 bg-surface">
                     Giỏ hàng
                   </Button>
                 </Link>

@@ -25,7 +25,7 @@ export default function Checkbox({ label, className = "", disabled, checked, onC
           {...props}
         />
         {/* Unchecked state style: viền vuông bo nhẹ (radius 2px - rounded-sm), rỗng */}
-        <div className="w-5 h-5 rounded-sm border border-border bg-white transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
+        <div className="w-5 h-5 rounded-sm border border-border bg-surface transition-all peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center">
           <Check size={14} className="text-white scale-0 peer-checked:scale-100 transition-transform duration-200" />
         </div>
       </div>

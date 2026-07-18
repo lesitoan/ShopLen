@@ -11,7 +11,7 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ error, isSearch = false, leftIcon, rightIcon, className = "", disabled, value, defaultValue, ...props }, ref) => {
     // Base styling mapping from designSystem.md (radius, border, text colors)
-    const baseClasses = "w-full text-text-primary text-[14px] bg-white border outline-none transition-all duration-200";
+    const baseClasses = "w-full text-text-primary text-[14px] bg-surface border outline-none transition-all duration-200";
     
     // Normal input is rounded-md, search is pill rounded-full
     const shapeClasses = isSearch ? "rounded-full py-2 px-10" : "rounded-md py-2 px-3";

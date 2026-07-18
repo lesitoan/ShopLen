@@ -3,6 +3,26 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #FAFAFC;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --text-primary: #2D2D2D;
+    --text-secondary: #6B7280;
+    --primary-light: #FFF1F4;
+    --footer-bg: #FCF8F9;
+  }
+
+  .dark {
+    --background: #121214;
+    --surface: #1E1E22;
+    --border: #2D2D33;
+    --text-primary: #F3F4F6;
+    --text-secondary: #9CA3AF;
+    --primary-light: #251C1E;
+    --footer-bg: #1A1819;
+  }
+
   body {
     @apply bg-background text-text-primary font-sans antialiased;
     font-size: 14px;

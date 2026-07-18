@@ -89,7 +89,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full bg-[#FCF8F9] border-t border-primary/10 pt-10 pb-6 text-text-primary">
+    <footer className="w-full bg-footerBg border-t border-primary/10 pt-10 pb-6 text-text-primary">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 pb-10 border-b border-border/60">

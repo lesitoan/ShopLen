@@ -1,36 +1,43 @@
 import React from "react";
-import Button from "@/components/ui/Button";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import HeroSlider from "./components/HeroSlider";
+import ProductSection from "./components/ProductSection";
+import CategoryGrid from "./components/CategoryGrid";
+import BlogSection from "./components/BlogSection";
+
+import { BEST_SELLERS_PRODUCTS, TODAY_OFFERS_PRODUCTS } from "./constants";
 
 export default function HomeScreen() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 flex flex-col items-center justify-center text-center">
-        <div className="max-w-xl">
-          <span className="text-sm font-semibold text-secondary uppercase tracking-widest bg-primary-light px-3 py-1 rounded-full">
-            Handmade with Love
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-text-primary mt-6 mb-4 leading-tight">
-            Móc Khóa Len Handmade Xinh Xắn
-          </h1>
-          <p className="text-base text-text-secondary mb-8 leading-relaxed">
-            Chào mừng bạn đến với Tiệm Len Nhà Kiều. Chúng tôi cung cấp các sản phẩm móc khóa len, hoa len và đồ decor đan tay tỉ mỉ, giúp bạn có những món quà tuyệt vời nhất cho người thân yêu.
-          </p>
+      <main className="flex-1 py-8 flex flex-col">
+        <HeroSlider />
 
-          <div className="flex flex-wrap justify-center gap-4">
-            <a href="/ui-demo">
-              <Button variant="primary" size="lg" className="rounded-full px-8 shadow-md">
-                Khám phá UI System Demo
-              </Button>
-            </a>
-            <Button variant="secondary" size="lg" className="rounded-full px-8">
-              Xem sản phẩm
-            </Button>
-          </div>
-        </div>
+        <ProductSection
+          title="SẢN PHẨM BÁN CHẠY"
+          description="Những sản phẩm được yêu thích nhất tại Tiệm Len Nhà Kiều. Mỗi sản phẩm đều được làm thủ công tỉ mỉ, chất liệu mềm mịn và an toàn."
+          ctaText="Xem tất cả"
+          ctaLink="/san-pham?sort=best_seller"
+          products={BEST_SELLERS_PRODUCTS}
+          // promoBgImage="/images/products/binh-hoa-tulip.png"
+
+        />
+
+        <CategoryGrid />
+
+        <ProductSection
+          title="ƯU ĐÃI HÔM NAY"
+          description="Sản phẩm giảm giá đặc biệt trong thời gian giới hạn. Số lượng có hạn - nhanh tay kẻo lỡ!"
+          ctaText="Xem tất cả ưu đãi"
+          ctaLink="/san-pham?sort=discount"
+          products={TODAY_OFFERS_PRODUCTS}
+          promoBgImage="/images/products/binh-hoa-tulip.png"
+        />
+
+        <BlogSection />
       </main>
 
       <Footer />

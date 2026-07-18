@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Heart, ShoppingCart, Star } from "lucide-react";
-import Badge from "./Badge";
-import Button from "./Button";
+import { Heart } from "lucide-react";
+import Badge from "@/components/ui/Badge";
 
 interface ProductCardProps {
   name: string;
   price: number;
   originalPrice?: number;
-  rating: number;
-  reviews: number;
+  rating?: number;
+  reviews?: number;
+  soldCount?: number;
   image: string;
   badge?: "new" | "bestSeller" | "hotTiktok" | "sale" | "limited" | "soldOut";
   badgeLabel?: string;
@@ -22,6 +22,7 @@ export default function ProductCard({
   originalPrice,
   rating,
   reviews,
+  soldCount,
   image,
   badge,
   badgeLabel,
@@ -44,17 +45,14 @@ export default function ProductCard({
   };
 
   return (
-    <div className="group relative bg-surface rounded-xl border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
-      {/* Product Image and Overlay Actions */}
+    <div className="group relative bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
       <div className="relative aspect-square w-full bg-background overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
-        {/* Badge Top Left */}
         {badge && (
           <div className="absolute left-2.5 top-2.5">
             <Badge variant={badge}>
@@ -74,7 +72,6 @@ export default function ProductCard({
           </div>
         )}
 
-        {/* Wishlist Button Top Right */}
         <button
           onClick={handleWishlistClick}
           className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200"
@@ -86,29 +83,16 @@ export default function ProductCard({
         </button>
       </div>
 
-      {/* Product Info */}
       <div className="p-4 flex flex-col flex-1">
-        {/* Product Name */}
         <h3 className="text-[14px] font-medium text-text-primary mb-1 line-clamp-2 min-h-[40px] group-hover:text-primary active:text-primary-active transition-colors">
           {name}
         </h3>
 
-        {/* Rating and Reviews */}
-        <div className="flex items-center gap-1 mb-3">
-          <div className="flex items-center text-amber-400">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <Star
-                key={idx}
-                size={12}
-                className={idx < Math.round(rating) ? "fill-amber-400" : "text-border"}
-              />
-            ))}
-          </div>
-          <span className="text-[11px] text-text-secondary">({reviews})</span>
+        <div className="flex items-center text-[12px] text-text-secondary mb-3 font-medium">
+          <span>Đã bán {soldCount ?? reviews ?? 0}</span>
         </div>
 
-        {/* Price and Cart Action */}
-        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
+        <div className="mt-auto pt-3 border-t border-border">
           <div className="flex flex-col">
             {originalPrice && (
               <span className="text-[11px] text-text-secondary line-through mb-0.5">
@@ -119,16 +103,6 @@ export default function ProductCard({
               {formatPrice(price)}
             </span>
           </div>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onAddToCart}
-            className="rounded-full shadow-sm hover:shadow"
-          >
-            <ShoppingCart size={14} />
-            <span className="text-[11px] font-medium">Mua</span>
-          </Button>
         </div>
       </div>
     </div>

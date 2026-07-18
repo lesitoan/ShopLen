@@ -115,9 +115,9 @@ export default function Header() {
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <div className="w-full flex flex-col bg-background">
-      <header className="w-full bg-surface/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between transition-all duration-300">
+    <div className="w-full flex flex-col sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-border">
+      <header className="w-full">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between transition-all duration-300">
           <Link href="/" className="flex items-center gap-3 group shrink-0">
             <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden border border-primary/10 group-hover:border-primary transition-all duration-300">
               <Image 
@@ -140,31 +140,27 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-1 lg:gap-3" ref={dropdownRef}>
-            <div className="relative">
+            <div className="relative group">
               <button 
-                onClick={() => toggleDropdown("products")}
-                className={`flex items-center gap-1.5 px-3.5 py-2 text-[14px] font-medium transition-colors duration-200 rounded-md hover:bg-primary-light hover:text-secondary ${
-                  activeDropdown === "products" ? "bg-primary-light text-secondary" : "text-text-primary"
-                }`}
+                className="flex items-center gap-1.5 px-3.5 py-2 text-[14px] font-medium transition-colors duration-200 rounded-md hover:bg-primary-light hover:text-secondary text-text-primary group-hover:bg-primary-light group-hover:text-secondary"
               >
                 Sản phẩm
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === "products" ? "rotate-180" : ""}`} />
+                <ChevronDown size={14} className="transition-transform duration-200 group-hover:rotate-180" />
               </button>
 
-              {activeDropdown === "products" && (
-                <div className="absolute left-0 mt-2 w-56 bg-surface border border-border rounded-md py-2 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+              <div className="absolute left-0 top-full pt-2 w-56 hidden group-hover:block z-50">
+                <div className="bg-surface border border-border rounded-md py-2 shadow-md animate-in fade-in slide-in-from-top-2 duration-200">
                   {productCategories.map((cat, idx) => (
                     <Link 
                       key={idx} 
                       href={cat.href}
                       className="block px-4 py-2.5 text-[14px] text-text-primary hover:bg-primary-light hover:text-secondary transition-colors"
-                      onClick={() => setActiveDropdown(null)}
                     >
                       {cat.name}
                     </Link>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
 
             <Link 
@@ -181,31 +177,27 @@ export default function Header() {
               Bài viết
             </Link>
 
-            <div className="relative">
+            <div className="relative group">
               <button 
-                onClick={() => toggleDropdown("highlights")}
-                className={`flex items-center gap-1.5 px-3.5 py-2 text-[14px] font-medium transition-colors duration-200 rounded-md hover:bg-primary-light hover:text-secondary ${
-                  activeDropdown === "highlights" ? "bg-primary-light text-secondary" : "text-text-primary"
-                }`}
+                className="flex items-center gap-1.5 px-3.5 py-2 text-[14px] font-medium transition-colors duration-200 rounded-md hover:bg-primary-light hover:text-secondary text-text-primary group-hover:bg-primary-light group-hover:text-secondary"
               >
                 Nổi bật
-                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === "highlights" ? "rotate-180" : ""}`} />
+                <ChevronDown size={14} className="transition-transform duration-200 group-hover:rotate-180" />
               </button>
 
-              {activeDropdown === "highlights" && (
-                <div className="absolute left-0 mt-2 w-52 bg-surface border border-border rounded-md py-2 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+              <div className="absolute left-0 top-full pt-2 w-52 hidden group-hover:block z-50">
+                <div className="bg-surface border border-border rounded-md py-2 shadow-md animate-in fade-in slide-in-from-top-2 duration-200">
                   {highlightMenu.map((item, idx) => (
                     <Link 
                       key={idx} 
                       href={item.href}
                       className="block px-4 py-2.5 text-[14px] text-text-primary hover:bg-primary-light hover:text-secondary transition-colors"
-                      onClick={() => setActiveDropdown(null)}
                     >
                       {item.name}
                     </Link>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           </nav>
 

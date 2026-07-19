@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { Heart } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 
 interface ProductCardProps {
+  id?: number | string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -17,6 +19,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({
+  id,
   name,
   price,
   originalPrice,
@@ -33,6 +36,7 @@ export default function ProductCard({
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     setIsWishlisted(!isWishlisted);
     if (onToggleWishlist) onToggleWishlist();
   };
@@ -44,8 +48,8 @@ export default function ProductCard({
     }).format(value);
   };
 
-  return (
-    <div className="group relative bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+  const cardContent = (
+    <>
       <div className="relative aspect-square w-full bg-background overflow-hidden">
         <img
           src={image}
@@ -74,7 +78,7 @@ export default function ProductCard({
 
         <button
           onClick={handleWishlistClick}
-          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200"
+          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200 z-10"
         >
           <Heart
             size={16}
@@ -105,6 +109,23 @@ export default function ProductCard({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (id) {
+    return (
+      <Link
+        href={`/san-pham/sp-${id}`}
+        className="group relative bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full cursor-pointer"
+      >
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="group relative bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+      {cardContent}
     </div>
   );
 }

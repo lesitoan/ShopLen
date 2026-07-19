@@ -92,6 +92,7 @@ export default function ProductSection({
             {products.slice(0, 4).map((product) => (
               <ProductCard
                 key={product.id}
+                id={product.id}
                 name={product.name}
                 price={product.price}
                 originalPrice={product.originalPrice}
@@ -119,6 +120,7 @@ export default function ProductSection({
               {products.map((product) => (
                 <SwiperSlide key={product.id} className="h-full">
                   <ProductCard
+                    id={product.id}
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}

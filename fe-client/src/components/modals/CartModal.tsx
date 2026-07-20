@@ -207,15 +207,20 @@ export default function CartModal({
             </div>
 
             {/* Buttons stacked */}
-            <div className="flex flex-col gap-2 mt-1">
-              <Link href="/thanh-toan" onClick={onClose} className="w-full">
-                <Button variant="primary" size="md" className="w-full text-[13.5px] font-bold rounded-md py-3.5 justify-center">
-                  Tiến hành thanh toán
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <Link href="/gio-hang" onClick={onClose} className="w-full">
+                <Button variant="outline" size="md" className="w-full text-[13px] font-semibold rounded-md py-3 justify-center border-primary/50 text-secondary hover:bg-primary-light/50 bg-surface">
+                  Xem giỏ hàng
                 </Button>
               </Link>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary mt-1">
-                <span>Thanh toán an toàn & bảo mật</span>
-              </div>
+              <Link href="/thanh-toan" onClick={onClose} className="w-full">
+                <Button variant="primary" size="md" className="w-full text-[13px] font-bold rounded-md py-3 justify-center">
+                  Thanh toán
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-text-secondary mt-0.5">
+              <span>Thanh toán an toàn & bảo mật</span>
             </div>
           </div>
         )}

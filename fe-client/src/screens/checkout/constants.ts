@@ -1,0 +1,64 @@
+import { CheckoutCartItem } from "./types";
+
+export const PROVINCE_OPTIONS = [
+  { value: "TUYEN_QUANG", label: "1. Tuyên Quang" },
+  { value: "LAO_CAI", label: "2. Lào Cai" },
+  { value: "LAI_CHAU", label: "3. Lai Châu" },
+  { value: "DIEN_BIEN", label: "4. Điện Biên" },
+  { value: "LANG_SON", label: "5. Lạng Sơn" },
+  { value: "CAO_BANG", label: "6. Cao Bằng" },
+  { value: "SON_LA", label: "7. Sơn La" },
+  { value: "THAI_NGUYEN", label: "8. Thái Nguyên" },
+  { value: "PHU_THO", label: "9. Phú Thọ" },
+  { value: "QUANG_NINH", label: "10. Quảng Ninh" },
+  { value: "BAC_NINH", label: "11. Bắc Ninh" },
+  { value: "HUNG_YEN", label: "12. Hưng Yên" },
+  { value: "HA_NOI", label: "13. TP. Hà Nội" },
+  { value: "HAI_PHONG", label: "14. TP. Hải Phòng" },
+  { value: "NINH_BINH", label: "15. Ninh Bình" },
+  { value: "THANH_HOA", label: "16. Thanh Hóa" },
+  { value: "NGHE_AN", label: "17. Nghệ An" },
+  { value: "HA_TINH", label: "18. Hà Tĩnh" },
+  { value: "QUANG_TRI", label: "19. Quảng Trị" },
+  { value: "HUE", label: "20. TP. Huế" },
+  { value: "DA_NANG", label: "21. TP. Đà Nẵng" },
+  { value: "QUANG_NGAI", label: "22. Quảng Ngãi" },
+  { value: "GIA_LAI", label: "23. Gia Lai" },
+  { value: "KHANH_HOA", label: "24. Khánh Hoà" },
+  { value: "LAM_DONG", label: "25. Lâm Đồng" },
+  { value: "DAK_LAK", label: "26. Đắk Lắk" },
+  { value: "HO_CHI_MINH", label: "27. TP. Hồ Chí Minh" },
+  { value: "DONG_NAI", label: "28. Đồng Nai" },
+  { value: "TAY_NINH", label: "29. Tây Ninh" },
+  { value: "CAN_THO", label: "30. TP. Cần Thơ" },
+  { value: "VINH_LONG", label: "31. Vĩnh Long" },
+  { value: "DONG_THAP", label: "32. Đồng Tháp" },
+  { value: "CA_MAU", label: "33. Cà Mau" },
+  { value: "AN_GIANG", label: "34. An Giang" },
+];
+
+export const SINGLE_PAYMENT_METHOD = {
+  id: "qr_bank",
+  name: "Chuyển khoản Ngân hàng (Mã QR tự động)",
+  subtitle: "Thanh toán trước 100% qua VietQR để shop tiến hành làm đơn hàng thủ công",
+  icon: "/images/icons/vietqr.png",
+};
+
+export const INITIAL_CHECKOUT_ITEMS: CheckoutCartItem[] = [
+  {
+    id: 1,
+    name: "Móc khóa Thỏ Bông Len Handmade",
+    color: "Hồng nhạt",
+    price: 45000,
+    quantity: 2,
+    image: "/images/products/moc-khoa-tho.png",
+  },
+  {
+    id: 2,
+    name: "Móc khóa Hoa Tinh Tú Sắc Màu",
+    color: "Vàng chanh",
+    price: 35000,
+    quantity: 1,
+    image: "/images/products/moc-khoa-hoa.png",
+  },
+];

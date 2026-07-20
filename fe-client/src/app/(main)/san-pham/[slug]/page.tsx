@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import ProductDetailScreen from "@/screens/productDetail";
 import { CATALOG_PRODUCTS } from "@/screens/products/constants";
+import PageLoader from "@/components/ui/PageLoader";
 
 interface PageProps {
   params: Promise<{
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function Page({ params }: PageProps) {
   const { slug } = await params;
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-text-secondary text-sm">Đang tải chi tiết sản phẩm...</div>}>
+    <Suspense fallback={<PageLoader message="Đang tải sản phẩm..." />}>
       <ProductDetailScreen slug={slug} />
     </Suspense>
   );

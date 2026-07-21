@@ -115,7 +115,7 @@ export default function ProductSection({
               onBeforeInit={(swiper) => {
                 swiperRef.current = swiper;
               }}
-              className="w-full !px-1 py-2"
+              className="w-full !px-1 py-2 product-carousel"
             >
               {products.map((product) => (
                 <SwiperSlide key={product.id} className="h-full">

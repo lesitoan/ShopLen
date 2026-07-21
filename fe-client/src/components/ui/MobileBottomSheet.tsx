@@ -58,6 +58,7 @@ export default function MobileBottomSheet({
     return () => {
       cancelAnimationFrame(animFrame);
       clearTimeout(timer);
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 

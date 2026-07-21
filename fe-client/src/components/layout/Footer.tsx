@@ -106,10 +106,10 @@ export default function Footer() {
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[15px] font-bold text-secondary tracking-wide leading-tight">
+                <span className="text-[14px] font-bold text-secondary tracking-wide leading-tight">
                   Tiệm Len
                 </span>
-                <span className="text-[12px] font-medium text-text-secondary leading-none">
+                <span className="text-[14px] font-bold text-secondary tracking-wide leading-tight">
                   Nhà Kiều
                 </span>
               </div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
+import NavigationReset from "@/components/common/NavigationReset";
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["vietnamese"],
@@ -21,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={beVietnamPro.variable}>
       <body className="antialiased">
+        <NavigationReset />
         {children}
       </body>
     </html>

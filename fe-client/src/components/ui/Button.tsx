@@ -1,9 +1,13 @@
 import React from "react";
+import LoadingDots, { LoadingDotsProps } from "./LoadingDots";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "outline" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
   iconOnly?: boolean;
+  isLoading?: boolean;
+  loadingText?: string;
+  loadingDotsSize?: LoadingDotsProps["size"];
   children?: React.ReactNode;
 }
 
@@ -11,6 +15,9 @@ export default function Button({
   variant = "primary",
   size = "md",
   iconOnly = false,
+  isLoading = false,
+  loadingText,
+  loadingDotsSize,
   className = "",
   disabled,
   children,
@@ -41,13 +48,23 @@ export default function Button({
         lg: "px-5 py-3 rounded-lg text-[16px] gap-3",
       };
 
+  const defaultDotsSize = size === "lg" ? "md" : size === "sm" ? "xs" : "sm";
+  const dotsSize = loadingDotsSize || defaultDotsSize;
+
   return (
     <button
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       {...props}
     >
-      {children}
+      {isLoading ? (
+        <span className="inline-flex items-center justify-center gap-2">
+          <LoadingDots size={dotsSize} />
+          {loadingText ? <span>{loadingText}</span> : null}
+        </span>
+      ) : (
+        children
+      )}
     </button>
   );
 }

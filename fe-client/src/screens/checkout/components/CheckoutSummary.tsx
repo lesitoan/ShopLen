@@ -107,10 +107,11 @@ export default function CheckoutSummary({
           type="submit"
           variant="primary"
           size="md"
-          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          loadingText="Đang tạo đơn hàng..."
           className="w-full py-3.5 text-[14px] font-bold rounded-md justify-center gap-2"
         >
-          <span>{isSubmitting ? "Đang tạo đơn hàng..." : "Xác nhận đặt hàng & Lấy mã QR"}</span>
+          <span>Xác nhận đặt hàng & Lấy mã QR</span>
           <ArrowRight size={16} />
         </Button>
 

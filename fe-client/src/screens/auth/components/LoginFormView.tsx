@@ -161,10 +161,11 @@ export default function LoginFormView({
           type="submit"
           variant="primary"
           size="md"
-          disabled={isSubmitting}
+          isLoading={isSubmitting}
+          loadingText="Đang xử lý..."
           className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
         >
-          {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
+          Đăng nhập
         </Button>
       </form>
 

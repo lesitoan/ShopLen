@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   Search, 
   ShoppingCart, 
@@ -29,6 +30,7 @@ import {
 } from "./constants";
 
 export default function Header() {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -43,6 +45,15 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const cartRef = useRef<HTMLDivElement>(null);
+
+  // Close modals and reset body overflow whenever route changes
+  useEffect(() => {
+    setIsCartOpen(false);
+    setIsSearchOpen(false);
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    document.body.style.overflow = "";
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -150,10 +161,10 @@ export default function Header() {
               />
             </div>
             <div className="hidden lg:flex flex-col">
-              <span className="text-[15px] font-bold text-secondary tracking-wide leading-tight">
+              <span className="text-[14px] font-bold text-secondary tracking-wide leading-tight">
                 Tiệm Len
               </span>
-              <span className="text-[12px] font-medium text-text-secondary leading-none">
+              <span className="text-[14px] font-bold text-secondary tracking-wide leading-tight">
                 Nhà Kiều
               </span>
             </div>

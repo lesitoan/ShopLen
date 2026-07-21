@@ -11,7 +11,7 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ error, isSearch = false, leftIcon, rightIcon, className = "", disabled, value, defaultValue, ...props }, ref) => {
     // Base styling mapping from designSystem.md (radius, border, text colors)
-    const baseClasses = "w-full text-text-primary text-[14px] bg-surface border outline-none transition-all duration-200";
+    const baseClasses = "w-full text-text-primary text-[14px] bg-surface border outline-none transition-all duration-200 ease-out";
     
     // Normal input is rounded-md, search is pill rounded-full
     const shapeClasses = isSearch ? "rounded-full py-2 px-10" : "rounded-md py-2 px-3";
@@ -29,14 +29,14 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="relative w-full">
         {/* Render Search icon if isSearch is true */}
         {isSearch && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none transition-colors duration-200">
             <Search size={18} />
           </div>
         )}
 
         {/* Custom left icon */}
         {!isSearch && leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none transition-colors duration-200">
             {leftIcon}
           </div>
         )}
@@ -50,9 +50,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
 
-        {/* Custom right icon */}
+        {/* Custom right icon (với animation active:scale-90 mượt mà khi nhấp chuột) */}
         {rightIcon && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary flex items-center justify-center z-10 transition-transform duration-150 active:scale-90 cursor-pointer">
             {rightIcon}
           </div>
         )}

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useRef, useEffect } from "react";
 import Image from "next/image";
 import { Search, Clock, X } from "lucide-react";
+import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -33,12 +33,6 @@ export default function SearchModal({
   keywordSuggestions
 }: SearchModalProps) {
   const desktopModalRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  // Set mounted on client side to avoid Next.js hydration issues with Portals
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Close when clicking outside (desktop only)
   useEffect(() => {
@@ -46,7 +40,6 @@ export default function SearchModal({
       if (!isOpen) return;
       const target = event.target as Node;
       
-      // Close only if click is outside both desktop modal and the trigger button
       if (
         desktopModalRef.current &&
         !desktopModalRef.current.contains(target) &&
@@ -64,32 +57,106 @@ export default function SearchModal({
 
   if (!isOpen) return null;
 
-  const mobileBottomSheet = mounted && typeof document !== "undefined" ? createPortal(
-    <div 
-      className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center animate-in fade-in duration-200"
-      onClick={onClose}
-    >
+  return (
+    <>
+      {/* DESKTOP POPOVER */}
       <div 
-        className="bg-surface w-full rounded-t-2xl border-t border-border max-h-[85vh] overflow-y-auto pb-6 flex flex-col animate-in slide-in-from-bottom duration-300"
-        onClick={(e) => e.stopPropagation()}
+        ref={desktopModalRef}
+        className="absolute right-0 mt-3.5 w-[500px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
       >
-        {/* Drag handle */}
-        <div className="w-12 h-1 bg-border/60 rounded-full mx-auto my-3 shrink-0" />
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pb-3 border-b border-border/50 shrink-0 text-left">
-          <span className="text-[16px] font-bold text-text-primary">Tìm kiếm</span>
+        <div className="absolute -top-[7px] right-[14px] w-3 h-3 bg-primary rotate-45 z-10" />
+
+        <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3">
+          <span className="text-[13.5px] font-bold text-text-primary">Tìm kiếm sản phẩm</span>
           <button 
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-background flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+            className="text-text-secondary hover:text-text-primary transition-colors p-0.5"
+            aria-label="Đóng"
           >
             <X size={16} />
           </button>
         </div>
-        
-        {/* Body */}
-        <div className="p-4 flex flex-col gap-6 text-left">
-          {/* Input container */}
+
+        <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-surface mb-4">
+          <input
+            type="text"
+            placeholder="Gõ và nhấn nút enter"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="flex-1 px-3 py-2 bg-transparent text-text-primary text-[13.5px] outline-none placeholder:text-text-secondary/50"
+            autoFocus
+          />
+          <button 
+            type="submit" 
+            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-[12px] font-bold px-4 transition-all shrink-0 uppercase tracking-wider"
+          >
+            TÌM KIẾM
+          </button>
+        </form>
+
+        <div className="grid grid-cols-2 gap-5 text-left">
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-2.5 select-none">
+              Tìm kiếm gần đây
+            </span>
+            {recentSearches.length === 0 ? (
+              <span className="text-[12px] text-text-secondary/60">Trống</span>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {recentSearches.map((search, idx) => (
+                  <div 
+                    key={idx}
+                    onClick={() => onRecentSearchClick(search)}
+                    className="flex items-center justify-between text-[12.5px] text-text-primary hover:text-secondary font-medium transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <Clock size={13} className="text-text-secondary/60 group-hover:text-secondary shrink-0" />
+                      <span className="truncate">{search}</span>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveRecentSearch(idx);
+                      }}
+                      className="text-text-secondary/40 hover:text-error ml-1 p-0.5"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-2.5 select-none">
+              Gợi ý từ khóa
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {keywordSuggestions.slice(0, 6).map((tag, idx) => (
+                <span
+                  key={idx}
+                  onClick={() => onRecentSearchClick(tag)}
+                  className="px-2.5 py-1 bg-background hover:bg-primary-light hover:text-secondary hover:border-primary/20 text-[12px] font-medium text-text-primary border border-border/40 rounded-md transition-all cursor-pointer"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MOBILE BOTTOM SHEET */}
+      <MobileBottomSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Tìm kiếm"
+        maxHeightClass="max-h-[85vh]"
+        headerPaddingClass="px-4"
+        paddingClass="py-2 pb-6"
+      >
+        <div className="px-4 flex flex-col gap-6 text-left">
           <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-surface">
             <div className="flex items-center pl-3 text-text-secondary">
               <Search size={18} />
@@ -104,7 +171,6 @@ export default function SearchModal({
             />
           </form>
 
-          {/* Lịch sử tìm kiếm */}
           <div className="flex flex-col">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[12px] font-bold text-text-secondary uppercase tracking-wider select-none">
@@ -143,7 +209,6 @@ export default function SearchModal({
             </div>
           </div>
 
-          {/* Từ khóa phổ biến */}
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-text-secondary uppercase tracking-wider mb-3 select-none">
               Từ khóa phổ biến
@@ -161,12 +226,10 @@ export default function SearchModal({
             </div>
           </div>
 
-          {/* Gợi ý sản phẩm */}
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-text-secondary uppercase tracking-wider mb-3 select-none">
               Gợi ý sản phẩm
             </span>
-            {/* Horizontal scroll grid */}
             <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
               {[
                 { id: 1, name: "Gấu len Momo", price: 319000, image: "/images/products/moc-khoa-gau.png" },
@@ -186,7 +249,7 @@ export default function SearchModal({
                     <Image 
                       src={product.image}
                       alt={product.name}
-                      fill
+                      fill 
                       sizes="120px"
                       className="object-cover"
                     />
@@ -203,114 +266,8 @@ export default function SearchModal({
               ))}
             </div>
           </div>
-
         </div>
-      </div>
-    </div>,
-    document.body
-  ) : null;
-
-  return (
-    <>
-      {/* ========================================================================= */}
-      {/* DESKTOP POPOVER (no backdrop, absolutely positioned relative to parent) */}
-      {/* ========================================================================= */}
-      <div 
-        ref={desktopModalRef}
-        className="absolute right-0 mt-3.5 w-[500px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
-      >
-        {/* Top Pointer Arrow */}
-        <div className="absolute -top-[7px] right-[14px] w-3 h-3 bg-primary rotate-45 z-10" />
-
-        {/* Header Title */}
-        <div className="flex items-center justify-between pb-3">
-          <span className="text-[12px] font-bold text-text-secondary uppercase select-none">Tìm kiếm</span>
-          <button 
-            onClick={onClose}
-            className="text-text-secondary hover:text-text-primary p-0.5"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* Input field */}
-        <form onSubmit={onSearchSubmit} className="border border-primary rounded-md overflow-hidden flex items-stretch w-full bg-surface">
-          <input
-            type="text"
-            placeholder="Gõ và nhấn nút enter"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="flex-1 px-3 py-2 bg-transparent text-text-primary text-[13.5px] outline-none placeholder:text-text-secondary/50"
-            autoFocus
-          />
-          <button 
-            type="submit" 
-            className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-[12px] font-bold px-4 transition-all shrink-0 uppercase tracking-wider"
-          >
-            TÌM KIẾM
-          </button>
-        </form>
-
-        <div className="h-px bg-border/50 my-4" />
-
-        {/* 2 columns suggestions */}
-        <div className="grid grid-cols-2 gap-5 text-left">
-          {/* Recent searches */}
-          <div className="flex flex-col">
-            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-2.5 select-none">
-              Tìm kiếm gần đây
-            </span>
-            {recentSearches.length === 0 ? (
-              <span className="text-[12px] text-text-secondary/60">Trống</span>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {recentSearches.map((search, idx) => (
-                  <div 
-                    key={idx}
-                    onClick={() => onRecentSearchClick(search)}
-                    className="flex items-center justify-between text-[12.5px] text-text-primary hover:text-secondary font-medium transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <Clock size={13} className="text-text-secondary/60 group-hover:text-secondary shrink-0" />
-                      <span className="truncate">{search}</span>
-                    </div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemoveRecentSearch(idx);
-                      }}
-                      className="text-text-secondary/40 hover:text-error ml-1 p-0.5"
-                    >
-                      <X size={10} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Keywords suggestions */}
-          <div className="flex flex-col">
-            <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-2.5 select-none">
-              Gợi ý từ khóa
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {keywordSuggestions.slice(0, 6).map((tag, idx) => (
-                <span
-                  key={idx}
-                  onClick={() => onRecentSearchClick(tag)}
-                  className="px-2.5 py-1 bg-background hover:bg-primary-light hover:text-secondary hover:border-primary/20 text-[12px] font-medium text-text-primary border border-border/40 rounded-md transition-all cursor-pointer"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Bottom Sheet (teleported) */}
-      {mobileBottomSheet}
+      </MobileBottomSheet>
     </>
   );
 }

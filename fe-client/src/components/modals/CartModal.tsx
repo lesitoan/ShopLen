@@ -72,7 +72,7 @@ export default function CartModal({
       {/* DESKTOP POPOVER */}
       <div 
         ref={desktopModalRef}
-        className="absolute right-0 mt-3.5 w-[290px] sm:w-[380px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
+        className="absolute right-0 mt-3.5 w-[290px] sm:w-[380px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-4 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
       >
         <div className="absolute -top-[7px] right-[14px] w-3 h-3 bg-primary rotate-45 z-10" />
 

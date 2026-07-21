@@ -7,6 +7,13 @@ export interface CartItem {
   image: string;
 }
 
+export interface NavMenuItem {
+  id: string;
+  name: string;
+  href?: string;
+  children?: { name: string; href: string }[];
+}
+
 export const PRODUCT_CATEGORIES = [
   { name: "Móc khóa len", href: "/san-pham?category=moc-khoa" },
   { name: "Thú bông len", href: "/san-pham?category=thu-bong" },
@@ -19,6 +26,29 @@ export const HIGHLIGHT_MENU = [
   { name: "Khuyến mãi", href: "/san-pham?sort=promo" },
   { name: "Hàng mới về", href: "/san-pham?sort=newest" },
   { name: "Sản phẩm bán chạy", href: "/san-pham?sort=best-seller" },
+];
+
+export const NAV_ITEMS: NavMenuItem[] = [
+  {
+    id: "products",
+    name: "Sản phẩm",
+    children: PRODUCT_CATEGORIES,
+  },
+  {
+    id: "custom-order",
+    name: "Đặt theo ảnh",
+    href: "/dat-theo-anh",
+  },
+  {
+    id: "blog",
+    name: "Bài viết",
+    href: "/blog",
+  },
+  {
+    id: "highlights",
+    name: "Nổi bật",
+    children: HIGHLIGHT_MENU,
+  },
 ];
 
 export const INITIAL_RECENT_SEARCHES = [
@@ -98,4 +128,3 @@ export const SOCIAL_LINKS = {
   youtube: "https://youtube.com",
   pinterest: "https://pinterest.com",
 };
-

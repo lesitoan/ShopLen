@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from "react";
 import Image from "next/image";
 import { Search, Clock, X } from "lucide-react";
 import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
+import ProductCard from "@/components/product/ProductCard";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export default function SearchModal({
     function handleClickOutside(event: MouseEvent) {
       if (!isOpen) return;
       const target = event.target as Node;
-      
+
       if (
         desktopModalRef.current &&
         !desktopModalRef.current.contains(target) &&
@@ -60,15 +61,15 @@ export default function SearchModal({
   return (
     <>
       {/* DESKTOP POPOVER */}
-      <div 
+      <div
         ref={desktopModalRef}
-        className="absolute right-0 mt-3.5 w-[500px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
+        className="absolute right-0 mt-3.5 w-[500px] bg-surface border border-border border-t-4 border-t-primary rounded-xl p-5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200 hidden md:block text-left"
       >
         <div className="absolute -top-[7px] right-[14px] w-3 h-3 bg-primary rotate-45 z-10" />
 
         <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-3">
           <span className="text-[13.5px] font-bold text-text-primary">Tìm kiếm sản phẩm</span>
-          <button 
+          <button
             onClick={onClose}
             className="text-text-secondary hover:text-text-primary transition-colors p-0.5"
             aria-label="Đóng"
@@ -86,8 +87,8 @@ export default function SearchModal({
             className="flex-1 px-3 py-2 bg-transparent text-text-primary text-[13.5px] outline-none placeholder:text-text-secondary/50"
             autoFocus
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="bg-primary hover:bg-primary-hover active:bg-primary-active text-white text-[12px] font-bold px-4 transition-all shrink-0 uppercase tracking-wider"
           >
             TÌM KIẾM
@@ -104,7 +105,7 @@ export default function SearchModal({
             ) : (
               <div className="flex flex-col gap-2">
                 {recentSearches.map((search, idx) => (
-                  <div 
+                  <div
                     key={idx}
                     onClick={() => onRecentSearchClick(search)}
                     className="flex items-center justify-between text-[12.5px] text-text-primary hover:text-secondary font-medium transition-colors cursor-pointer group"
@@ -113,7 +114,7 @@ export default function SearchModal({
                       <Clock size={13} className="text-text-secondary/60 group-hover:text-secondary shrink-0" />
                       <span className="truncate">{search}</span>
                     </div>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onRemoveRecentSearch(idx);
@@ -176,17 +177,17 @@ export default function SearchModal({
               <span className="text-[12px] font-bold text-text-secondary uppercase tracking-wider select-none">
                 Tìm kiếm gần đây
               </span>
-              <button 
-                onClick={onClearRecentSearches} 
+              <button
+                onClick={onClearRecentSearches}
                 className="text-[11px] text-secondary font-bold hover:underline"
               >
                 Xóa tất cả
               </button>
             </div>
-            
+
             <div className="flex flex-col gap-2.5">
               {recentSearches.map((search, idx) => (
-                <div 
+                <div
                   key={idx}
                   onClick={() => onRecentSearchClick(search)}
                   className="flex items-center justify-between py-1 border-b border-border/40 text-[13px] text-text-primary font-medium cursor-pointer"
@@ -195,7 +196,7 @@ export default function SearchModal({
                     <Clock size={14} className="text-text-secondary/60 shrink-0" />
                     <span className="truncate">{search}</span>
                   </div>
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemoveRecentSearch(idx);
@@ -230,38 +231,22 @@ export default function SearchModal({
             <span className="text-[12px] font-bold text-text-secondary uppercase tracking-wider mb-3 select-none">
               Gợi ý sản phẩm
             </span>
-            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex gap-3 overflow-x-auto pb-3 no-scrollbar">
               {[
-                { id: 1, name: "Gấu len Momo", price: 319000, image: "/images/products/moc-khoa-gau.png" },
-                { id: 2, name: "Túi len hoa cúc", price: 269000, image: "/images/products/tui-hoa-cuc.png" },
-                { id: 3, name: "Mũ len tai thỏ", price: 189000, image: "/images/products/gau-bong-tho.png" },
-                { id: 4, name: "Khăn choàng basic", price: 289000, image: "/images/products/binh-hoa-tulip.png" }
+                { id: 1, name: "Gấu len Momo handmade", price: 319000, image: "/images/products/moc-khoa-gau.png", soldCount: 42, badge: "bestSeller" as const },
+                { id: 2, name: "Túi len hoa cúc nhỏ nhắn", price: 269000, image: "/images/products/tui-hoa-cuc.png", soldCount: 18, badge: "new" as const },
+                { id: 3, name: "Mũ len tai thỏ mộng mơ", price: 189000, image: "/images/products/gau-bong-tho.png", soldCount: 29, badge: "hotTiktok" as const },
+                { id: 4, name: "Bình hoa tulip len handmade", price: 289000, image: "/images/products/binh-hoa-tulip.png", soldCount: 15 }
               ].map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => {
-                    onClose();
-                    window.location.href = `/san-pham/sp-${product.id}`;
-                  }}
-                  className="flex flex-col bg-background/50 border border-border/30 p-2 rounded-xl shrink-0 w-36 cursor-pointer"
-                >
-                  <div className="relative aspect-square w-full rounded-md overflow-hidden bg-surface border border-border/50">
-                    <Image 
-                      src={product.image}
-                      alt={product.name}
-                      fill 
-                      sizes="120px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="mt-2 flex flex-col min-w-0">
-                    <span className="text-[12px] font-semibold text-text-primary truncate">
-                      {product.name}
-                    </span>
-                    <span className="text-[12.5px] font-bold text-secondary mt-0.5">
-                      {(product.price).toLocaleString("vi-VN") + "đ"}
-                    </span>
-                  </div>
+                <div key={product.id} className="w-40 shrink-0" onClick={onClose}>
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    image={product.image}
+                    soldCount={product.soldCount}
+                    badge={product.badge}
+                  />
                 </div>
               ))}
             </div>

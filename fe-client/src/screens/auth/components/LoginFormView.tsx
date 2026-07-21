@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import SocialLoginOptions from "./SocialLoginOptions";
 import { LoginFormData, AuthViewMode } from "../types";
+import { setCookie } from "@/utils/cookieUtils";
 
 interface LoginFormViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
@@ -27,20 +28,25 @@ export default function LoginFormView({
     formState: { errors },
   } = useForm<LoginFormData>({
     defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
+      email: "demo@gmail.com",
+      password: "12345678",
+      rememberMe: true,
     },
     mode: "onTouched",
   });
 
   const onSubmit = (data: LoginFormData) => {
     setIsSubmitting(true);
-    console.log("Login form data:", data);
+    // Fake login: set cookie isLogin = true
+    setCookie("isLogin", "true", 7);
+
     setTimeout(() => {
       setIsSubmitting(false);
-      if (onSubmitSuccess) onSubmitSuccess(data);
-      else window.location.href = "/";
+      if (onSubmitSuccess) {
+        onSubmitSuccess(data);
+      } else {
+        window.location.href = "/tai-khoan";
+      }
     }, 600);
   };
 

@@ -1,6 +1,7 @@
 import React from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import FloatingActions from "@/components/common/FloatingActions";
 
 export default function MainLayout({
   children,
@@ -12,6 +13,7 @@ export default function MainLayout({
       <Header />
       {children}
       <Footer />
+      <FloatingActions />
     </div>
   );
 }

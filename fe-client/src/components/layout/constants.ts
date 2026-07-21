@@ -42,7 +42,7 @@ export const NAV_ITEMS: NavMenuItem[] = [
   {
     id: "blog",
     name: "Bài viết",
-    href: "/blog",
+    href: "/bai-viet",
   },
   {
     id: "highlights",
@@ -90,9 +90,9 @@ export const INITIAL_CART_ITEMS: CartItem[] = [
 
 export const FOOTER_ABOUT_LINKS = [
   { name: "Giới thiệu", href: "/gioi-thieu" },
-  { name: "Câu chuyện thương hiệu", href: "/cau-chuyen" },
-  { name: "Chính sách chất lượng", href: "/chat-luong" },
-  { name: "Tuyển dụng", href: "/tuyen-dung" },
+  { name: "Câu chuyện thương hiệu", href: "/gioi-thieu" },
+  { name: "Chính sách chất lượng", href: "/chinh-sach-bao-mat" },
+  { name: "Tuyển dụng", href: "/lien-he" },
   { name: "Liên hệ", href: "/lien-he" },
 ];
 
@@ -106,19 +106,19 @@ export const FOOTER_PRODUCT_LINKS = [
 ];
 
 export const FOOTER_SUPPORT_LINKS = [
-  { name: "Hướng dẫn đặt hàng", href: "/ho-tro/dat-hang" },
-  { name: "Chính sách thanh toán", href: "/ho-tro/thanh-toan" },
-  { name: "Chính sách vận chuyển", href: "/ho-tro/van-chuyen" },
-  { name: "Chính sách đổi trả", href: "/ho-tro/doi-tra" },
-  { name: "Câu hỏi thường gặp (FAQ)", href: "/ho-tro/faq" },
-  { name: "Hướng dẫn bảo quản", href: "/ho-tro/bao-quan" },
+  { name: "Chính sách bảo mật", href: "/chinh-sach-bao-mat" },
+  { name: "Điều khoản sử dụng", href: "/dieu-khoan-su-dung" },
+  { name: "Chính sách thanh toán", href: "/chinh-sach-thanh-toan" },
+  { name: "Chính sách vận chuyển", href: "/chinh-sach-van-chuyen" },
+  { name: "Chính sách đổi trả & hoàn tiền", href: "/chinh-sach-doi-tra" },
+  { name: "Câu hỏi thường gặp (FAQ)", href: "/bai-viet" },
 ];
 
 export const FOOTER_CONTACT_INFO = {
   address: "Đà Nẵng, Việt Nam",
-  phone: "Đang cập nhật",
-  email: "Đang cập nhật",
-  hours: "08:00 - 22:00 (T2 - CN)",
+  phone: "0987.654.321",
+  email: "hotro@tiemlennhakieu.com",
+  hours: "08:00 - 21:00 (T2 - CN)",
 };
 
 export const SOCIAL_LINKS = {

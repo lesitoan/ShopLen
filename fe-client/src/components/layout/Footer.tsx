@@ -311,11 +311,11 @@ export default function Footer() {
 
           <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
             <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1.5 text-[12.5px] text-text-secondary font-medium">
-              <Link href="/bao-mat" className="hover:text-secondary transition-colors">Chính sách bảo mật</Link>
+              <Link href="/chinh-sach-bao-mat" className="hover:text-secondary transition-colors">Chính sách bảo mật</Link>
               <span className="text-border/80 hidden sm:inline">•</span>
-              <Link href="/dieu-khoan" className="hover:text-secondary transition-colors">Điều khoản sử dụng</Link>
+              <Link href="/dieu-khoan-su-dung" className="hover:text-secondary transition-colors">Điều khoản sử dụng</Link>
               <span className="text-border/80 hidden sm:inline">•</span>
-              <Link href="/sitemap" className="hover:text-secondary transition-colors">Sitemap</Link>
+              <Link href="/chinh-sach-doi-tra" className="hover:text-secondary transition-colors">Chính sách đổi trả</Link>
             </div>
             <p className="text-[12px] text-text-secondary/60 mt-1">
               &copy; 2024 Tiệm Len Nhà Kiều. All rights reserved.

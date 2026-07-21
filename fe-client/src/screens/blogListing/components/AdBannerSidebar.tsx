@@ -5,7 +5,13 @@ import Image from "next/image";
 
 import { AD_BANNERS, BANNER_AUTOPLAY_INTERVAL } from "../constants";
 
-export default function AdBannerSidebar() {
+interface AdBannerSidebarProps {
+  className?: string;
+}
+
+export default function AdBannerSidebar({
+  className = "hidden md:block w-[270px] shrink-0 sticky top-[80px] self-start",
+}: AdBannerSidebarProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const goTo = useCallback((index: number) => {
@@ -20,7 +26,7 @@ export default function AdBannerSidebar() {
   }, []);
 
   return (
-    <aside className="hidden md:block w-[270px] shrink-0 sticky top-[80px] self-start">
+    <div className={className}>
       <div className="relative rounded-lg border border-border overflow-hidden bg-background">
         <div className="relative w-full">
           {AD_BANNERS.map((banner, idx) => (
@@ -63,6 +69,6 @@ export default function AdBannerSidebar() {
           ))}
         </div>
       </div>
-    </aside>
+    </div>
   );
 }

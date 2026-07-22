@@ -9,6 +9,8 @@ import SocialLoginOptions from "./SocialLoginOptions";
 import { LoginFormData, AuthViewMode } from "../types";
 import { setCookie } from "@/utils/cookieUtils";
 
+import { useRouter } from "next/navigation";
+
 interface LoginFormViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
   onSubmitSuccess?: (data: LoginFormData) => void;
@@ -18,6 +20,7 @@ export default function LoginFormView({
   onSwitchView,
   onSubmitSuccess,
 }: LoginFormViewProps) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,7 +48,7 @@ export default function LoginFormView({
       if (onSubmitSuccess) {
         onSubmitSuccess(data);
       } else {
-        window.location.href = "/tai-khoan";
+        router.push("/tai-khoan");
       }
     }, 600);
   };

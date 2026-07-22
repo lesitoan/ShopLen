@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ShoppingCart,
@@ -86,6 +87,8 @@ export default function DesktopHeader({
     }
   };
 
+  const router = useRouter();
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchValue.trim()) {
@@ -93,13 +96,13 @@ export default function DesktopHeader({
         setRecentSearches((prev) => [searchValue.trim(), ...prev.slice(0, 4)]);
       }
       setIsSearchOpen(false);
-      window.location.href = `/san-pham?search=${encodeURIComponent(searchValue.trim())}`;
+      router.push(`/san-pham?search=${encodeURIComponent(searchValue.trim())}`);
     }
   };
 
   const handleRecentSearchClick = (searchVal: string) => {
     setSearchValue(searchVal);
-    window.location.href = `/san-pham?search=${encodeURIComponent(searchVal)}`;
+    router.push(`/san-pham?search=${encodeURIComponent(searchVal)}`);
     setIsSearchOpen(false);
   };
 

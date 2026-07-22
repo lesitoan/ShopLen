@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "../constants";
 import Button from "@/components/ui/Button";
@@ -21,7 +22,7 @@ export default function CategoryGrid() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {CATEGORIES.map((category) => (
-              <a
+              <Link
                 key={category.id}
                 href={`/san-pham?category=${category.slug}`}
                 className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg hover:border-primary transition-all duration-300 cursor-pointer group"
@@ -43,7 +44,7 @@ export default function CategoryGrid() {
                     <ArrowRight size={10} className="transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -70,11 +71,11 @@ export default function CategoryGrid() {
                   Những món len đan móc tỉ mỉ theo yêu cầu, gửi trọn ý tưởng của riêng bạn.
                 </p>
               </div>
-              <a href="/lien-he">
+              <Link href="/lien-he">
                 <Button variant="primary" className="rounded-md px-5 py-2.5 font-semibold text-[12px]">
                   Đặt hàng ngay
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

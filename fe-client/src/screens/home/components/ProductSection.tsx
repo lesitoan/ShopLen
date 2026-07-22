@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -54,7 +55,7 @@ export default function ProductSection({
                   {description}
                 </p>
               </div>
-              <a href={ctaLink} className="w-full sm:w-auto mt-auto">
+              <Link href={ctaLink} className="w-full sm:w-auto mt-auto">
                 <Button
                   variant="primary"
                   className="rounded-md px-5 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 w-full sm:w-auto justify-center"
@@ -62,7 +63,7 @@ export default function ProductSection({
                   <span>{ctaText}</span>
                   <ChevronRight size={14} />
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         ) : (
@@ -75,7 +76,7 @@ export default function ProductSection({
                 {description}
               </p>
             </div>
-            <a href={ctaLink} className="w-full sm:w-auto">
+            <Link href={ctaLink} className="w-full sm:w-auto">
               <Button
                 variant="primary"
                 className="rounded-md px-5 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 w-full sm:w-auto justify-center"
@@ -83,7 +84,7 @@ export default function ProductSection({
                 <span>{ctaText}</span>
                 <ChevronRight size={14} />
               </Button>
-            </a>
+            </Link>
           </div>
         )}
 

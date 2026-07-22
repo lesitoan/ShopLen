@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { checkIsLoggedIn, deleteCookie } from "@/utils/cookieUtils";
 import DesktopHeader from "./components/DesktopHeader";
 import MobileHeader from "./components/MobileHeader";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -36,7 +37,7 @@ export default function Header() {
     deleteCookie("isLogin");
     setIsLoggedIn(false);
     setIsMobileMenuOpen(false);
-    window.location.href = "/";
+    router.push("/");
   };
 
   return (

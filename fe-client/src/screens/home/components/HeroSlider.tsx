@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
@@ -64,16 +65,16 @@ export default function HeroSlider() {
                     {slide.description}
                   </p>
                   <div className="flex items-center gap-3">
-                    <a href={slide.primaryBtnLink}>
+                    <Link href={slide.primaryBtnLink}>
                       <Button variant="primary" className="rounded-md px-6 py-2.5 font-semibold text-sm">
                         {slide.primaryBtnText}
                       </Button>
-                    </a>
-                    <a href={slide.secondaryBtnLink}>
+                    </Link>
+                    <Link href={slide.secondaryBtnLink}>
                       <Button variant="secondary" className="rounded-md px-6 py-2.5 font-semibold text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm">
                         {slide.secondaryBtnText}
                       </Button>
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>

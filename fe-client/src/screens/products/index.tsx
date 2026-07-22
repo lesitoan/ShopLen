@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
 import Button from "@/components/ui/Button";
@@ -153,9 +154,9 @@ export default function ProductsScreen() {
       <main className="flex-1 py-8 flex flex-col">
         <div className="max-w-6xl mx-auto px-4 md:px-6 w-full flex-1 flex flex-col">
           <div className="flex items-center gap-1.5 text-[12px] text-text-secondary mb-4 select-none">
-            <a href="/" className="hover:text-primary transition-colors">
+            <Link href="/" className="hover:text-primary transition-colors">
               Trang chủ
-            </a>
+            </Link>
             <span>&gt;</span>
             <span className="font-medium text-text-primary">Sản phẩm</span>
           </div>

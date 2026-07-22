@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { BLOG_POSTS } from "../constants";
 import BlogCard from "@/components/blog/BlogCard";
@@ -16,13 +17,13 @@ export default function BlogSection() {
             Chia sẻ các bài viết hướng dẫn móc len và cẩm nang quà tặng ý nghĩa.
           </p>
         </div>
-        <a
-          href="/blog"
+        <Link
+          href="/bai-viet"
           className="text-[13px] font-semibold text-secondary hover:text-primary-active transition-colors inline-flex items-center gap-1 group whitespace-nowrap self-start sm:self-auto"
         >
           <span>Xem tất cả bài viết</span>
           <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
-        </a>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

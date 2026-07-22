@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Calendar, Clock } from "lucide-react";
 
 interface BlogCardProps {
@@ -22,14 +23,15 @@ export default function BlogCard({
   readTime,
   href,
 }: BlogCardProps) {
-  const targetHref = href || `/blog/post-${id}`;
+  const targetHref = href || `/bai-viet-chi-tiet-${id}`;
 
   return (
-    <a
+    <Link
       href={targetHref}
       className="flex flex-col h-full bg-surface border border-border rounded-lg overflow-hidden group hover:border-primary transition-all duration-300 cursor-pointer"
     >
       <div className="relative aspect-[16/10] w-full bg-background overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image}
           alt={title}
@@ -64,6 +66,6 @@ export default function BlogCard({
           </div>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ProfileSidebar from "./components/ProfileSidebar";
 import PersonalInfoTab from "./components/PersonalInfoTab";
 import OrderHistoryTab from "./components/OrderHistoryTab";
@@ -12,21 +13,21 @@ import { DEMO_USER, MOCK_ORDERS, MOCK_ADDRESSES } from "./constants";
 import { deleteCookie, checkIsLoggedIn } from "@/utils/cookieUtils";
 
 export default function UserProfileScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ProfileTab>("PROFILE");
   const [user, setUser] = useState<UserProfile>(DEMO_USER);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    // Check cookie on mount
     if (!checkIsLoggedIn()) {
-      window.location.href = "/dang-nhap";
+      router.push("/dang-nhap");
     }
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     deleteCookie("isLogin");
-    window.location.href = "/";
+    router.push("/");
   };
 
   if (!isMounted) return null;

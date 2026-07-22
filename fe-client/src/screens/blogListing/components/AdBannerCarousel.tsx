@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-
+import Link from "next/link";
 import { AD_BANNERS, BANNER_AUTOPLAY_INTERVAL } from "../constants";
 
 export default function AdBannerCarousel() {
@@ -24,7 +24,7 @@ export default function AdBannerCarousel() {
       <div className="relative rounded-lg border border-border overflow-hidden bg-background">
         <div className="relative w-full">
           {AD_BANNERS.map((banner, idx) => (
-            <a
+            <Link
               key={banner.id}
               href={banner.href}
               className={`block w-full transition-opacity duration-500 ${
@@ -45,7 +45,7 @@ export default function AdBannerCarousel() {
                 className="block"
                 priority={idx === 0}
               />
-            </a>
+            </Link>
           ))}
         </div>
 

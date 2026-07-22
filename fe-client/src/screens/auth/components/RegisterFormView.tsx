@@ -6,6 +6,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import SocialLoginOptions from "./SocialLoginOptions";
 import { RegisterFormData, AuthViewMode } from "../types";
+import { useRouter } from "next/navigation";
 
 interface RegisterFormViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
@@ -16,6 +17,7 @@ export default function RegisterFormView({
   onSwitchView,
   onSubmitSuccess,
 }: RegisterFormViewProps) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +42,7 @@ export default function RegisterFormView({
     setTimeout(() => {
       setIsSubmitting(false);
       if (onSubmitSuccess) onSubmitSuccess(data);
-      else window.location.href = "/";
+      else router.push("/");
     }, 600);
   };
 

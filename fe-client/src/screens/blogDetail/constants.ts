@@ -149,5 +149,5 @@ export const RELATED_POSTS: BlogPost[] = [
 ];
 
 export function getPostBySlug(slug: string): BlogDetail | null {
-  return MOCK_BLOG_DETAILS[slug] ?? MOCK_BLOG_DETAILS["bai-viet-chi-tiet-1"] ?? null;
+  return MOCK_BLOG_DETAILS[slug] ?? null;
 }

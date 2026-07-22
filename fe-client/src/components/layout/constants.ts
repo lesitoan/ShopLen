@@ -89,20 +89,17 @@ export const INITIAL_CART_ITEMS: CartItem[] = [
 ];
 
 export const FOOTER_ABOUT_LINKS = [
-  { name: "Giới thiệu", href: "/gioi-thieu" },
-  { name: "Câu chuyện thương hiệu", href: "/gioi-thieu" },
-  { name: "Chính sách chất lượng", href: "/chinh-sach-bao-mat" },
-  { name: "Tuyển dụng", href: "/lien-he" },
-  { name: "Liên hệ", href: "/lien-he" },
+  { name: "Giới thiệu thương hiệu", href: "/gioi-thieu" },
+  { name: "Bài viết & Mẹo hay", href: "/bai-viet" },
+  { name: "Liên hệ hỗ trợ", href: "/lien-he" },
 ];
 
 export const FOOTER_PRODUCT_LINKS = [
   { name: "Móc khóa len", href: "/san-pham?category=moc-khoa" },
-  { name: "Gấu bông len", href: "/san-pham?category=thu-bong" },
-  { name: "Đồ trang trí", href: "/san-pham?category=do-decor" },
+  { name: "Thú bông len", href: "/san-pham?category=thu-bong" },
+  { name: "Hoa len", href: "/san-pham?category=hoa-len" },
   { name: "Phụ kiện len", href: "/san-pham?category=phu-kien" },
-  { name: "Sản phẩm khác", href: "/san-pham?category=khac" },
-  { name: "Quà tặng handmade", href: "/san-pham?category=qua-tang" },
+  { name: "Đặt theo ảnh yêu cầu", href: "/dat-theo-anh" },
 ];
 
 export const FOOTER_SUPPORT_LINKS = [
@@ -111,7 +108,7 @@ export const FOOTER_SUPPORT_LINKS = [
   { name: "Chính sách thanh toán", href: "/chinh-sach-thanh-toan" },
   { name: "Chính sách vận chuyển", href: "/chinh-sach-van-chuyen" },
   { name: "Chính sách đổi trả & hoàn tiền", href: "/chinh-sach-doi-tra" },
-  { name: "Câu hỏi thường gặp (FAQ)", href: "/bai-viet" },
+  { name: "Câu hỏi thường gặp (FAQ)", href: "/faq" },
 ];
 
 export const FOOTER_CONTACT_INFO = {

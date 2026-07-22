@@ -299,26 +299,35 @@ export default function Footer() {
             <span className="text-[12px] font-semibold text-text-secondary uppercase select-none">
               Phương thức thanh toán
             </span>
-            <div className="flex items-center gap-2.5 select-none">
-              <div className="bg-white border border-border/60 rounded-md px-3 py-1.5 h-8 flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start select-none">
+              <div className="bg-white border border-border/60 rounded-md px-2.5 py-1.5 h-8 flex items-center justify-center shrink-0">
+                <div className="text-[#00529C] font-bold text-[10px] tracking-tight leading-none">Viet<span className="text-[#EA0029]">QR</span> / Banking</div>
+              </div>
+              <div className="bg-white border border-border/60 rounded-md px-2.5 py-1.5 h-8 flex items-center justify-center shrink-0">
+                <div className="text-[#005BAA] font-bold text-[10px] tracking-tight leading-none">VN<span className="text-[#E31837]">PAY</span></div>
+              </div>
+              <div className="bg-white border border-border/60 rounded-md px-2.5 py-1.5 h-8 flex items-center justify-center shrink-0">
                 <div className="bg-[#A50064] text-white px-1.5 py-0.5 rounded text-[8px] font-bold tracking-tighter uppercase leading-none">momo</div>
               </div>
-              <div className="bg-white border border-border/60 rounded-md px-3 py-1.5 h-8 flex items-center justify-center shrink-0">
+              <div className="bg-white border border-border/60 rounded-md px-2.5 py-1.5 h-8 flex items-center justify-center shrink-0">
                 <div className="text-[#008FE5] font-bold text-[10px] tracking-tight leading-none">Zalo<span className="text-[#00A859]">Pay</span></div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-center md:items-end gap-2 text-center md:text-right">
-            <div className="flex items-center flex-wrap justify-center gap-x-3 gap-y-1.5 text-[12.5px] text-text-secondary font-medium">
-              <Link href="/chinh-sach-bao-mat" className="hover:text-secondary transition-colors">Chính sách bảo mật</Link>
-              <span className="text-border/80 hidden sm:inline">•</span>
-              <Link href="/dieu-khoan-su-dung" className="hover:text-secondary transition-colors">Điều khoản sử dụng</Link>
-              <span className="text-border/80 hidden sm:inline">•</span>
-              <Link href="/chinh-sach-doi-tra" className="hover:text-secondary transition-colors">Chính sách đổi trả</Link>
-            </div>
-            <p className="text-[12px] text-text-secondary/60 mt-1">
+          <div className="flex flex-col items-center md:items-end gap-1 text-center md:text-right">
+            <p className="text-[12px] text-text-secondary/60">
               &copy; 2024 Tiệm Len Nhà Kiều. All rights reserved.
+            </p>
+            <p className="text-[11.5px] text-text-secondary/70">
+              Developed by{" "}
+              <a
+                href="mailto:lesitoanbk@gmail.com"
+                className="font-semibold text-secondary hover:underline"
+                title="Liên hệ Developer: lesitoanbk@gmail.com"
+              >
+                Toàn Dev
+              </a>
             </p>
           </div>
         </div>

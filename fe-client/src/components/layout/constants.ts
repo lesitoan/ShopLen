@@ -35,9 +35,9 @@ export const NAV_ITEMS: NavMenuItem[] = [
     children: PRODUCT_CATEGORIES,
   },
   {
-    id: "custom-order",
-    name: "Đặt theo ảnh",
-    href: "/dat-theo-anh",
+    id: "order-lookup",
+    name: "Tra cứu đơn",
+    href: "/tra-cuu-don-hang",
   },
   {
     id: "blog",

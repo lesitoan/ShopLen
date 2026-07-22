@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/gioi-thieu",
     "/lien-he",
     "/faq",
+    "/tra-cuu-don-hang",
     "/chinh-sach-bao-mat",
     "/dieu-khoan-su-dung",
     "/chinh-sach-doi-tra",

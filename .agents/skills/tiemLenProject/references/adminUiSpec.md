@@ -30,24 +30,24 @@ Nguyên tắc chung:
 ## 1. Danh sách màn hình (Sitemap)
 
 ```
-/dang-nhap                     Login
-/                                Dashboard tổng quan
-/don-hang                       Danh sách đơn hàng
-/don-hang/[id]                  Chi tiết đơn hàng
-/san-pham                       Danh sách sản phẩm
-/san-pham/them-moi              Thêm sản phẩm
-/san-pham/[id]                  Sửa sản phẩm
-/danh-muc                       Quản lý danh mục
-/khach-hang                     Danh sách khách hàng
-/khach-hang/[id]                Chi tiết khách hàng
-/khuyen-mai                     Mã giảm giá / khuyến mãi
-/diem-thuong/cau-hinh           Cấu hình tích điểm
-/blog                           Danh sách bài viết
-/blog/them-moi                  Viết bài mới
-/blog/[id]                      Sửa bài viết
-/nhan-vien                      Quản lý tài khoản nhân viên (phân quyền)
-/cau-hinh                       Cấu hình chung (ngân hàng, ship, thông báo)
-/thong-ke                       Báo cáo/thống kê nâng cao
+/login                         Login
+/                              Dashboard tổng quan
+/orders                        Danh sách đơn hàng
+/orders/[id]                   Chi tiết đơn hàng
+/products                      Danh sách sản phẩm
+/products/new                  Thêm sản phẩm
+/products/[id]                 Sửa sản phẩm
+/categories                    Quản lý danh mục
+/customers                     Danh sách khách hàng
+/customers/[id]                Chi tiết khách hàng
+/promotions                    Mã giảm giá / khuyến mãi
+/rewards/config                Cấu hình tích điểm
+/blog                          Danh sách bài viết
+/blog/new                      Viết bài mới
+/blog/[id]                     Sửa bài viết
+/staff                         Quản lý tài khoản nhân viên (phân quyền)
+/settings                      Cấu hình chung (ngân hàng, ship, thông báo)
+/analytics                     Báo cáo/thống kê nâng cao
 ```
 
 ---
@@ -88,7 +88,7 @@ Nguyên tắc chung:
 
 ## 4. Quản lý đơn hàng
 
-### 4.1 Danh sách đơn hàng (`/don-hang`)
+### 4.1 Danh sách đơn hàng (`/orders`)
 
 **Bộ lọc**:
 - Trạng thái: Chờ thanh toán / Đã thanh toán / Đang đóng gói / Đang giao / Hoàn tất / Đã hủy
@@ -99,7 +99,7 @@ Nguyên tắc chung:
 
 **Realtime**: đơn mới tự thêm vào đầu bảng kèm hiệu ứng highlight ngắn (vd nền vàng nhạt 2s) để admin dễ nhận biết; đồng thời phát âm thanh thông báo nhỏ (có thể tắt trong cấu hình).
 
-### 4.2 Chi tiết đơn hàng (`/don-hang/[id]`)
+### 4.2 Chi tiết đơn hàng (`/orders/[id]`)
 
 **Bố cục**:
 - Thông tin khách hàng & địa chỉ giao hàng
@@ -114,13 +114,13 @@ Nguyên tắc chung:
 
 ## 5. Quản lý sản phẩm
 
-### 5.1 Danh sách sản phẩm (`/san-pham`)
+### 5.1 Danh sách sản phẩm (`/products`)
 - Bộ lọc: danh mục, trạng thái (còn hàng/hết hàng/ẩn), search tên
 - Bảng: Ảnh, Tên, Danh mục, Giá, Tồn kho, Trạng thái, Hành động (Sửa/Ẩn/Xóa)
 - Nút "+ Thêm sản phẩm"
 - Thao tác nhanh đổi tồn kho ngay trên bảng (inline edit) để nhập hàng nhanh không cần vào trang sửa
 
-### 5.2 Thêm/Sửa sản phẩm (`/san-pham/them-moi`, `/san-pham/[id]`)
+### 5.2 Thêm/Sửa sản phẩm (`/products/new`, `/products/[id]`)
 **Form gồm**:
 - Tên sản phẩm, slug (tự sinh, cho sửa tay)
 - Danh mục (select, có thể multi nếu 1 sản phẩm thuộc nhiều category)
@@ -134,7 +134,7 @@ Nguyên tắc chung:
 
 ---
 
-## 6. Quản lý danh mục (`/danh-muc`)
+## 6. Quản lý danh mục (`/categories`)
 - Danh sách danh mục (tên, ảnh/icon, số sản phẩm thuộc danh mục, thứ tự hiển thị)
 - Thêm/sửa/xóa, kéo thả sắp xếp thứ tự hiển thị trên trang client
 
@@ -142,11 +142,11 @@ Nguyên tắc chung:
 
 ## 7. Quản lý khách hàng
 
-### 7.1 Danh sách (`/khach-hang`)
+### 7.1 Danh sách (`/customers`)
 - Bảng: Tên, SĐT/Email, Tổng số đơn, Tổng chi tiêu, Điểm hiện có, Ngày tham gia
 - Search theo tên/SĐT
 
-### 7.2 Chi tiết khách hàng (`/khach-hang/[id]`)
+### 7.2 Chi tiết khách hàng (`/customers/[id]`)
 - Thông tin cá nhân, địa chỉ đã lưu
 - Lịch sử đơn hàng của khách
 - Lịch sử điểm tích/tiêu
@@ -156,11 +156,11 @@ Nguyên tắc chung:
 
 ## 8. Khuyến mãi & Điểm thưởng
 
-### 8.1 Mã giảm giá (`/khuyen-mai`)
+### 8.1 Mã giảm giá (`/promotions`)
 - Danh sách mã: code, loại giảm (%, số tiền cố định), điều kiện áp dụng (đơn tối thiểu), thời gian hiệu lực, số lượt dùng còn lại, trạng thái
 - Thêm/sửa/vô hiệu hóa mã
 
-### 8.2 Cấu hình tích điểm (`/diem-thuong/cau-hinh`)
+### 8.2 Cấu hình tích điểm (`/rewards/config`)
 - Tỷ lệ tích điểm (vd 1.000đ = 1 điểm)
 - Tỷ lệ quy đổi điểm → giảm giá (vd 100 điểm = 10.000đ)
 - Điều kiện tối thiểu để dùng điểm
@@ -173,7 +173,7 @@ Nguyên tắc chung:
 - Bảng: Tiêu đề, Tag, Trạng thái (Nháp/Đã đăng), Lượt xem, Ngày đăng
 - Nút "+ Viết bài mới"
 
-### 9.2 Soạn bài viết (`/blog/them-moi`, `/blog/[id]`)
+### 9.2 Soạn bài viết (`/blog/new`, `/blog/[id]`)
 - Tiêu đề, slug
 - Rich text editor (chèn ảnh, video embed)
 - Chọn tag/category blog
@@ -183,7 +183,7 @@ Nguyên tắc chung:
 
 ---
 
-## 10. Quản lý nhân viên & phân quyền (`/nhan-vien`)
+## 10. Quản lý nhân viên & phân quyền (`/staff`)
 
 - Danh sách tài khoản nhân viên, vai trò (Admin toàn quyền / Nhân viên xử lý đơn / Nhân viên viết blog)
 - Thêm tài khoản, gán quyền theo module (đơn hàng, sản phẩm, blog...)
@@ -191,7 +191,7 @@ Nguyên tắc chung:
 
 ---
 
-## 11. Cấu hình chung (`/cau-hinh`)
+## 11. Cấu hình chung (`/settings`)
 
 - Thông tin ngân hàng nhận QR (số TK, tên NH, chủ TK) — dùng để generate QR động
 - Thời gian giữ đơn trước khi tự hủy (phút)
@@ -201,7 +201,7 @@ Nguyên tắc chung:
 
 ---
 
-## 12. Thống kê nâng cao (`/thong-ke`)
+## 12. Thống kê nâng cao (`/analytics`)
 
 - Doanh thu theo khoảng thời gian tùy chọn, so sánh kỳ trước
 - Top sản phẩm/danh mục bán chạy

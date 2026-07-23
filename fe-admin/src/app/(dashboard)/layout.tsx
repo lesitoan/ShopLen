@@ -22,13 +22,10 @@ export default function DashboardLayout({
       >
         <Topbar isCollapsed={isCollapsed} />
 
-        <main className="flex-1 p-6 pt-22 overflow-x-hidden">
+        <main className="flex-1 p-6 pt-24 overflow-x-hidden">
           {children}
         </main>
 
-        <footer className="py-4 px-6 border-t border-border/40 text-center text-xs text-text-muted">
-          Tiệm Len Nhà Kiều © 2026 Admin Dashboard. Hệ thống quản lý bán hàng.
-        </footer>
       </div>
     </div>
   );

@@ -201,27 +201,27 @@ fe-admin/
 ├── src/
 │   ├── app/
 │   │   ├── (dashboard)/
-│   │   │   ├── dashboard/page.tsx                → screens/dashboard
-│   │   │   ├── don-hang/
+│   │   │   ├── page.tsx                          → screens/dashboard
+│   │   │   ├── orders/
 │   │   │   │   ├── page.tsx                      → screens/orders/list
 │   │   │   │   └── [id]/page.tsx                 → screens/orders/detail
-│   │   │   ├── san-pham/
+│   │   │   ├── products/
 │   │   │   │   ├── page.tsx                      → screens/products/list
-│   │   │   │   ├── them-moi/page.tsx             → screens/products/create
+│   │   │   │   ├── new/page.tsx                  → screens/products/create
 │   │   │   │   └── [id]/page.tsx                 → screens/products/edit
-│   │   │   ├── danh-muc/page.tsx                 → screens/categories
-│   │   │   ├── khach-hang/
+│   │   │   ├── categories/page.tsx               → screens/categories
+│   │   │   ├── customers/
 │   │   │   │   ├── page.tsx                      → screens/customers/list
 │   │   │   │   └── [id]/page.tsx                 → screens/customers/detail
-│   │   │   ├── khuyen-mai/page.tsx               → screens/promotions
-│   │   │   ├── diem-thuong/cau-hinh/page.tsx     → screens/loyalty-config
+│   │   │   ├── promotions/page.tsx               → screens/promotions
+│   │   │   ├── rewards/config/page.tsx           → screens/loyalty-config
 │   │   │   ├── blog/
 │   │   │   │   ├── page.tsx                      → screens/blog/list
-│   │   │   │   ├── them-moi/page.tsx             → screens/blog/create
+│   │   │   │   ├── new/page.tsx                  → screens/blog/create
 │   │   │   │   └── [id]/page.tsx                 → screens/blog/edit
-│   │   │   ├── nhan-vien/page.tsx                → screens/staff
-│   │   │   ├── cau-hinh/page.tsx                 → screens/settings
-│   │   │   └── thong-ke/page.tsx                 → screens/reports
+│   │   │   ├── staff/page.tsx                    → screens/staff
+│   │   │   ├── settings/page.tsx                 → screens/settings
+│   │   │   └── analytics/page.tsx                → screens/reports
 │   │   │
 │   │   ├── login/page.tsx                        → screens/auth/login
 │   │   └── layout.tsx

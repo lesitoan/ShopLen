@@ -61,7 +61,7 @@ export const MOCK_STAT_CARDS: StatCardItem[] = [
   },
   {
     id: "stat_pending_payment",
-    title: "Chờ VietQR đếm ngược",
+    title: "Chờ thanh toán",
     value: "5 đơn",
     change: "-2 đơn",
     isPositive: false,

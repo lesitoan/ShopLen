@@ -102,8 +102,10 @@ export function OrdersTable({
 
                       <td className="px-4 py-3.5">
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-muted text-text-secondary border border-border">
-                          {order.paymentMethod === "VIETQR"
-                            ? "VietQR 100%"
+                          {order.paymentMethod === "BANK_TRANSFER"
+                            ? "Chuyển khoản ngân hàng"
+                            : order.paymentMethod === "COD" || order.paymentMethod === "CASH_ON_DELIVERY"
+                            ? "COD (Tiền mặt)"
                             : order.paymentMethod}
                         </span>
                       </td>

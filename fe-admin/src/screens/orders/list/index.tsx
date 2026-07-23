@@ -64,7 +64,7 @@ export function OrdersListScreen() {
         <div>
           <h1 className="text-xl font-bold text-text-highlight">Quản lý Đơn hàng</h1>
           <p className="text-xs text-text-muted mt-0.5">
-            Theo dõi, lọc và xử lý toàn bộ đơn hàng thanh toán qua VietQR
+            Theo dõi, lọc và xử lý toàn bộ đơn hàng của tiệm
           </p>
         </div>
       </div>

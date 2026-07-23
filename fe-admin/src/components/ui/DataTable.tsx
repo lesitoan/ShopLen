@@ -27,6 +27,7 @@ export interface DataTableProps<T> {
   emptyMessage?: string;
   pagination?: PaginationProps;
   keyExtractor: (item: T, index: number) => string | number;
+  className?: string;
 }
 
 export function DataTable<T>({
@@ -36,6 +37,7 @@ export function DataTable<T>({
   emptyMessage = "Không có dữ liệu hiển thị",
   pagination,
   keyExtractor,
+  className = "",
 }: DataTableProps<T>) {
   const alignClasses = {
     left: "text-left",
@@ -44,7 +46,9 @@ export function DataTable<T>({
   };
 
   return (
-    <div className="w-full bg-surface border border-border rounded-lg overflow-hidden shadow-sm">
+    <div
+      className={`w-full bg-surface border border-border rounded-lg overflow-hidden shadow-sm ${className}`}
+    >
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="bg-surface-muted text-text-secondary text-xs uppercase font-medium border-b border-border">

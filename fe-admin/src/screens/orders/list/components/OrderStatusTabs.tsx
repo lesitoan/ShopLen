@@ -26,7 +26,7 @@ export function OrderStatusTabs({
 
   const tabs: { key: OrderStatusFilter; label: string }[] = [
     { key: "ALL", label: "Tất cả" },
-    { key: "PENDING_PAYMENT", label: ORDER_STATUS_MAP.PENDING_PAYMENT?.label || "Chờ VietQR" },
+    { key: "PENDING_PAYMENT", label: ORDER_STATUS_MAP.PENDING_PAYMENT?.label || "Chờ thanh toán" },
     { key: "PAID", label: ORDER_STATUS_MAP.PAID?.label || "Đã thanh toán" },
     { key: "PACKING", label: ORDER_STATUS_MAP.PACKING?.label || "Đang đóng gói" },
     { key: "SHIPPING", label: ORDER_STATUS_MAP.SHIPPING?.label || "Đang giao hàng" },

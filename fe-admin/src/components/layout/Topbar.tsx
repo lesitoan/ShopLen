@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Breadcrumb } from "../ui/Breadcrumb";
 import { DropdownMenu } from "../ui/DropdownMenu";
 import { Search, Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucide-react";
+import { BREADCRUMB_ROUTE_MAP } from "./constants";
 
 export interface TopbarProps {
   isCollapsed: boolean;
@@ -12,31 +14,16 @@ export interface TopbarProps {
 
 export default function Topbar({ isCollapsed }: TopbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(2);
 
   const getBreadcrumbItems = () => {
-    const routeMap: Record<string, string> = {
-      "": "Dashboard",
-      orders: "Đơn hàng",
-      products: "Sản phẩm",
-      categories: "Danh mục",
-      customers: "Khách hàng",
-      promotions: "Khuyến mãi",
-      rewards: "Điểm thưởng",
-      config: "Cấu hình",
-      blog: "Bài viết",
-      staff: "Nhân viên",
-      analytics: "Thống kê",
-      settings: "Cấu hình hệ thống",
-      new: "Thêm mới",
-    };
-
     const segments = pathname.split("/").filter(Boolean);
     if (segments.length === 0) return [{ label: "Dashboard" }];
 
     return segments.map((seg, index) => {
       const href = "/" + segments.slice(0, index + 1).join("/");
-      const label = routeMap[seg] || seg;
+      const label = BREADCRUMB_ROUTE_MAP[seg] || seg;
       return { label, href };
     });
   };
@@ -74,7 +61,7 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
       icon: <LogOut className="w-4 h-4 text-status-danger" />,
       danger: true,
       onClick: () => {
-        window.location.href = "/login";
+        router.push("/login");
       },
     },
   ];
@@ -95,7 +82,7 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
           <input
             type="text"
             placeholder="Tìm kiếm nhanh (Ctrl + K)..."
-            className="bg-surface-muted text-xs text-text-primary placeholder:text-text-muted rounded-md border border-border pl-9 pr-4 py-1.5 w-64 focus:outline-none focus:border-primary transition-all"
+            className="bg-surface-muted text-xs text-text-primary placeholder:text-text-muted rounded-md border border-border pl-9 pr-4 py-1.5 w-64 outline-none focus:outline-none focus-visible:outline-none focus:border-primary transition-colors"
           />
         </div>
 
@@ -120,9 +107,13 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
           align="right"
           trigger={
             <div className="flex items-center gap-2.5 cursor-pointer p-1 rounded-md hover:bg-surface-hover transition-colors select-none">
-              <div className="w-8 h-8 rounded-md bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-xs">
-                NK
-              </div>
+              <Image
+                src="/images/avatar.svg"
+                alt="Admin Kiều Avatar"
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded-full object-cover shrink-0"
+              />
               <div className="hidden lg:flex flex-col text-left">
                 <span className="text-xs font-semibold text-text-highlight leading-tight">
                   Admin Kiều

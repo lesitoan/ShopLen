@@ -96,7 +96,7 @@ export function DropdownMenu({
   const isFullWidth = className.includes("w-full");
 
   return (
-    <div ref={containerRef} className={`relative inline-block text-left ${className}`}>
+    <div ref={containerRef} className={`relative text-left ${className}`}>
       <div onClick={() => setIsOpen((prev) => !prev)} className={`cursor-pointer ${isFullWidth ? "w-full" : ""}`}>
         {trigger ? (
           trigger
@@ -126,7 +126,7 @@ export function DropdownMenu({
       {isOpen && (
         <div
           style={getMaxHeightStyle()}
-          className={`absolute z-50 mt-1.5 ${width} ${maxHeightClass} overflow-y-auto rounded-md bg-surface border border-border shadow-2xl shadow-black/50 py-1 text-xs scrollbar-thin scrollbar-thumb-border transition-all ${
+          className={`absolute z-50 mt-1.5 min-w-full ${isFullWidth ? "w-full" : width} ${maxHeightClass} overflow-y-auto rounded-md bg-surface border border-border shadow-2xl shadow-black/50 py-1 text-xs scrollbar-thin scrollbar-thumb-border transition-all ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >

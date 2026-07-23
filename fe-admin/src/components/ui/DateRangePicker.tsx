@@ -13,6 +13,8 @@ export interface DateRangePickerProps {
   onChange?: (range: DateRange) => void;
   placeholder?: string;
   className?: string;
+  align?: "left" | "right";
+  size?: "sm" | "md" | "lg";
 }
 
 const MONTH_NAMES = [
@@ -32,9 +34,17 @@ const formatDateISO = (d: Date): string => {
 export function DateRangePicker({
   value,
   onChange,
-  placeholder = "Chọn khoảng ngày...",
+  placeholder,
   className = "",
+  align = "left",
+  size = "md",
 }: DateRangePickerProps) {
+  const sizeStyles = {
+    sm: { h: "h-[30px]", text: "text-xs", icon: "w-3.5 h-3.5", px: "px-2.5" },
+    md: { h: "h-[38px]", text: "text-sm", icon: "w-4 h-4", px: "px-3" },
+    lg: { h: "h-[46px]", text: "text-base", icon: "w-4 h-4", px: "px-4" },
+  };
+  const sz = sizeStyles[size];
   const [isOpen, setIsOpen] = useState(false);
 
   const today = new Date();
@@ -175,13 +185,14 @@ export function DateRangePicker({
           <button
             type="button"
             title="Chọn khoảng ngày"
-            className="p-2 rounded-md bg-surface-muted hover:bg-surface-hover text-text-secondary hover:text-text-primary border border-border transition-colors flex items-center justify-center"
+            className={`${sz.h} ${sz.px} rounded-md bg-surface-muted hover:bg-surface-hover text-text-secondary hover:text-text-primary border border-border transition-colors flex items-center justify-center gap-1.5`}
           >
-            <CalendarIcon className="w-4 h-4" />
+            <CalendarIcon className={sz.icon} />
+            {placeholder && <span className={`${sz.text} font-medium`}>{placeholder}</span>}
           </button>
         ) : (
-          <div className="relative flex items-center bg-surface-muted text-text-primary text-xs pl-3 pr-7 py-2 rounded-md border border-primary/50 hover:border-primary font-semibold shadow-sm transition-all">
-            <CalendarIcon className="w-3.5 h-3.5 mr-2 text-primary shrink-0" />
+          <div className={`relative flex items-center bg-surface-muted text-text-primary ${sz.text} ${sz.px} pr-7 ${sz.h} rounded-md border border-primary/50 hover:border-primary font-semibold shadow-sm transition-all`}>
+            <CalendarIcon className={`${sz.icon} mr-2 text-primary shrink-0`} />
             <span>{displayText}</span>
             <button
               type="button"
@@ -196,7 +207,9 @@ export function DateRangePicker({
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-1.5 w-72 rounded-lg bg-surface border border-border shadow-2xl shadow-black/70 p-3 text-xs select-none space-y-3">
+        <div className={`absolute z-50 mt-1.5 w-72 rounded-lg bg-surface border border-border shadow-2xl shadow-black/70 p-3 text-xs select-none space-y-3 ${
+          align === "right" ? "right-0" : "left-0"
+        }`}>
           <div className="flex items-center justify-between font-semibold text-text-highlight px-1">
             <button
               type="button"

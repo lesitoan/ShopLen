@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-gradient-to-br from-bg-dark via-bg-mid to-bg-deep text-text-primary font-sans antialiased min-h-screen;
     font-size: 14px;

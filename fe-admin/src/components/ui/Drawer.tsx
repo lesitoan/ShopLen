@@ -34,9 +34,23 @@ export function Drawer({
   const [isResizing, setIsResizing] = useState(false);
   const resizerRef = useRef<HTMLDivElement>(null);
 
+  // Preserve content during exit animation
+  const [activeContent, setActiveContent] = useState({
+    title,
+    description,
+    children,
+    footer,
+  });
+
   // Initialize width & mount lifecycle
   useEffect(() => {
     if (isOpen) {
+      setActiveContent({
+        title,
+        description,
+        children,
+        footer,
+      });
       setMounted(true);
 
       // Default to 1/3 window width (min 380px, max 85% of screen)
@@ -46,7 +60,6 @@ export function Drawer({
       }
 
       const timer = setTimeout(() => setAnimateIn(true), 10);
-      document.body.style.overflow = "hidden";
       return () => {
         clearTimeout(timer);
       };
@@ -56,10 +69,9 @@ export function Drawer({
         setMounted(false);
         setDrawerWidth(null);
       }, 300);
-      document.body.style.overflow = "unset";
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, title, description, children, footer]);
 
   // ESC Key listener
   useEffect(() => {
@@ -114,6 +126,11 @@ export function Drawer({
 
   if (!mounted) return null;
 
+  const currentTitle = activeContent.title;
+  const currentDescription = activeContent.description;
+  const currentChildren = activeContent.children;
+  const currentFooter = activeContent.footer;
+
   const positionClasses = {
     right: {
       panel: "right-0 border-l border-border",
@@ -165,13 +182,13 @@ export function Drawer({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface-muted/30 shrink-0">
           <div>
-            {title && (
+            {currentTitle && (
               <h2 className="text-lg font-bold text-text-highlight tracking-tight">
-                {title}
+                {currentTitle}
               </h2>
             )}
-            {description && (
-              <p className="text-xs text-text-muted mt-0.5">{description}</p>
+            {currentDescription && (
+              <p className="text-xs text-text-muted mt-0.5">{currentDescription}</p>
             )}
           </div>
           <button
@@ -186,13 +203,13 @@ export function Drawer({
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-border">
-          {children}
+          {currentChildren}
         </div>
 
         {/* Footer */}
-        {footer && (
+        {currentFooter && (
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-surface-muted/30 shrink-0">
-            {footer}
+            {currentFooter}
           </div>
         )}
       </div>

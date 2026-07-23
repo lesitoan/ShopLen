@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Ban, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -46,21 +46,65 @@ export function Modal({
   showCloseButton = true,
   icon,
 }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+
+  // Preserve content during exit animation so text doesn't flicker when parent state clears
+  const [activeContent, setActiveContent] = useState({
+    title,
+    description,
+    children,
+    footer,
+    type,
+    confirmText,
+    cancelText,
+    icon,
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveContent({
+        title,
+        description,
+        children,
+        footer,
+        type,
+        confirmText,
+        cancelText,
+        icon,
+      });
+      setMounted(true);
+      const timer = setTimeout(() => setAnimateIn(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+      const timer = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, title, description, children, footer, type, confirmText, cancelText, icon]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && isOpen) onClose();
     };
     if (isOpen) {
-      document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     }
     return () => {
-      document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
+
+  const currentTitle = activeContent.title;
+  const currentDescription = activeContent.description;
+  const currentChildren = activeContent.children;
+  const currentFooter = activeContent.footer;
+  const currentType = activeContent.type;
+  const currentConfirmText = activeContent.confirmText;
+  const currentCancelText = activeContent.cancelText;
+  const currentIcon = activeContent.icon;
 
   const sizeClasses = {
     sm: "max-w-md",
@@ -70,8 +114,8 @@ export function Modal({
   };
 
   const renderIcon = () => {
-    if (icon) return icon;
-    switch (type) {
+    if (currentIcon) return currentIcon;
+    switch (currentType) {
       case "CANCEL":
       case "DANGER":
         return <Ban className="w-4 h-4 text-status-danger shrink-0" />;
@@ -88,46 +132,52 @@ export function Modal({
   };
 
   const getConfirmVariant = (): "danger" | "primary" => {
-    if (type === "CANCEL" || type === "DANGER") return "danger";
+    if (currentType === "CANCEL" || currentType === "DANGER") return "danger";
     return "primary";
   };
 
   const defaultConfirmText =
-    type === "CANCEL" ? "Xác nhận Hủy" : type === "DANGER" ? "Xóa" : "Xác nhận";
-  const defaultCancelText = type === "CANCEL" ? "Bỏ qua" : "Hủy bỏ";
+    currentType === "CANCEL" ? "Xác nhận Hủy" : currentType === "DANGER" ? "Xóa" : "Xác nhận";
+  const defaultCancelText = currentType === "CANCEL" ? "Bỏ qua" : "Hủy bỏ";
 
   const defaultFooter = onConfirm ? (
     <>
       <Button variant="secondary" onClick={onClose} disabled={isLoading}>
-        {cancelText || defaultCancelText}
+        {currentCancelText || defaultCancelText}
       </Button>
       <Button
         variant={getConfirmVariant()}
         onClick={onConfirm}
         isLoading={isLoading}
       >
-        {confirmText || defaultConfirmText}
+        {currentConfirmText || defaultConfirmText}
       </Button>
     </>
   ) : null;
 
-  const activeFooter = footer !== undefined ? footer : defaultFooter;
+  const resolvedFooter = currentFooter !== undefined ? currentFooter : defaultFooter;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-bg-deep/80 backdrop-blur-sm transition-opacity"
+        className={`fixed inset-0 bg-bg-deep/80 backdrop-blur-sm transition-opacity duration-200 ease-out ${
+          animateIn ? "opacity-100" : "opacity-0"
+        }`}
         onClick={onClose}
       />
 
+      {/* Modal Content Box */}
       <div
-        className={`relative w-full ${sizeClasses[size]} bg-surface border border-border rounded-xl shadow-2xl z-10 overflow-hidden transform transition-all`}
+        className={`relative w-full ${sizeClasses[size]} bg-surface border border-border rounded-xl shadow-2xl z-10 overflow-hidden transform transition-all duration-200 ease-out ${
+          animateIn ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2"
+        }`}
       >
-        {(title || showCloseButton) && (
+        {(currentTitle || showCloseButton) && (
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <div className="flex items-center gap-2 text-base font-bold text-text-highlight">
               {renderIcon()}
-              {typeof title === "string" ? <span>{title}</span> : title}
+              {typeof currentTitle === "string" ? <span>{currentTitle}</span> : currentTitle}
             </div>
 
             {showCloseButton && (
@@ -142,17 +192,17 @@ export function Modal({
         )}
 
         <div className="p-5 max-h-[75vh] overflow-y-auto space-y-3">
-          {description && (
+          {currentDescription && (
             <p className="text-xs text-text-secondary leading-relaxed font-medium">
-              {description}
+              {currentDescription}
             </p>
           )}
-          {children}
+          {currentChildren}
         </div>
 
-        {activeFooter && (
+        {resolvedFooter && (
           <div className="flex items-center justify-end gap-3 px-5 py-3.5 border-t border-border bg-surface-muted/50">
-            {activeFooter}
+            {resolvedFooter}
           </div>
         )}
       </div>

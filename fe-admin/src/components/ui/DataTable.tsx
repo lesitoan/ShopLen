@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { ChevronLeft, ChevronRight, Inbox } from "lucide-react";
-import { Button } from "./Button";
+import { Inbox } from "lucide-react";
+import { Pagination } from "./Pagination";
 
 export interface Column<T> {
   key: string;
@@ -134,27 +134,11 @@ export function DataTable<T>({
             bản ghi
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.currentPage <= 1}
-              onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="px-2 font-medium text-text-primary">
-              Trang {pagination.currentPage} / {pagination.totalPages || 1}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.currentPage >= pagination.totalPages}
-              onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages || 1}
+            onPageChange={pagination.onPageChange}
+          />
         </div>
       )}
     </div>

@@ -19,6 +19,7 @@
 - **Auth**: JWT, có phân quyền role (Admin / Nhân viên) — xem mục 8
 
 Nguyên tắc chung:
+- **Design System & Theme**: Sử dụng duy nhất **Theme Dark Navy Slate + Màu chủ đạo Xanh Emerald (`#10B981`)** quy định tại **`references/adminDesignSystem.md`** (không code logic Light/Dark mode).
 - Toàn bộ dữ liệu bảng (đơn hàng, sản phẩm, khách hàng) phải **phân trang + filter phía server**, không load hết về client.
 - Mọi hành động thay đổi trạng thái quan trọng (hủy đơn, xác nhận thanh toán thủ công, xóa sản phẩm) đều cần **modal xác nhận**.
 - Áp dụng optimistic UI cho các thao tác nhỏ (đổi trạng thái), nhưng phải rollback nếu API lỗi.

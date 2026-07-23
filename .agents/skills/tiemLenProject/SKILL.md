@@ -35,20 +35,25 @@ api/           → backend, theo MVC (routes/controllers/services/models)
 8. **Cấm sử dụng Emoji/Icon trong chuỗi văn bản**: Tuyệt đối không sử dụng các biểu tượng cảm xúc (emoji/icon dạng text như 🔥, ✨, 🏆, 🎁, 🎉, 🔒...) trực tiếp trong các chuỗi ký tự hiển thị (text string). Không tự ý chèn thêm biểu tượng vector (như Lucide icons) hay hình ảnh kế bên văn bản trừ khi có yêu cầu cụ thể từ khách hàng. Văn bản hiển thị phải là text thuần túy, sạch sẽ.
 9. **Không chạy build sau mỗi lần sửa**: Tiết kiệm tài nguyên và thời gian bằng việc không chạy lệnh build dự án (`npm run build` hoặc `next build`) sau mỗi lần sửa đổi code nhỏ. Tin tưởng vào trình hot-reload của dev server, chỉ thực hiện chạy build ở bước kiểm tra nghiệm thu hoặc đóng gói cuối cùng.
 10. **Không viết comment giải thích UI**: Không chèn các comment giải thích các phần tử HTML/JSX hoặc cấu trúc layout cơ bản (ví dụ: cấm chèn `{/* Logo Section */}`, `{/* Main Container */}`, `{/* Button */}`). Chỉ viết comment giải thích đối với các đoạn logic, thuật toán phức tạp, xử lý sự kiện đặc biệt hoặc dòng code khó hiểu để giữ mã nguồn luôn sạch sẽ.
+11. **Quy tắc đặt thẻ liên kết & điều hướng trong Next.js**:
+    - **Dùng `<Link href="...">` từ `next/link`**: Cho tất cả đường dẫn chuyển trang nội bộ (`/san-pham`, `/bai-viet`, `/gioi-thieu`, `/lien-he`, `/faq`, `/tra-cuu-don-hang`, `/tai-khoan`...). Tuyệt đối không dùng thẻ `<a>` chuẩn HTML hay `window.location.href` cho liên kết nội bộ để tránh gây Hard Reload trang và tận dụng cơ chế Pre-fetching/SPA client routing mượt mà.
+    - **Dùng `useRouter().push(...)` từ `next/navigation`**: Cho các luồng điều hướng bằng JavaScript (submit form tìm kiếm, sau khi đăng nhập/đăng xuất, chuyển trang tự động). Không dùng `window.location.href = ...`.
+    - **Dùng thẻ `<a>` chuẩn HTML nguyên bản**: Chỉ dùng cho 4 trường hợp bắt buộc: (1) Link ra mạng xã hội/ứng dụng ngoài (`zalo.me`, `m.me`, `facebook.com`...) kèm `target="_blank" rel="noopener noreferrer"`; (2) Link giao thức thiết bị (`tel:` gọi điện, `mailto:` gửi mail); (3) Link neo cuộn trang tại chỗ (`href="#id"` cuộn mượt); (4) Link cho thư viện JS nguyên bản (như PhotoSwipe Lightbox xem ảnh).
 
 ## Bảng con trỏ — đọc file nào khi đang làm gì
 
 | Đang làm gì | Đọc file |
 |---|---|
-| Code/sửa màn hình phía `fe-client` | `references/clientUiSpec.md` |
-| Code/sửa màn hình phía `fe-admin` | `references/adminUiSpec.md` |
-| Cần màu sắc, typography, spacing, hoặc spec 1 component UI (Button, Input, Modal, Toast...) | `references/designSystem.md` |
+| Code/sửa màn hình phía `fe-client` | `references/clientUiSpec.md` & `references/designSystem.md` |
+| Code/sửa màn hình phía `fe-admin` | `references/adminUiSpec.md` & `references/adminDesignSystem.md` |
+| Cần màu sắc, typography, spacing, hoặc spec UI Component cho `fe-client` | `references/designSystem.md` |
+| Cần dải màu Dark Navy Slate, bo góc, hoặc spec UI Component cho `fe-admin` | `references/adminDesignSystem.md` |
 | Tạo file/folder mới, đặt tên biến/hàm/class, phân vân snake vs camel | `references/namingConvention.md` (đã gộp trong `mvcApiStructure.md`, xem mục 1) |
 | Code route/controller/service/model cho `api/`, hoặc cần biết luồng xử lý 1 request | `references/mvcApiStructure.md` |
 | Tạo cấu trúc thư mục gốc cho 1 trong 3 source, phân vân screens/ vs components/ | `references/sourceStructure.md` |
-| Cần biết endpoint API, request/response mẫu, mã lỗi | *(chưa có — hỏi user hoặc tạo `references/apiContract.md` trước khi code nếu chưa tồn tại)* |
-| Cần biết event Socket.IO nào bắn lúc nào, ai lắng nghe, payload gì | *(chưa có — tham khảo phần Socket.IO rải rác trong `clientUiSpec.md`/`adminUiSpec.md` mục events, hoặc tạo `references/socketFlow.md` nếu cần gom lại)* |
-| Cần biết luật nghiệp vụ (thời gian giữ đơn, công thức tích điểm, điều kiện dùng điểm, quy tắc reserve tồn kho) | *(chưa có — hỏi user để chốt số liệu cụ thể trước khi code, đừng tự bịa con số)* |
+| Cần biết endpoint API, request/response mẫu, mã lỗi | `references/apiContract.md` |
+| Cần biết event Socket.IO nào bắn lúc nào, ai lắng nghe, payload gì | `references/socketFlow.md` |
+| Cần biết luật nghiệp vụ (thời gian giữ đơn, công thức tích điểm, quy tắc tồn kho) | `references/businessRules.md` |
 
 ## Nguyên tắc khi thiếu thông tin
 

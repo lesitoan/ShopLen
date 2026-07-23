@@ -261,11 +261,13 @@ Ví dụ: modal "Xác nhận xóa sản phẩm" — "Bạn có chắc chắn mu�
 
 ## 19. Áp dụng riêng biệt cho `fe-client` và `fe-admin` (không dùng chung)
 
-Vì `fe-client` và `fe-admin` là 2 source **độc lập hoàn toàn, không share code/package**, file design system này là tài liệu tham chiếu chung về mặt **giá trị thiết kế** (màu, spacing, typography...), nhưng phần **code component** phải được viết riêng ở mỗi source:
+Vì `fe-client` và `fe-admin` là 2 source **độc lập hoàn toàn, không share code/package**:
+- **FE Client (`fe-client`)**: Sử dụng hệ thống token màu sắc thương hiệu chính (Theme hồng tươi `primary: #F9B4C7`) quy định trong file này (`designSystem.md`).
+- **FE Admin (`fe-admin`)**: Sử dụng dải màu Dark Navy Slate + Xanh Emerald (`primary: #10B981`) được quy định riêng biệt trong **`references/adminDesignSystem.md`**.
 
 ```
-fe-client/src/components/ui/     ← Button, Input, Select, Badge, Toast, Modal... (code riêng)
-fe-admin/src/components/ui/      ← Button, Input, Select, Badge, Toast, Modal... (code riêng, KHÔNG import từ fe-client)
+fe-client/src/components/ui/     ← Button, Input, Select, Badge, Modal... (Theme Hồng tươi)
+fe-admin/src/components/ui/      ← Button, Input, Select, Badge, Modal... (Theme Dark Navy Slate + Emerald Green)
 ```
 
 - Cả 2 nơi cùng áp dụng đúng token màu/spacing/radius ở mục 1-3, và copy cùng giá trị `colors` trong `tailwind.config.ts` sang cả 2 source — nhưng đây là **copy tay**, không phải import chung 1 package.

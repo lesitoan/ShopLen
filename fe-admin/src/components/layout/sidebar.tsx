@@ -2,24 +2,25 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   LayoutDashboard,
   ShoppingBag,
   Package,
-  Tags,
+  FolderTree,
   Users,
   Percent,
   Award,
-  BookOpen,
+  FileText,
   UserCheck,
   Settings,
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Store,
 } from "lucide-react";
-import Link from "next/link";
 
-interface SidebarProps {
+export interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (val: boolean) => void;
 }
@@ -29,16 +30,16 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   const menuItems = [
     { name: "Dashboard", path: "/", icon: <LayoutDashboard size={18} /> },
-    { name: "Đơn hàng", path: "/don-hang", icon: <ShoppingBag size={18} />, badge: 3 },
-    { name: "Sản phẩm", path: "/san-pham", icon: <Package size={18} /> },
-    { name: "Danh mục", path: "/danh-muc", icon: <Tags size={18} /> },
-    { name: "Khách hàng", path: "/khach-hang", icon: <Users size={18} /> },
-    { name: "Khuyến mãi", path: "/khuyen-mai", icon: <Percent size={18} /> },
-    { name: "Điểm thưởng", path: "/diem-thuong/cau-hinh", icon: <Award size={18} /> },
-    { name: "Blog", path: "/blog", icon: <BookOpen size={18} /> },
-    { name: "Nhân viên", path: "/nhan-vien", icon: <UserCheck size={18} /> },
-    { name: "Thống kê", path: "/thong-ke", icon: <BarChart3 size={18} /> },
-    { name: "Cấu hình", path: "/cau-hinh", icon: <Settings size={18} /> },
+    { name: "Đơn hàng", path: "/orders", icon: <ShoppingBag size={18} />, badge: 3 },
+    { name: "Sản phẩm", path: "/products", icon: <Package size={18} /> },
+    { name: "Danh mục", path: "/categories", icon: <FolderTree size={18} /> },
+    { name: "Khách hàng", path: "/customers", icon: <Users size={18} /> },
+    { name: "Khuyến mãi", path: "/promotions", icon: <Percent size={18} /> },
+    { name: "Điểm thưởng", path: "/rewards/config", icon: <Award size={18} /> },
+    { name: "Bài viết", path: "/blog", icon: <FileText size={18} /> },
+    { name: "Nhân viên", path: "/staff", icon: <UserCheck size={18} /> },
+    { name: "Thống kê", path: "/analytics", icon: <BarChart3 size={18} /> },
+    { name: "Cấu hình", path: "/settings", icon: <Settings size={18} /> },
   ];
 
   const handleToggle = () => {
@@ -47,30 +48,45 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
   return (
     <aside
-      className={`bg-white border-r border-border h-screen flex flex-col justify-between fixed left-0 top-0 transition-all duration-300 z-50 ${
+      className={`bg-surface border-r border-border h-screen flex flex-col justify-between fixed left-0 top-0 transition-all duration-300 z-50 shadow-2xl shadow-black/40 ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
       <div>
-        {/* Logo and toggle */}
-        <div className="flex items-center justify-between p-4 border-b border-border h-16">
+        <div className="flex items-center justify-between px-4 h-16 border-b border-border">
           {!isCollapsed && (
-            <span className="font-bold text-base text-secondary truncate">
-              🌸 Nhà Kiều Admin
-            </span>
+            <Link href="/" className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+                <Store size={18} />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold text-sm text-text-highlight truncate tracking-tight">
+                  Tiệm Len Nhà Kiều
+                </span>
+                <span className="text-[10px] text-primary font-medium tracking-wider uppercase">
+                  Admin Dashboard
+                </span>
+              </div>
+            </Link>
           )}
+
+          {isCollapsed && (
+            <div className="mx-auto w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
+              <Store size={18} />
+            </div>
+          )}
+
           <button
             onClick={handleToggle}
-            className={`text-text-secondary hover:text-text-primary rounded p-1 hover:bg-background transition-colors ${
-              isCollapsed ? "mx-auto" : ""
+            className={`text-text-muted hover:text-text-primary rounded-md p-1.5 hover:bg-surface-hover transition-colors ${
+              isCollapsed ? "mx-auto mt-2" : ""
             }`}
           >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         </div>
 
-        {/* Menu Navigation */}
-        <nav className="p-3 space-y-1">
+        <nav className="p-2.5 space-y-1 overflow-y-auto max-h-[calc(100vh-8rem)]">
           {menuItems.map((item) => {
             const isActive =
               item.path === "/"
@@ -81,21 +97,33 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               <Link
                 key={item.name}
                 href={item.path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 relative ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 relative group ${
                   isActive
-                    ? "bg-primary-light text-secondary font-bold"
-                    : "text-text-secondary hover:bg-background hover:text-text-primary"
+                    ? "bg-gradient-to-r from-primary to-emerald-600 text-bg-deep font-bold shadow-md shadow-primary/20"
+                    : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                 }`}
               >
-                <div className="shrink-0">{item.icon}</div>
+                <div
+                  className={`shrink-0 transition-transform group-hover:scale-110 ${
+                    isActive ? "text-bg-deep" : "text-text-muted group-hover:text-text-primary"
+                  }`}
+                >
+                  {item.icon}
+                </div>
+
                 {!isCollapsed && <span className="truncate">{item.name}</span>}
 
-                {/* Optional Badge */}
                 {item.badge !== undefined && (
                   <span
-                    className={`absolute right-3 top-1/2 -translate-y-1/2 rounded-full w-4.5 h-4.5 text-[9px] font-bold flex items-center justify-center ${
-                      isActive ? "bg-secondary text-white" : "bg-error text-white"
-                    } ${isCollapsed ? "right-1.5 top-1.5 translate-y-0" : ""}`}
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold shrink-0 ${
+                      isActive
+                        ? "bg-bg-deep text-primary font-extrabold"
+                        : "bg-status-danger/20 text-status-danger border border-status-danger/30"
+                    } ${
+                      isCollapsed
+                        ? "absolute right-1 top-1 text-[9px] px-1 py-0"
+                        : "ml-auto"
+                    }`}
                   >
                     {item.badge}
                   </span>
@@ -106,10 +134,9 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Footer Info */}
       {!isCollapsed && (
-        <div className="p-4 border-t border-border bg-background/50 text-[11px] text-text-secondary select-none text-center">
-          v1.0.0 © Tiệm Len Nhà Kiều
+        <div className="p-3 border-t border-border bg-surface-muted/30 text-[11px] text-text-muted select-none text-center">
+          v1.0.0 Admin Control Center
         </div>
       )}
     </aside>

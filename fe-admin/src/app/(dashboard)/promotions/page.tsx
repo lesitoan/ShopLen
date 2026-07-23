@@ -1,5 +1,5 @@
 import PlaceholderScreen from "@/screens/placeholder";
 
 export default function Page() {
-  return <PlaceholderScreen title="Quản Lý Nhân Viên & Quyền" />;
+  return <PlaceholderScreen title="Mã Giảm Giá & Khuyến Mãi" />;
 }

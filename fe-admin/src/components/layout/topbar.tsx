@@ -1,164 +1,138 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell, User, LogOut } from "lucide-react";
-import Button from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { Breadcrumb } from "../ui/Breadcrumb";
+import { DropdownMenu } from "../ui/DropdownMenu";
+import { Search, Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucide-react";
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  unread: boolean;
+export interface TopbarProps {
+  isCollapsed: boolean;
 }
 
-export default function Topbar() {
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+export default function Topbar({ isCollapsed }: TopbarProps) {
+  const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(2);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: "1",
-      title: "Đơn hàng mới #DH2026",
-      message: "Khách hàng Nguyễn Văn A vừa đặt đơn hàng trị giá 120.000đ.",
-      time: "2 phút trước",
-      unread: true,
-    },
-    {
-      id: "2",
-      title: "Thanh toán thành công #DH2025",
-      message: "Đơn hàng #DH2025 đã khớp thanh toán tự động qua SePay.",
-      time: "15 phút trước",
-      unread: true,
-    },
-    {
-      id: "3",
-      title: "Sắp hết hàng",
-      message: "Móc khóa Bé Heo Hồng chỉ còn 2 sản phẩm trong kho.",
-      time: "1 giờ trước",
-      unread: false,
-    },
-  ]);
+  const getBreadcrumbItems = () => {
+    const routeMap: Record<string, string> = {
+      "": "Dashboard",
+      orders: "Đơn hàng",
+      products: "Sản phẩm",
+      categories: "Danh mục",
+      customers: "Khách hàng",
+      promotions: "Khuyến mãi",
+      rewards: "Điểm thưởng",
+      config: "Cấu hình",
+      blog: "Bài viết",
+      staff: "Nhân viên",
+      analytics: "Thống kê",
+      settings: "Cấu hình hệ thống",
+      new: "Thêm mới",
+    };
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length === 0) return [{ label: "Dashboard" }];
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+    return segments.map((seg, index) => {
+      const href = "/" + segments.slice(0, index + 1).join("/");
+      const label = routeMap[seg] || seg;
+      return { label, href };
+    });
   };
 
-  const handleNotificationClick = () => {
-    setShowNotifications(!showNotifications);
-    setShowUserMenu(false);
-  };
+  const notificationItems = [
+    {
+      key: "notif-1",
+      label: "Đơn hàng mới #ORD-9821 vừa được khởi tạo",
+      icon: <ShoppingBag className="w-4 h-4 text-primary shrink-0" />,
+      onClick: () => setUnreadCount((prev) => Math.max(0, prev - 1)),
+    },
+    {
+      key: "notif-2",
+      label: "Thanh toán ngân hàng thành công cho #ORD-9818",
+      icon: <CheckCircle className="w-4 h-4 text-status-success shrink-0" />,
+      onClick: () => setUnreadCount((prev) => Math.max(0, prev - 1)),
+    },
+  ];
 
-  const handleUserClick = () => {
-    setShowUserMenu(!showUserMenu);
-    setShowNotifications(false);
-  };
+  const userMenuItems = [
+    {
+      key: "profile",
+      label: "Thông tin cá nhân",
+      icon: <User className="w-4 h-4 text-text-muted" />,
+    },
+    {
+      key: "role",
+      label: "Quyền Quản trị viên (Super Admin)",
+      icon: <ShieldCheck className="w-4 h-4 text-primary" />,
+      disabled: true,
+    },
+    {
+      key: "logout",
+      label: "Đăng xuất",
+      icon: <LogOut className="w-4 h-4 text-status-danger" />,
+      danger: true,
+      onClick: () => {
+        window.location.href = "/login";
+      },
+    },
+  ];
 
   return (
-    <header className="bg-white border-b border-border h-16 px-6 flex items-center justify-between sticky top-0 z-40 select-none">
-      {/* Left section: Title or Breadcrumbs info */}
-      <div className="flex items-center gap-2">
-        <span className="text-[13px] text-text-secondary">Hệ thống quản trị</span>
-        <span className="text-text-secondary/50">/</span>
-        <span className="text-[13px] text-text-primary font-semibold">Dashboard</span>
+    <header
+      className={`fixed top-0 right-0 h-16 bg-surface border-b border-border z-40 transition-all duration-300 flex items-center justify-between px-6 ${
+        isCollapsed ? "left-16" : "left-64"
+      }`}
+    >
+      <div className="flex items-center gap-4">
+        <Breadcrumb items={getBreadcrumbItems()} />
       </div>
 
-      {/* Right section: Actions */}
-      <div className="flex items-center gap-4 relative">
-        {/* Notification Bell */}
-        <div className="relative">
-          <Button
-            variant="ghost"
-            iconOnly
-            onClick={handleNotificationClick}
-            className="rounded-full text-text-secondary hover:bg-background relative"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 bg-error w-4 h-4 rounded-full text-[9px] text-white flex items-center justify-center font-bold animate-pulse">
-                {unreadCount}
-              </span>
-            )}
-          </Button>
-
-          {/* Notifications Dropdown */}
-          {showNotifications && (
-            <div className="absolute right-0 mt-2.5 w-80 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden">
-              <div className="p-3 border-b border-border flex items-center justify-between bg-background/50">
-                <span className="font-semibold text-text-primary text-[13px]">Thông báo mới nhất</span>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={markAllRead}
-                    className="text-[11px] text-secondary hover:underline font-medium"
-                  >
-                    Đánh dấu đã đọc
-                  </button>
-                )}
-              </div>
-              <div className="max-h-64 overflow-y-auto divide-y divide-border">
-                {notifications.length > 0 ? (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className={`p-3 text-left transition-colors cursor-pointer hover:bg-background/40 ${
-                        n.unread ? "bg-primary-light/30" : ""
-                      }`}
-                    >
-                      <p className="text-[12px] font-semibold text-text-primary">{n.title}</p>
-                      <p className="text-[11px] text-text-secondary mt-0.5 line-clamp-2">{n.message}</p>
-                      <span className="text-[10px] text-text-secondary/60 mt-1 block">{n.time}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-6 text-center text-text-secondary text-[12px]">Không có thông báo mới</div>
-                )}
-              </div>
-            </div>
-          )}
+      <div className="flex items-center gap-4">
+        <div className="relative hidden md:flex items-center">
+          <Search className="w-4 h-4 text-text-muted absolute left-3 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm nhanh (Ctrl + K)..."
+            className="bg-surface-muted text-xs text-text-primary placeholder:text-text-muted rounded-md border border-border pl-9 pr-4 py-1.5 w-64 focus:outline-none focus:border-primary transition-all"
+          />
         </div>
 
-        {/* User Account Menu */}
-        <div className="relative">
-          <button
-            onClick={handleUserClick}
-            className="flex items-center gap-2.5 outline-none hover:opacity-80 transition-opacity"
-          >
-            <div className="w-9 h-9 rounded-full bg-primary-light border border-primary/20 flex items-center justify-center text-secondary">
-              <User size={18} />
+        <DropdownMenu
+          align="right"
+          trigger={
+            <div className="relative p-2 rounded-md hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-status-danger text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
             </div>
-            <div className="hidden md:flex flex-col text-left">
-              <span className="text-[13px] font-semibold text-text-primary">Kiều Admin</span>
-              <span className="text-[10px] text-text-secondary">Quản trị viên</span>
-            </div>
-          </button>
+          }
+          items={notificationItems}
+        />
 
-          {/* User Dropdown */}
-          {showUserMenu && (
-            <div className="absolute right-0 mt-2.5 w-44 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1">
-              <a
-                href="/nhan-vien"
-                className="flex items-center gap-2 px-3.5 py-2 text-[13px] text-text-primary hover:bg-background transition-colors"
-                onClick={() => setShowUserMenu(false)}
-              >
-                <User size={15} />
-                <span>Hồ sơ cá nhân</span>
-              </a>
-              <hr className="border-border" />
-              <button
-                onClick={() => {
-                  setShowUserMenu(false);
-                  alert("Đăng xuất hệ thống!");
-                }}
-                className="w-full flex items-center gap-2 px-3.5 py-2 text-[13px] text-error hover:bg-error/5 transition-colors text-left"
-              >
-                <LogOut size={15} />
-                <span>Đăng xuất</span>
-              </button>
+        <div className="h-5 w-[1px] bg-border" />
+
+        <DropdownMenu
+          align="right"
+          trigger={
+            <div className="flex items-center gap-2.5 cursor-pointer p-1 rounded-md hover:bg-surface-hover transition-colors select-none">
+              <div className="w-8 h-8 rounded-md bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-xs">
+                NK
+              </div>
+              <div className="hidden lg:flex flex-col text-left">
+                <span className="text-xs font-semibold text-text-highlight leading-tight">
+                  Admin Kiều
+                </span>
+                <span className="text-[10px] text-text-muted">Quản trị viên</span>
+              </div>
             </div>
-          )}
-        </div>
+          }
+          items={userMenuItems}
+        />
       </div>
     </header>
   );

@@ -12,24 +12,25 @@ export default function DashboardLayout({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex text-text-primary">
-      {/* Sidebar navigation */}
+    <div className="min-h-screen bg-transparent flex text-text-primary">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-      {/* Main panel container */}
       <div
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
           isCollapsed ? "pl-16" : "pl-64"
         }`}
       >
-        {/* Header navigation */}
-        <Topbar />
+        <Topbar isCollapsed={isCollapsed} />
 
-        {/* Content main body */}
-        <main className="flex-1 p-6 overflow-x-hidden">
+        <main className="flex-1 p-6 pt-22 overflow-x-hidden">
           {children}
         </main>
+
+        <footer className="py-4 px-6 border-t border-border/40 text-center text-xs text-text-muted">
+          Tiệm Len Nhà Kiều © 2026 Admin Dashboard. Hệ thống quản lý bán hàng.
+        </footer>
       </div>
     </div>
   );
 }
+

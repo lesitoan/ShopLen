@@ -93,19 +93,24 @@ export function DropdownMenu({
 
   const maxHeightClass = maxHeight?.startsWith("max-h-") ? maxHeight : "";
 
+  const isFullWidth = className.includes("w-full");
+
   return (
     <div ref={containerRef} className={`relative inline-block text-left ${className}`}>
-      {/* Trigger Button */}
-      <div onClick={() => setIsOpen((prev) => !prev)} className="cursor-pointer">
+      <div onClick={() => setIsOpen((prev) => !prev)} className={`cursor-pointer ${isFullWidth ? "w-full" : ""}`}>
         {trigger ? (
           trigger
         ) : (
           <button
             type="button"
-            className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs rounded-md transition-all duration-200 select-none ${variantStyles[variant]}`}
+            className={`inline-flex items-center gap-2 px-3.5 h-[38px] text-xs rounded-md transition-all duration-200 select-none ${
+              isFullWidth ? "w-full justify-between" : ""
+            } ${variantStyles[variant]}`}
           >
-            {triggerIcon && <span className="shrink-0">{triggerIcon}</span>}
-            <span className="font-semibold">{label}</span>
+            <div className="flex items-center gap-2 min-w-0">
+              {triggerIcon && <span className="shrink-0">{triggerIcon}</span>}
+              <span className="font-semibold truncate">{label}</span>
+            </div>
             {showChevron && (
               <ChevronDown
                 className={`w-4 h-4 shrink-0 transition-transform duration-200 ${

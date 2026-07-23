@@ -6,7 +6,7 @@ import { Pagination } from "./Pagination";
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: React.ReactNode;
   render?: (row: T, index: number) => React.ReactNode;
   align?: "left" | "center" | "right";
   width?: string;

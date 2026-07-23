@@ -22,7 +22,7 @@ export interface MultiSelectDropdownProps {
   options: MultiSelectOption[];
   /** Mảng các key đang được chọn */
   selectedKeys: string[];
-  /** Callback khi thay đổi danh sách được chọn */
+  /** Callback khi bấm Áp dụng để thay đổi danh sách được chọn */
   onChange: (selectedKeys: string[]) => void;
   /** Tùy chọn hiển thị nút "Chọn tất cả" */
   showSelectAll?: boolean;
@@ -30,7 +30,7 @@ export interface MultiSelectDropdownProps {
   align?: "left" | "right";
   /** Chiều rộng menu tùy chỉnh, ví dụ: "w-56" */
   width?: string;
-  /** Chiều cao tối đa tùy chỉnh cho cuộn, ví dụ: "max-h-60" */
+  /** Chiều cao tối đa tùy chỉnh cho danh sách cuộn */
   maxHeight?: string;
   className?: string;
 }
@@ -44,12 +44,18 @@ export function MultiSelectDropdown({
   onChange,
   showSelectAll = true,
   align = "left",
-  width = "w-56",
-  maxHeight = "max-h-60",
+  width = "w-60",
+  maxHeight = "max-h-56",
   className = "",
 }: MultiSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [tempSelectedKeys, setTempSelectedKeys] = useState<string[]>(selectedKeys);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Sync tempSelectedKeys when opening menu or selectedKeys prop changes
+  useEffect(() => {
+    setTempSelectedKeys(selectedKeys);
+  }, [selectedKeys, isOpen]);
 
   // Close on outside click
   useEffect(() => {
@@ -65,28 +71,38 @@ export function MultiSelectDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isAllSelected =
-    options.length > 0 && options.every((opt) => selectedKeys.includes(opt.key));
+  const isAllTempSelected =
+    options.length > 0 && options.every((opt) => tempSelectedKeys.includes(opt.key));
 
   const handleToggleOption = (key: string) => {
-    if (selectedKeys.includes(key)) {
-      onChange(selectedKeys.filter((k) => k !== key));
+    if (tempSelectedKeys.includes(key)) {
+      setTempSelectedKeys((prev) => prev.filter((k) => k !== key));
     } else {
-      onChange([...selectedKeys, key]);
+      setTempSelectedKeys((prev) => [...prev, key]);
     }
   };
 
   const handleToggleAll = () => {
-    if (isAllSelected) {
-      onChange([]);
+    if (isAllTempSelected) {
+      setTempSelectedKeys([]);
     } else {
-      onChange(options.map((opt) => opt.key));
+      setTempSelectedKeys(options.map((opt) => opt.key));
     }
   };
 
-  const handleClearSelected = (e: React.MouseEvent) => {
+  const handleReset = () => {
+    setTempSelectedKeys([]);
+  };
+
+  const handleApply = () => {
+    onChange(tempSelectedKeys);
+    setIsOpen(false);
+  };
+
+  const handleClearTrigger = (e: React.MouseEvent) => {
     e.stopPropagation();
     onChange([]);
+    setTempSelectedKeys([]);
   };
 
   const variantStyles = {
@@ -117,14 +133,14 @@ export function MultiSelectDropdown({
       <div onClick={() => setIsOpen((prev) => !prev)} className="cursor-pointer select-none">
         <button
           type="button"
-          className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs rounded-md transition-all duration-200 ${variantStyles[variant]}`}
+          className={`inline-flex items-center gap-2 px-3.5 h-[38px] text-xs rounded-md transition-all duration-200 ${variantStyles[variant]}`}
         >
           {triggerIcon && <span className="shrink-0">{triggerIcon}</span>}
           <span className="font-semibold">{triggerLabelDisplay}</span>
 
           {selectedKeys.length > 0 && (
             <span
-              onClick={handleClearSelected}
+              onClick={handleClearTrigger}
               className="p-0.5 rounded-full hover:bg-surface-active text-text-muted hover:text-text-primary transition-colors ml-1"
               title="Xóa lựa chọn"
             >
@@ -143,70 +159,89 @@ export function MultiSelectDropdown({
       {/* Popper Box */}
       {isOpen && (
         <div
-          className={`absolute z-50 mt-1.5 ${width} ${maxHeight} overflow-y-auto rounded-md bg-surface border border-border shadow-2xl shadow-black/60 py-1.5 text-xs scrollbar-thin scrollbar-thumb-border transition-all ${
+          className={`absolute z-50 mt-1.5 ${width} rounded-xl bg-surface border border-border shadow-2xl shadow-black/60 p-2 text-xs transition-all ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
-          {/* Select All Option */}
-          {showSelectAll && options.length > 0 && (
-            <>
+          {/* Options List */}
+          <div className={`${maxHeight} overflow-y-auto space-y-0.5 pr-1 scrollbar-thin scrollbar-thumb-border`}>
+            {/* Select All Option */}
+            {showSelectAll && options.length > 0 && (
               <div
                 onClick={handleToggleAll}
-                className="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-surface-hover transition-colors text-text-secondary hover:text-text-primary font-semibold select-none border-b border-border/50 pb-2 mb-1"
+                className="flex items-center gap-2.5 px-2.5 py-1.5 cursor-pointer hover:bg-surface-hover rounded-lg transition-colors text-text-secondary hover:text-text-primary font-semibold select-none border-b border-border/50 pb-2 mb-1"
               >
                 <div
                   className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                    isAllSelected
+                    isAllTempSelected
                       ? "bg-primary border-primary text-bg-deep font-bold"
                       : "border-border-light bg-surface-muted"
                   }`}
                 >
-                  {isAllSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                  {isAllTempSelected && <Check className="w-3 h-3 stroke-[3]" />}
                 </div>
                 <span>Tất cả</span>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Options List */}
-          {options.map((opt) => {
-            const isChecked = selectedKeys.includes(opt.key);
+            {options.map((opt) => {
+              const isChecked = tempSelectedKeys.includes(opt.key);
 
-            return (
-              <div
-                key={opt.key}
-                onClick={() => !opt.disabled && handleToggleOption(opt.key)}
-                className={`flex items-center justify-between gap-2.5 px-3 py-2 transition-colors select-none ${
-                  opt.disabled
-                    ? "opacity-40 cursor-not-allowed"
-                    : "cursor-pointer hover:bg-surface-hover"
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div
-                    className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                      isChecked
-                        ? "bg-primary border-primary text-bg-deep font-bold"
-                        : "border-border-light bg-surface-muted"
-                    }`}
-                  >
-                    {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+              return (
+                <div
+                  key={opt.key}
+                  onClick={() => !opt.disabled && handleToggleOption(opt.key)}
+                  className={`flex items-center justify-between gap-2.5 px-2.5 py-1.5 rounded-lg transition-colors select-none ${
+                    opt.disabled
+                      ? "opacity-40 cursor-not-allowed"
+                      : "cursor-pointer hover:bg-surface-hover"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                        isChecked
+                          ? "bg-primary border-primary text-bg-deep font-bold"
+                          : "border-border-light bg-surface-muted"
+                      }`}
+                    >
+                      {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                    </div>
+
+                    {opt.icon && <span className="shrink-0">{opt.icon}</span>}
+                    <span
+                      className={`truncate font-medium ${
+                        isChecked ? "text-text-highlight font-bold" : "text-text-primary"
+                      }`}
+                    >
+                      {opt.label}
+                    </span>
                   </div>
 
-                  {opt.icon && <span className="shrink-0">{opt.icon}</span>}
-                  <span
-                    className={`truncate font-medium ${
-                      isChecked ? "text-text-highlight" : "text-text-primary"
-                    }`}
-                  >
-                    {opt.label}
-                  </span>
+                  {opt.badge && <div className="shrink-0">{opt.badge}</div>}
                 </div>
+              );
+            })}
+          </div>
 
-                {opt.badge && <div className="shrink-0">{opt.badge}</div>}
-              </div>
-            );
-          })}
+          {/* Action Footer */}
+          <div className="flex items-center justify-between pt-2 mt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-2.5 py-1 rounded text-[11px] font-semibold text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors"
+            >
+              Đặt lại
+            </button>
+
+            <button
+              type="button"
+              onClick={handleApply}
+              className="px-3 py-1 rounded-lg text-xs font-bold bg-primary hover:bg-primary-hover text-bg-deep transition-all shadow-md shadow-primary/20"
+            >
+              Áp dụng
+            </button>
+          </div>
         </div>
       )}
     </div>

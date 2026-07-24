@@ -122,7 +122,7 @@ export function OrdersTable({
         <div className="flex items-center justify-end">
           <Link
             href={`/orders/${order.id}`}
-            className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-surface-muted transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-primary/15 transition-colors inline-flex items-center justify-center"
             title="Xem chi tiết đơn"
           >
             <Eye className="w-4 h-4" />

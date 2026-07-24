@@ -7,6 +7,7 @@ import {
   DateRangeFilter,
   SortOption,
 } from "./constants";
+import { OrderListHeader } from "./components/OrderListHeader";
 import { OrderStatusTabs } from "./components/OrderStatusTabs";
 import { OrderFilterBar } from "./components/OrderFilterBar";
 import { OrdersTable } from "./components/OrdersTable";
@@ -19,15 +20,12 @@ export function OrdersListScreen() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Filter and sort logic
   const filteredOrders = useMemo(() => {
     return MOCK_ORDERS.filter((order) => {
-      // 1. Status Filter
       if (statusFilter !== "ALL" && order.status !== statusFilter) {
         return false;
       }
 
-      // 2. Search Query (orderCode, customerName, phone)
       if (searchQuery.trim() !== "") {
         const query = searchQuery.toLowerCase().trim();
         const matchCode = order.orderCode.toLowerCase().includes(query);
@@ -49,7 +47,6 @@ export function OrdersListScreen() {
     });
   }, [statusFilter, searchQuery, dateFilter, sortBy]);
 
-  // Reset filter handler
   const handleResetFilter = () => {
     setStatusFilter("ALL");
     setSearchQuery("");
@@ -58,16 +55,16 @@ export function OrdersListScreen() {
     setPage(1);
   };
 
+  const handleExportExcel = () => {
+    alert(`Xuất file Excel danh sách ${filteredOrders.length} đơn hàng thành công!`);
+  };
+
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-text-highlight">Quản lý Đơn hàng</h1>
-          <p className="text-xs text-text-muted mt-0.5">
-            Theo dõi, lọc và xử lý toàn bộ đơn hàng của tiệm
-          </p>
-        </div>
-      </div>
+      <OrderListHeader
+        totalCount={filteredOrders.length}
+        onExportExcel={handleExportExcel}
+      />
 
       <OrderStatusTabs
         currentTab={statusFilter}

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
+import { Tabs, TabItem } from "@/components/ui/Tabs";
 import { OrderStatusFilter, OrderListItem } from "../constants";
 import { ORDER_STATUS_MAP } from "@/constants/orders";
 
@@ -15,8 +16,7 @@ export function OrderStatusTabs({
   onSelectTab,
   orders,
 }: OrderStatusTabsProps) {
-  // Count orders per status
-  const counts = React.useMemo(() => {
+  const counts = useMemo(() => {
     const acc: Record<string, number> = { ALL: orders.length };
     orders.forEach((ord) => {
       acc[ord.status] = (acc[ord.status] || 0) + 1;
@@ -24,47 +24,48 @@ export function OrderStatusTabs({
     return acc;
   }, [orders]);
 
-  const tabs: { key: OrderStatusFilter; label: string }[] = [
-    { key: "ALL", label: "Tất cả" },
-    { key: "PENDING_PAYMENT", label: ORDER_STATUS_MAP.PENDING_PAYMENT?.label || "Chờ thanh toán" },
-    { key: "PAID", label: ORDER_STATUS_MAP.PAID?.label || "Đã thanh toán" },
-    { key: "PACKING", label: ORDER_STATUS_MAP.PACKING?.label || "Đang đóng gói" },
-    { key: "SHIPPING", label: ORDER_STATUS_MAP.SHIPPING?.label || "Đang giao hàng" },
-    { key: "COMPLETED", label: ORDER_STATUS_MAP.COMPLETED?.label || "Hoàn tất" },
-    { key: "CANCELLED", label: ORDER_STATUS_MAP.CANCELLED?.label || "Đã hủy" },
-  ];
+  const tabs: TabItem[] = useMemo(
+    () => [
+      { id: "ALL", label: "Tất cả", count: counts.ALL || 0 },
+      {
+        id: "PENDING_PAYMENT",
+        label: ORDER_STATUS_MAP.PENDING_PAYMENT?.label || "Chờ thanh toán",
+        count: counts.PENDING_PAYMENT || 0,
+      },
+      {
+        id: "PAID",
+        label: ORDER_STATUS_MAP.PAID?.label || "Đã thanh toán",
+        count: counts.PAID || 0,
+      },
+      {
+        id: "PACKING",
+        label: ORDER_STATUS_MAP.PACKING?.label || "Đang đóng gói",
+        count: counts.PACKING || 0,
+      },
+      {
+        id: "SHIPPING",
+        label: ORDER_STATUS_MAP.SHIPPING?.label || "Đang giao hàng",
+        count: counts.SHIPPING || 0,
+      },
+      {
+        id: "COMPLETED",
+        label: ORDER_STATUS_MAP.COMPLETED?.label || "Hoàn tất",
+        count: counts.COMPLETED || 0,
+      },
+      {
+        id: "CANCELLED",
+        label: ORDER_STATUS_MAP.CANCELLED?.label || "Đã hủy",
+        count: counts.CANCELLED || 0,
+      },
+    ],
+    [counts]
+  );
 
   return (
-    <div className="border-b border-border">
-      <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden text-xs scrollbar-none">
-        {tabs.map((tab) => {
-          const isActive = currentTab === tab.key;
-          const count = counts[tab.key] || 0;
-
-          return (
-            <button
-              key={tab.key}
-              onClick={() => onSelectTab(tab.key)}
-              className={`flex items-center gap-2 px-3 py-2 font-medium rounded-t-lg transition-all shrink-0 border-b-2 ${
-                isActive
-                  ? "border-primary text-primary bg-surface-hover/80 font-semibold"
-                  : "border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-hover/40"
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span
-                className={`px-1.5 py-0.5 text-[10px] rounded-full font-bold ${
-                  isActive
-                    ? "bg-primary/20 text-primary"
-                    : "bg-surface-muted text-text-muted"
-                }`}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    <Tabs
+      tabs={tabs}
+      activeTab={currentTab}
+      onTabChange={(tabId) => onSelectTab(tabId as OrderStatusFilter)}
+    />
   );
 }

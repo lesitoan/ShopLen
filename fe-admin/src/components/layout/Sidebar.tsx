@@ -50,9 +50,6 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 <span className="font-bold text-sm text-text-highlight truncate tracking-tight">
                   Tiệm Len Nhà Kiều
                 </span>
-                <span className="text-[10px] text-primary font-medium tracking-wider uppercase">
-                  Admin Dashboard
-                </span>
               </div>
             </Link>
           )}

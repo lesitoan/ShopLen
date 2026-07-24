@@ -41,7 +41,7 @@ export function ReportsScreen() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <ReportsHeader
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
@@ -52,7 +52,7 @@ export function ReportsScreen() {
 
       <RevenueCompareChart data={revenueData} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopRankingCard
           title="Top sản phẩm bán chạy"
           description="Theo số lượng đã bán trong kỳ"
@@ -81,7 +81,7 @@ export function ReportsScreen() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OrderStatusDonut data={MOCK_ORDER_STATUS} total={totalOrders} />
       </div>
     </div>

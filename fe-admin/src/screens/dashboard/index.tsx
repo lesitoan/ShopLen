@@ -33,9 +33,6 @@ export default function DashboardScreen() {
             <h1 className="text-2xl font-extrabold text-text-highlight tracking-tight">
               Dashboard Tổng Quan
             </h1>
-            <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" /> Realtime Live
-            </span>
           </div>
           <p className="text-xs text-text-secondary mt-1">
             Chào mừng trở lại! Theo dõi chỉ số kinh doanh Tiệm Len Nhà Kiều hôm nay.
@@ -43,18 +40,10 @@ export default function DashboardScreen() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRefresh}
-            leftIcon={<RotateCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />}
-          >
-            Làm mới
-          </Button>
 
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             leftIcon={<Download className="w-3.5 h-3.5" />}
           >
             Xuất báo cáo

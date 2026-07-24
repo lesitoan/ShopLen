@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Breadcrumb } from "../ui/Breadcrumb";
 import { DropdownMenu } from "../ui/DropdownMenu";
-import { Search, Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucide-react";
+import { Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucide-react";
 import { BREADCRUMB_ROUTE_MAP } from "./constants";
 
 export interface TopbarProps {
@@ -76,23 +76,14 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
         <Breadcrumb items={getBreadcrumbItems()} />
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative hidden md:flex items-center">
-          <Search className="w-4 h-4 text-text-muted absolute left-3 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm nhanh (Ctrl + K)..."
-            className="bg-surface-muted text-xs text-text-primary placeholder:text-text-muted rounded-md border border-border pl-9 pr-4 py-1.5 w-64 outline-none focus:outline-none focus-visible:outline-none focus:border-primary transition-colors"
-          />
-        </div>
-
+      <div className="flex items-center gap-5">
         <DropdownMenu
           align="right"
           trigger={
-            <div className="relative p-2 rounded-md hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors">
+            <div className="relative p-2.5 rounded-lg hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors cursor-pointer">
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-status-danger text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
+                <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-status-danger text-white text-[9px] font-bold flex items-center justify-center animate-pulse">
                   {unreadCount}
                 </span>
               )}
@@ -101,24 +92,24 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
           items={notificationItems}
         />
 
-        <div className="h-5 w-[1px] bg-border" />
+        <div className="h-6 w-[1px] bg-border" />
 
         <DropdownMenu
           align="right"
           trigger={
-            <div className="flex items-center gap-2.5 cursor-pointer p-1 rounded-md hover:bg-surface-hover transition-colors select-none">
+            <div className="flex items-center gap-3 cursor-pointer px-3.5 py-2 rounded-lg hover:bg-surface-hover transition-colors select-none">
               <Image
                 src="/images/avatar.svg"
                 alt="Admin Kiều Avatar"
-                width={32}
-                height={32}
-                className="w-8 h-8 rounded-full object-cover shrink-0"
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-primary/20"
               />
               <div className="hidden lg:flex flex-col text-left">
                 <span className="text-xs font-semibold text-text-highlight leading-tight">
                   Admin Kiều
                 </span>
-                <span className="text-[10px] text-text-muted">Quản trị viên</span>
+                <span className="text-[10px] text-text-muted mt-0.5">Quản trị viên</span>
               </div>
             </div>
           }

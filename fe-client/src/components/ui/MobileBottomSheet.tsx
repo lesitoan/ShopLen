@@ -72,6 +72,7 @@ export default function MobileBottomSheet({
 
   return createPortal(
     <div
+      data-mobile-bottom-sheet="true"
       className={`md:hidden fixed inset-0 z-50 flex items-end justify-center transition-all duration-500 ease-out ${
         active
           ? "bg-black/60 backdrop-blur-sm opacity-100 pointer-events-auto"
@@ -82,7 +83,7 @@ export default function MobileBottomSheet({
       <div
         className={`bg-surface w-full rounded-t-[28px] border-t-2 border-primary/30 ${maxHeightClass} overflow-hidden ${paddingClass} flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] transform ${
           active ? "translate-y-0" : "translate-y-full"
-        } select-none`}
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shrink-0">

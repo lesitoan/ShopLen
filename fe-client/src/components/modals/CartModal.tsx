@@ -41,8 +41,16 @@ export default function CartModal({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!isOpen) return;
-      const target = event.target as Node;
+      const target = event.target as HTMLElement;
       
+      // Ignore mobile bottom sheet clicks or mobile viewport
+      if (
+        window.innerWidth < 768 ||
+        target?.closest?.('[data-mobile-bottom-sheet]')
+      ) {
+        return;
+      }
+
       if (
         desktopModalRef.current &&
         !desktopModalRef.current.contains(target) &&

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import Image from "next/image";
 import { Search, Clock, X } from "lucide-react";
 import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
 import ProductCard from "@/components/product/ProductCard";
@@ -39,7 +38,15 @@ export default function SearchModal({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!isOpen) return;
-      const target = event.target as Node;
+      const target = event.target as HTMLElement;
+
+      // Ignore mobile bottom sheet clicks or mobile viewport
+      if (
+        window.innerWidth < 768 ||
+        target?.closest?.('[data-mobile-bottom-sheet]')
+      ) {
+        return;
+      }
 
       if (
         desktopModalRef.current &&

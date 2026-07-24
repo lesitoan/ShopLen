@@ -33,7 +33,14 @@ export default function UserMenuModal({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!isOpen) return;
-      const target = event.target as Node;
+      const target = event.target as HTMLElement;
+
+      if (
+        window.innerWidth < 768 ||
+        target?.closest?.('[data-mobile-bottom-sheet]')
+      ) {
+        return;
+      }
 
       if (
         desktopModalRef.current &&

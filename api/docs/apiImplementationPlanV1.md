@@ -4,6 +4,8 @@
 >
 > Mục tiêu v1: nối được luồng bán hàng thật, quản trị sản phẩm/danh mục/đơn/khách hàng cơ bản, thanh toán QR, webhook thanh toán, socket trạng thái đơn. Những phần chưa cần sẽ không tạo bảng/endpoint để tránh phình scope.
 
+> Thiết kế DB chi tiết nằm ở `api/docs/databaseDesignV1.md`.
+
 ## 1. Quyết định phạm vi v1
 
 ### 1.1. Làm trong v1

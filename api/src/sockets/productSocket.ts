@@ -1,5 +1,5 @@
-import { getSocketServer } from "./socketServer.js";
+import { getSocketServer } from "@/sockets/socketServer.js";
 
-export function emitStockUpdate(productVariantId: string, stock: number) {
-  getSocketServer()?.emit("stock:update", { productVariantId, stock });
+export function emitStockUpdate(productId: string, stock: number) {
+  getSocketServer()?.emit("stock:update", { productId, stock });
 }

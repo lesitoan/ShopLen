@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { MESSAGES } from "../constants/messages.js";
+import { MESSAGES } from "@/constants/messages.js";
 
 export function authMiddleware(
   request: Request,

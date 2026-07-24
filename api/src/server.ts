@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { createServer } from "node:http";
-import { createApp } from "./app.js";
-import { env } from "./config/envValidation.js";
-import { setupSocketServer } from "./sockets/socketServer.js";
+import { createApp } from "@/app.js";
+import { env } from "@/config/envValidation.js";
+import { setupSocketServer } from "@/sockets/socketServer.js";
 
 const app = createApp();
 const httpServer = createServer(app);

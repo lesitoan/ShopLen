@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from "node:http";
 import { Server } from "socket.io";
-import { env } from "../config/envValidation.js";
+import { env } from "@/config/envValidation.js";
 
 let socketServer: Server | null = null;
 

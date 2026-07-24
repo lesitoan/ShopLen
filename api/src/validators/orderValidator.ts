@@ -10,6 +10,12 @@ export const createOrderValidator = z.object({
   body: z.object({
     customerName: z.string().min(2),
     customerPhone: z.string().min(8),
-    items: z.array(z.object({ productVariantId: z.string(), quantity: z.number().int().positive() })),
+    items: z.array(
+      z.object({
+        productId: z.string().min(1),
+        quantity: z.number().int().positive(),
+        selectedOptions: z.record(z.string(), z.string()).optional(),
+      }),
+    ),
   }),
 });

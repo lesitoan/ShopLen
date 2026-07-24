@@ -7,7 +7,6 @@ const envSchema = z.object({
   ADMIN_URL: z.string().url().default("http://localhost:3001"),
   DATABASE_URL: z.string().optional(),
   JWT_SECRET: z.string().optional(),
-  REDIS_URL: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_ADMIN_CHAT_ID: z.string().optional(),
   BANK_ACCOUNT_NUMBER: z.string().optional(),

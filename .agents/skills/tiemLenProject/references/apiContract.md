@@ -1,5 +1,18 @@
 # API Contract — Nguồn chân lý cho FE-BE
 
+> CẬP NHẬT V1: Nếu repo có `api/docs/apiImplementationPlanV1.md`, dùng file đó làm contract hiện hành trước khi code API. Nội dung bên dưới là contract nền/legacy và có một số phần đã đổi theo quyết định mới.
+>
+> Quyết định v1 hiện hành:
+> - Không guest checkout; `POST /api/orders` bắt buộc customer JWT.
+> - Auth client dùng email/password và Google login; không dùng phone/password.
+> - Cart lưu localStorage, không có API cart v1.
+> - Promotions, settings table, banner/hero API tạm chưa làm trong v1.
+> - Product bỏ rating sao, bỏ `isFeatured`; dùng `highlightType` nullable: `"HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK"`.
+> - Product images tách bảng riêng, thumbnail qua `isThumbnail`.
+> - Product options dùng bảng `productOptions`, values lưu `jsonb`, hiện max 2 option/product: `COLOR`, `SIZE`.
+> - Order item lưu `productSnapshot` bằng `jsonb`; không render order cũ bằng cách join product hiện tại.
+> - Error format: `{ success: false, message, internalMessage?, errorCode }`, không có `details`.
+
 > Vì `fe-client`, `fe-admin`, `api` không share type, đây là tài liệu **duy nhất** để đối chiếu
 > field/response giữa FE và BE. Mọi thay đổi request/response đều phải cập nhật file này TRƯỚC,
 > agent code FE và BE phải cùng tham chiếu đúng 1 bản này.

@@ -327,6 +327,37 @@ fe-admin/
 
 ---
 
+## 2.1. Quy chuẩn cấu trúc Call API bằng RTK Query & Redux Toolkit trong FE (`fe-client` & `fe-admin`)
+
+Cấu trúc thư mục API layer theo chuẩn Clean Architecture:
+
+```
+src/
+├── store/                          # Redux Store chính
+│   ├── index.ts                    # configureStore, nạp baseApi.reducer & middleware
+│   ├── rootReducer.ts              # Gom reducers
+│   ├── hooks.ts                    # Typed hooks (useAppDispatch, useAppSelector)
+│   └── slices/                     # Local Client State
+│       ├── cartSlice.ts            # State giỏ hàng (lưu LocalStorage qua Middleware)
+│       └── authSlice.ts            # State session User/Customer hiện tại
+│
+├── services/api/                   # RTK Query API Layer
+│   ├── baseApi.ts                  # createApi duy nhất với fetchBaseQuery chung (baseUrl, prepareHeaders, tagTypes)
+│   ├── authApi.ts                  # baseApi.injectEndpoints ({ login, register, getMe })
+│   ├── productApi.ts               # baseApi.injectEndpoints ({ getProducts, getProductBySlug })
+│   ├── categoryApi.ts              # baseApi.injectEndpoints ({ getCategories })
+│   ├── orderApi.ts                 # baseApi.injectEndpoints ({ createOrder, getOrderLookup })
+│   └── bannerApi.ts                # baseApi.injectEndpoints ({ getBannersByPosition })
+```
+
+**Nguyên tắc cốt lõi**:
+1. Một `baseApi.ts` tập trung chịu trách nhiệm về `baseUrl`, chèn Header Auth Token tự động và quản lý `tagTypes` phục vụ **Automatic Re-fetching / Cache Invalidation**.
+2. Dùng `baseApi.injectEndpoints()` cho từng domain (`productApi.ts`, `orderApi.ts`, `authApi.ts`).
+3. RTK Query quản lý **Server State** (tự động cache & invalidates tags). Redux Slices quản lý **Client Local State** (`cartSlice` tự lưu `localStorage`).
+4. Screen components tại `src/screens/<ten-man>/` chỉ import và sử dụng trực tiếp các Auto-Generated React Hooks sinh ra từ RTK Query (ví dụ `useGetProductsQuery()`, `useCreateOrderMutation()`). Không gọi `fetch` hay `axios` trực tiếp trong UI components.
+
+---
+
 ## 3. Vì sao KHÔNG dùng shared-types package (theo yêu cầu)
 
 So với cách dùng `packages/shared-types` chung 1 repo:

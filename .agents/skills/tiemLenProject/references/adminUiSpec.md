@@ -6,6 +6,13 @@
 
 ---
 
+> CẬP NHẬT V1: Nếu làm API/admin integration, ưu tiên `api/docs/apiImplementationPlanV1.md`.
+> - Product v1 không dùng variant theo tổ hợp màu/size; dùng bảng `productOptions`, mỗi product có 0-2 option (`COLOR`, `SIZE`), values lưu `jsonb`.
+> - Tồn kho v1 quản lý ở cấp product.
+> - Product bỏ `isFeatured`; dùng `highlightType?: "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK"`.
+> - Promotions và settings table tạm chưa làm API v1; các màn hiện có có thể giữ Coming Soon hoặc ẩn chức năng gọi API.
+> - Cloudinary upload đi qua API backend, không đưa `CLOUDINARY_API_SECRET` lên FE.
+
 ## 0. Tech stack đề xuất
 
 - **Framework**: Next.js (App Router) hoặc React + Vite (admin không cần SEO nên SSR không bắt buộc, ưu tiên tốc độ dev)

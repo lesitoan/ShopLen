@@ -1,9 +1,9 @@
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import { env } from "./config/envValidation.js";
-import { errorHandlerMiddleware } from "./middlewares/errorHandlerMiddleware.js";
-import { routes } from "./routes/index.js";
+import { env } from "@/config/envValidation.js";
+import { errorHandlerMiddleware } from "@/middlewares/errorHandlerMiddleware.js";
+import { routes } from "@/routes/index.js";
 
 export function createApp() {
   const app = express();
@@ -22,7 +22,7 @@ export function createApp() {
     response.json({ ok: true, service: "tiemLenApi" });
   });
 
-  app.use("/api", routes);
+  app.use("/api/v1", routes);
   app.use(errorHandlerMiddleware);
 
   return app;

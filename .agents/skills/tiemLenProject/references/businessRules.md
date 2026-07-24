@@ -1,5 +1,12 @@
 # Business Rules — Luật nghiệp vụ cốt lõi
 
+> CẬP NHẬT V1: Nếu repo có `api/docs/apiImplementationPlanV1.md`, dùng file đó làm nguồn quyết định hiện hành. Một số rule bên dưới là đề xuất cũ và đã được override:
+> - V1 không hỗ trợ guest checkout; khách phải đăng nhập mới tạo đơn.
+> - V1 chưa tạo bảng settings; các số như phí ship, thời gian giữ đơn, VietQR/bank, Telegram lấy từ env/config.
+> - V1 chưa làm promotions.
+> - Cart lưu localStorage ở client, không lưu server-side.
+> - Product option v1 chỉ lưu bằng bảng `productOptions` với values `jsonb`, không dùng variant/filter nhiều bảng.
+
 > ⚠️ Các con số trong file này là **giá trị mặc định đề xuất**, chưa phải quyết định cuối cùng
 > của chủ shop. Agent code có thể dùng tạm các số này để implement (đưa thành **config có thể
 > chỉnh trong `/admin/cauHinh`**, không hardcode cứng trong code), nhưng phải hỏi lại user để

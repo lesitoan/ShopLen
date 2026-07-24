@@ -5,6 +5,8 @@
 
 ---
 
+> CẬP NHẬT V1: Product v1 không dùng variant tồn kho riêng. Event tồn kho chỉ cần `productId`, `stockQuantity` hoặc `stockLeft`, và `status`. Nếu ví dụ cũ có `variantId`, xem đó là optional legacy, không bắt buộc implement v1.
+
 ## 1. Nguyên tắc chung
 
 - 1 kết nối socket duy nhất mỗi app (không tạo nhiều connection ở nhiều component) — quản lý qua `hooks/useSocket.ts` (client) / `hooks/useSocketAdmin.ts` (admin) và `sockets/socketServer.ts` (api).

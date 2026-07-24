@@ -1,4 +1,4 @@
-import { getSocketServer } from "./socketServer.js";
+import { getSocketServer } from "@/sockets/socketServer.js";
 
 export function emitOrderPaid(orderId: string) {
   getSocketServer()?.emit("order:paid", { orderId });

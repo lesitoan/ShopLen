@@ -1,4 +1,4 @@
-import type { OrderStatus } from "../constants/orderStatus.js";
+import type { OrderStatus } from "@/constants/orderStatus.js";
 
 export type OrderModel = {
   id: string;

@@ -6,6 +6,14 @@
 
 ---
 
+> CẬP NHẬT V1: Các phần trong file này nói về guest checkout, guest order lookup hoặc merge cart server là legacy. Quyết định hiện hành:
+> - Khách phải đăng nhập mới checkout.
+> - Cart lưu localStorage ở client, không tạo API cart v1.
+> - Không có guest order lookup trong API v1; lịch sử/chi tiết đơn nằm trong tài khoản customer.
+> - Auth client dùng email/password và Google login.
+> - Product không còn rating sao.
+> - Product option hiện chỉ gồm `COLOR` và `SIZE`, lưu theo từng product bằng bảng `productOptions`.
+
 ## 0. Tech stack đề xuất (Frontend)
 
 - **Framework**: Next.js (App Router), SSR/ISR cho SEO (đặc biệt trang Blog, Product Detail, Home)

@@ -5,6 +5,17 @@
 
 ---
 
+> CẬP NHẬT V1: Cấu trúc dưới đây là khung tổng quát. Khi triển khai API hiện tại, ưu tiên `api/docs/apiImplementationPlanV1.md`.
+> - Không bắt buộc tạo `promotionRoutes`, `promotionService`, `promotionModel`, settings routes/model trong v1.
+> - Không tạo `productVariantModel` cho v1; dùng `productOptionModel` với values `jsonb`.
+> - Cần thêm/cập nhật model theo v1: `customerModel`, `productImageModel`, `productOptionModel`, order item có `productSnapshot jsonb`.
+> - Auth client dùng email/password + Google login trong bảng `customers`; admin dùng bảng `users`.
+> - Cart không có route API v1.
+> - API v1 mount dưới `/api/v1`.
+> - Trong `api/src`, dùng path alias `@/*` trỏ tới `src/*` cho mọi import nội bộ.
+> - `routes/`, `controllers/`, `services/`, `dto/` tách nhánh `admin/` và `client/` khi domain có thể phân biệt.
+> - `dto/` chứa request/response schema hoặc DTO theo API contract; `types/` chứa type nội bộ dùng chung; `models/` chỉ chứa entity/schema DB.
+
 ## 1. Quy ước đặt tên (bắt buộc)
 
 **Không dùng kebab-case** (dạng `product-detail`, `order-lookup`...) cho thư mục/file.

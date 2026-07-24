@@ -9,24 +9,59 @@ description: Quy ước và đặc tả kỹ thuật cho dự án website bán m
 
 Website bán móc khóa len handmade (hoa, quà sinh nhật, động vật...), chạy song song với kênh TikTok đang có traffic (~30-50 khách/ngày). Đặc điểm nghiệp vụ chính:
 - 100% đơn hàng thanh toán trước qua QR chuyển khoản ngân hàng
-- Khách có thể mua **không cần đăng nhập** (guest, tra cứu đơn qua mã đơn + SĐT) hoặc **đăng nhập** để tích điểm/giảm giá
+- V1 yêu cầu khách **đăng nhập mới được mua hàng**; không hỗ trợ guest checkout và không có API cart
 - Có blog để tối ưu SEO, kéo traffic organic
 - Áp dụng Socket.IO cho các luồng real-time (trạng thái đơn hàng, tồn kho) và Telegram bot để admin nhận thông báo đơn mới — đây là 2 điểm kỹ thuật ưu tiên đầu tư vì mục đích vừa chạy thực tế vừa làm đẹp CV backend.
+
+## Quyết định API v1 hiện hành (ưu tiên hơn reference cũ)
+
+Khi làm API hoặc chỉnh contract, ưu tiên file `api/docs/apiImplementationPlanV1.md` nếu tồn tại. Các quyết định v1 đã chốt:
+
+- Cart lưu `localStorage` ở client, API chỉ nhận items khi checkout.
+- Checkout bắt buộc đăng nhập customer; `orders.customerId` bắt buộc và lấy từ JWT, không nhận từ body.
+- Customer auth dùng email/password và Google login trong cùng bảng `customers`: `isManualLogin`, `isGoogleLogin`, `googleAccountId`; không tạo bảng social provider riêng.
+- Customer profile `phone` optional, nhưng phone người nhận trong order vẫn bắt buộc để giao hàng/liên hệ.
+- Không làm promotions, settings table, banner/hero API trong v1.
+- Config v1 lấy từ env/config: Google client id, Cloudinary, VietQR/bank, ship fee, order hold minutes, Telegram.
+- Product bỏ `isFeatured`, bỏ rating sao, bỏ bảng badge riêng trong v1; dùng `highlightType?: "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK"`.
+- Product images tách bảng `productImages`, thumbnail đánh dấu bằng `isThumbnail`.
+- Product options dùng một bảng `productOptions`; mỗi sản phẩm có 0-2 option, hiện chỉ `COLOR` và `SIZE`, values lưu `jsonb`.
+- Order item lưu `productSnapshot` bằng `jsonb` để đơn cũ không phụ thuộc product hiện tại.
+- Error response không có `details`; có `internalMessage?` chỉ ở dev/test.
+- API v1 mount dưới `/api/v1`.
+- Trong `api/src`, dùng path alias `@/*` trỏ tới `src/*` cho mọi import nội bộ; tránh import tương đối dài như `../../utils/...`.
+- `routes/`, `controllers/`, `services/`, `dto/` tách nhánh `admin/` và `client/` khi domain có thể phân biệt theo trang quản trị và storefront.
+- `dto/` chứa request/response schema hoặc DTO theo API contract; `types/` chứa type nội bộ dùng chung, không phải entity DB. Entity/schema DB vẫn nằm trong `models/`.
 
 ## Cấu trúc dự án (3 source độc lập, không share code)
 
 ```
 fe-client/     → website khách hàng (storefront)
 fe-admin/      → dashboard quản trị
-api/           → backend, theo MVC (routes/controllers/services/models)
+api/           → backend, theo MVC (routes/controllers/services/models/dto/types)
 ```
 
 **`fe-client` và `fe-admin` không dùng chung bất kỳ package/component/type nào.** Mỗi source tự có `components/`, `hooks/`, `constants/`, `types/` riêng. Không tạo `packages/shared-*` giữa 2 FE hay giữa FE-API.
 
+## Quy chuẩn cấu trúc Call API bằng RTK Query & Redux Toolkit (FE Client & FE Admin)
+
+1. **Một `baseApi.ts` duy nhất (`src/services/api/baseApi.ts`)**:
+   - Sử dụng `createApi` với `fetchBaseQuery` khai báo `baseUrl: process.env.NEXT_PUBLIC_API_URL`.
+   - `prepareHeaders` tự động chèn `Authorization: Bearer <token>` từ Redux State.
+   - Khai báo đầy đủ `tagTypes: ["Product", "Category", "Order", "User", "Customer", "Banner"]` phục vụ cơ chế tự động re-fetch/invalidates cache.
+2. **Inject Endpoints theo Feature Domain**:
+   - Chia nhỏ file API theo miền dữ liệu: `productApi.ts`, `categoryApi.ts`, `orderApi.ts`, `authApi.ts`, `bannerApi.ts`.
+   - Sử dụng `baseApi.injectEndpoints()` để định nghĩa các builder query/mutation.
+3. **Phân định rõ ràng 2 loại State trong FE**:
+   - **Server State**: Do RTK Query quản lý hoàn toàn (tự động cache, tự động re-fetch).
+   - **Client Local State**: Do Redux Slices (`src/store/slices/`) quản lý (`cartSlice` lưu LocalStorage qua Redux middleware, `authSlice` lưu thông tin user/token).
+4. **Quy tắc gọi trong Screen Component**:
+   - Các màn hình tại `src/screens/<ten-man>/` chỉ được import và sử dụng trực tiếp các Auto-Generated React Hooks sinh ra từ RTK Query (ví dụ: `useGetProductsQuery()`, `useCreateOrderMutation()`). Tuyệt đối không tự viết lệnh `fetch` hay `axios` trực tiếp trong UI components.
+
 ## Quy tắc bất biến (áp dụng mọi lúc, không cần mở references)
 
 1. **Đặt tên**: Sử dụng **camelCase** cho tất cả thư mục, biến, hàm, và các tệp tin không chứa giao diện UI (như helper, service, controller, route, constants) — không dùng kebab-case hay snake_case (trừ tên cột DB). Đối với các **tệp tin component UI (React components)**, bắt buộc phải đặt tên tệp theo định dạng **PascalCase** (ví dụ: `Button.tsx`, `Header.tsx`, `SearchModal.tsx`). Đối với các giá trị **Enum** hoặc các hằng số chế độ/trạng thái (**Enum / Union Type string values** như `AuthViewMode`, `OrderStatus`), bắt buộc phải sử dụng định dạng **UPPER_SNAKE_CASE** (ví dụ: `"LANDING"`, `"LOGIN"`, `"REGISTER"`, `"FORGOT_PASSWORD"`, `"PENDING_PAYMENT"`).
-2. **API theo MVC rõ ràng**: `routes/` chỉ định nghĩa endpoint → `controllers/` nhận request/validate cơ bản → `services/` chứa business logic thật → `models/` là entity/schema. Controller không tự viết logic, route không tự gọi DB.
+2. **API theo MVC rõ ràng**: `routes/` chỉ định nghĩa endpoint → `controllers/` nhận request/validate cơ bản → `services/` chứa business logic thật → `models/` là entity/schema. `dto/` chứa request/response schema/type, `types/` chứa type nội bộ dùng chung. Controller không tự viết logic, route không tự gọi DB.
 3. **Tách biệt Constants khỏi Component**: Không khai báo các biến hằng số (constants), cấu hình tĩnh, dữ liệu mappers/options dùng chung hoặc dữ liệu mock lớn trực tiếp trong component. Nếu là hằng số/mock data chỉ dùng riêng cho 1 màn hình, đặt trong file `constants.ts` cùng cấp màn hình đó. Nếu là hằng số/mapper/config dùng chung cho nhiều màn hình (ví dụ: mappers trạng thái đơn hàng `orders.ts`, options danh mục, loại thanh toán...), bắt buộc phải đặt tại thư mục `/src/constants/` chung (như `src/constants/orders.ts`, `src/constants/mappers.ts`...).
 4. **Trong FE, `app/**/page.tsx` chỉ làm 2 việc**: định nghĩa route + render component từ `screens/`. Toàn bộ logic/state/sub-component riêng 1 màn nằm trong `screens/<tenMan>/`. Cái gì dùng chung ≥ 2 màn mới đưa lên `components/`, `hooks/` gốc.
 5. **UI phải bám đúng design token** đã định nghĩa (màu, spacing, radius, typography) — không tự chế màu/size ngoài token.
@@ -52,18 +87,10 @@ api/           → backend, theo MVC (routes/controllers/services/models)
 | Tạo file/folder mới, đặt tên biến/hàm/class, phân vân snake vs camel | `references/namingConvention.md` (đã gộp trong `mvcApiStructure.md`, xem mục 1) |
 | Code route/controller/service/model cho `api/`, hoặc cần biết luồng xử lý 1 request | `references/mvcApiStructure.md` |
 | Tạo cấu trúc thư mục gốc cho 1 trong 3 source, phân vân screens/ vs components/ | `references/sourceStructure.md` |
-| Cần biết endpoint API, request/response mẫu, mã lỗi | `references/apiContract.md` |
+| Cần biết endpoint API, request/response mẫu, mã lỗi, DB schema V2 | `api/docs/apiImplementationPlanV2.md` |
 | Cần biết event Socket.IO nào bắn lúc nào, ai lắng nghe, payload gì | `references/socketFlow.md` |
 | Cần biết luật nghiệp vụ (thời gian giữ đơn, công thức tích điểm, quy tắc tồn kho) | `references/businessRules.md` |
 
 ## Nguyên tắc khi thiếu thông tin
 
 Nếu cần 1 con số/luật nghiệp vụ cụ thể chưa được định nghĩa ở đâu trong `references/` (vd: % tích điểm, số phút giữ đơn, phí ship) — **hỏi lại user để chốt**, không tự giả định rồi code cứng, vì đây là số liệu ảnh hưởng trực tiếp tới tiền và trải nghiệm khách hàng thật.
-
-## Danh sách file trong `references/`
-
-- `clientUiSpec.md` — toàn bộ màn hình, bố cục, component, trạng thái của `fe-client`
-- `adminUiSpec.md` — toàn bộ màn hình, bố cục, component, trạng thái của `fe-admin`
-- `designSystem.md` — design token (màu/typography/spacing/radius) + spec 18 nhóm component UI
-- `mvcApiStructure.md` — quy ước đặt tên camelCase toàn dự án + cấu trúc MVC chi tiết cho `api/`
-- `sourceStructure.md` — cây thư mục đầy đủ `fe-client`/`fe-admin` theo pattern `app/` + `screens/`

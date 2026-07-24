@@ -65,7 +65,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3 text-text-muted pointer-events-none shrink-0">
+            <div className="absolute left-3 inset-y-0 flex items-center text-text-muted pointer-events-none shrink-0">
               {leftIcon}
             </div>
           )}
@@ -87,7 +87,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={onClear}
-              className="absolute right-3 text-text-muted hover:text-text-primary p-0.5 rounded transition-colors"
+              className="absolute right-3 inset-y-0 flex items-center text-text-muted hover:text-text-primary p-0.5 rounded transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -114,7 +114,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           ) : (
             rightIcon && (
-              <div className="absolute right-3 text-text-muted pointer-events-none shrink-0">
+              <div className="absolute right-3 inset-y-0 flex items-center text-text-muted shrink-0">
                 {rightIcon}
               </div>
             )

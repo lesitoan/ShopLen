@@ -164,7 +164,7 @@ Rule:
 
 Rule link tài khoản:
 
-- Register email/password: tạo `customers`, set `passwordHash`, `isManualLogin = true`, `isGoogleLogin = false`.
+- Register email/password: request không cần `fullName`; backend tự set `fullName` mặc định từ phần trước `@` của email hoặc `"Khách hàng"`, tạo `customers`, set `passwordHash`, `isManualLogin = true`, `isGoogleLogin = false`.
 - Login Google:
   - Verify Google ID token ở backend.
   - Lấy `sub`, `email`, `email_verified`, `name`, `picture`.
@@ -615,12 +615,13 @@ Request:
 
 ```json
 {
-  "fullName": "Nguyễn Thu Hà",
   "email": "ha@example.com",
   "password": "123456",
   "confirmPassword": "123456"
 }
 ```
+
+Register không yêu cầu `fullName`. Backend tự set tên mặc định để thỏa `customers.fullName` non-null; khách có thể sửa lại trong profile.
 
 Response:
 
@@ -630,7 +631,7 @@ Response:
   "data": {
     "customer": {
       "id": "cust_01",
-      "fullName": "Nguyễn Thu Hà",
+      "fullName": "ha",
       "email": "ha@example.com",
       "phone": null
     },
@@ -647,8 +648,7 @@ Request:
 ```json
 {
   "email": "ha@example.com",
-  "password": "123456",
-  "rememberMe": true
+  "password": "123456"
 }
 ```
 
@@ -701,6 +701,28 @@ Request:
 }
 ```
 
+#### `POST /api/auth/password/otp/verify`
+
+FE gọi endpoint này sau khi user nhập OTP. Chỉ khi API trả success thì FE mới hiện form nhập mật khẩu mới.
+
+Request:
+
+```json
+{
+  "email": "ha@example.com",
+  "otpCode": "123456"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Mã xác nhận hợp lệ"
+}
+```
+
 #### `POST /api/auth/password/reset`
 
 Request:
@@ -709,9 +731,12 @@ Request:
 {
   "email": "ha@example.com",
   "otpCode": "123456",
-  "newPassword": "new-password"
+  "newPassword": "new-password",
+  "confirmPassword": "new-password"
 }
 ```
+
+Backend vẫn verify lại OTP khi reset để tránh đổi mật khẩu nếu FE bị bypass.
 
 #### Các endpoint khác
 
@@ -1176,6 +1201,7 @@ Không cần promotion error code trong v1.
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 - `POST /api/auth/password/forgot`
+- `POST /api/auth/password/otp/verify`
 - `POST /api/auth/password/reset`
 - `GET /api/auth/me`
 - `GET /api/categories`

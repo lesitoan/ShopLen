@@ -1,0 +1,100 @@
+import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
+import { env } from "@/config/envValidation.js";
+import { AppError } from "@/utils/appError.js";
+import type {
+  CustomerAccessTokenPayload,
+  CustomerRefreshTokenPayload,
+} from "@/types/clientAuth.type.js";
+
+function getAccessSecret(): Secret {
+  const secret = env.JWT_ACCESS_SECRET ?? env.JWT_SECRET;
+
+  if (!secret) {
+    throw new AppError(
+      "Thiếu cấu hình JWT access secret.",
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "JWT_ACCESS_SECRET or JWT_SECRET is missing",
+    );
+  }
+
+  return secret;
+}
+
+function getRefreshSecret(): Secret {
+  const secret = env.JWT_REFRESH_SECRET ?? env.JWT_SECRET;
+
+  if (!secret) {
+    throw new AppError(
+      "Thiếu cấu hình JWT refresh secret.",
+      500,
+      "INTERNAL_SERVER_ERROR",
+      "JWT_REFRESH_SECRET or JWT_SECRET is missing",
+    );
+  }
+
+  return secret;
+}
+
+export function signCustomerAccessToken(payload: CustomerAccessTokenPayload) {
+  return jwt.sign(payload, getAccessSecret(), {
+    expiresIn: env.JWT_ACCESS_EXPIRES_IN,
+  } as SignOptions);
+}
+
+export function signCustomerRefreshToken(payload: CustomerRefreshTokenPayload) {
+  return jwt.sign(payload, getRefreshSecret(), {
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+  } as SignOptions);
+}
+
+export function verifyCustomerAccessToken(token: string) {
+  let payload: string | jwt.JwtPayload;
+
+  try {
+    payload = jwt.verify(token, getAccessSecret());
+  } catch (error) {
+    throw new AppError(
+      "Token không hợp lệ hoặc đã hết hạn.",
+      401,
+      "UNAUTHORIZED",
+      error instanceof Error ? error.message : "Access token verify failed",
+    );
+  }
+
+  if (
+    typeof payload !== "object" ||
+    payload.tokenType !== "CUSTOMER" ||
+    typeof payload.sub !== "string" ||
+    typeof payload.email !== "string"
+  ) {
+    throw new AppError("Token không hợp lệ.", 401, "UNAUTHORIZED");
+  }
+
+  return payload as CustomerAccessTokenPayload;
+}
+
+export function verifyCustomerRefreshToken(token: string) {
+  let payload: string | jwt.JwtPayload;
+
+  try {
+    payload = jwt.verify(token, getRefreshSecret());
+  } catch (error) {
+    throw new AppError(
+      "Refresh token không hợp lệ hoặc đã hết hạn.",
+      401,
+      "REFRESH_TOKEN_INVALID",
+      error instanceof Error ? error.message : "Refresh token verify failed",
+    );
+  }
+
+  if (
+    typeof payload !== "object" ||
+    payload.tokenType !== "CUSTOMER_REFRESH" ||
+    typeof payload.sub !== "string"
+  ) {
+    throw new AppError("Refresh token không hợp lệ.", 401, "REFRESH_TOKEN_INVALID");
+  }
+
+  return payload as CustomerRefreshTokenPayload;
+}

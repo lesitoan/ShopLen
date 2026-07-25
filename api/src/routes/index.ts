@@ -4,6 +4,7 @@ import { adminOrderRoutes } from "@/routes/admin/adminOrderRoutes.js";
 import { uploadRoutes } from "@/routes/admin/uploadRoutes.js";
 import { authRoutes } from "@/routes/client/authRoutes.js";
 import { categoryRoutes } from "@/routes/client/categoryRoutes.js";
+import { customerRoutes } from "@/routes/client/customerRoutes.js";
 import { orderRoutes } from "@/routes/client/orderRoutes.js";
 import { paymentRoutes } from "@/routes/client/paymentRoutes.js";
 import { productRoutes } from "@/routes/client/productRoutes.js";
@@ -11,6 +12,7 @@ import { productRoutes } from "@/routes/client/productRoutes.js";
 export const routes = Router();
 
 routes.use("/auth", authRoutes);
+routes.use("/customers", customerRoutes);
 routes.use("/products", productRoutes);
 routes.use("/orders", orderRoutes);
 routes.use("/payments", paymentRoutes);

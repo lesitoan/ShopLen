@@ -70,3 +70,16 @@ export type ForgotPasswordResetFormData = {
   newPassword: string;
   confirmPassword: string;
 };
+
+export type ChangePasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+export type UpdateCustomerProfileRequest = {
+  fullName?: string;
+  phone?: string | null;
+  gender?: "MALE" | "FEMALE" | "OTHER";
+  birthday?: string | null;
+};

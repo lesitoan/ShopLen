@@ -1,61 +1,155 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { User, Phone, Mail, Calendar, CheckCircle2 } from "lucide-react";
+import { User, Phone, Mail, CheckCircle2 } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Radio from "@/components/ui/Radio";
-import { UserProfile, PersonalInfoFormData } from "../types";
+import DatePicker from "@/components/ui/DatePicker";
+import { toast } from "react-toastify";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { useUpdateCustomerProfileMutation } from "@/services/api/customerApi";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setCustomerProfile } from "@/store/slices/authSlice";
+import type {
+  CustomerSession,
+  UpdateCustomerProfileRequest,
+} from "@/types/auth.type";
+import EmptyState from "@/components/ui/EmptyState";
+import { PersonalInfoFormData } from "../types";
 
-interface PersonalInfoTabProps {
-  user: UserProfile;
-  onUpdateSuccess?: (updated: UserProfile) => void;
+type FormGender = PersonalInfoFormData["gender"];
+
+function mapFormGenderToApi(gender: FormGender): NonNullable<CustomerSession["gender"]> {
+  if (gender === "Nam") return "MALE";
+  if (gender === "Khác") return "OTHER";
+  return "FEMALE";
 }
 
-export default function PersonalInfoTab({
-  user,
-  onUpdateSuccess,
-}: PersonalInfoTabProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
+function normalizeDateToInputFormat(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  if (dateStr.includes("/")) {
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+  }
+  if (dateStr.includes("T")) {
+    return dateStr.split("T")[0];
+  }
+  return dateStr;
+}
+
+function buildChangedProfilePayload(
+  data: PersonalInfoFormData,
+  activeUser: CustomerSession,
+): UpdateCustomerProfileRequest {
+  const payload: UpdateCustomerProfileRequest = {};
+  const fullName = data.fullName.trim();
+  const phone = data.phone.trim() || null;
+  const gender = mapFormGenderToApi(data.gender);
+  const birthday = data.birthday.trim() || null;
+
+  if (fullName !== activeUser.fullName) {
+    payload.fullName = fullName;
+  }
+
+  if (phone !== (activeUser.phone ?? null)) {
+    payload.phone = phone;
+  }
+
+  if (gender !== (activeUser.gender ?? "OTHER")) {
+    payload.gender = gender;
+  }
+
+  const activeBirthdayNormalized = normalizeDateToInputFormat(activeUser.birthday);
+  if (birthday !== (activeBirthdayNormalized || null)) {
+    payload.birthday = birthday;
+  }
+
+  return payload;
+}
+
+export default function PersonalInfoTab() {
+  const dispatch = useAppDispatch();
+  const activeUser = useAppSelector((state) => state.auth.customer);
+
+  const [updateCustomerProfile, { isLoading: isSubmitting }] =
+    useUpdateCustomerProfileMutation();
+
+  const initialGender: "Nam" | "Nữ" | "Khác" =
+    activeUser?.gender === "MALE"
+      ? "Nam"
+      : activeUser?.gender === "FEMALE"
+        ? "Nữ"
+        : "Khác";
 
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<PersonalInfoFormData>({
     defaultValues: {
-      fullName: user.fullName,
-      phone: user.phone,
-      email: user.email,
-      gender: user.gender,
-      birthday: user.birthday,
+      fullName: activeUser?.fullName ?? "",
+      phone: activeUser?.phone ?? "",
+      email: activeUser?.email ?? "",
+      gender: initialGender,
+      birthday: normalizeDateToInputFormat(activeUser?.birthday),
     },
     mode: "onTouched",
   });
 
-  const onSubmit = (data: PersonalInfoFormData) => {
-    setIsSubmitting(true);
-    setSavedSuccess(false);
+  useEffect(() => {
+    if (activeUser) {
+      reset({
+        fullName: activeUser.fullName,
+        phone: activeUser.phone ?? "",
+        email: activeUser.email,
+        gender:
+          activeUser.gender === "MALE"
+            ? "Nam"
+            : activeUser.gender === "FEMALE"
+              ? "Nữ"
+              : "Khác",
+        birthday: normalizeDateToInputFormat(activeUser.birthday),
+      });
+    }
+  }, [activeUser, reset]);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSavedSuccess(true);
-      if (onUpdateSuccess) {
-        onUpdateSuccess({
-          ...user,
-          fullName: data.fullName,
-          phone: data.phone,
-          email: data.email,
-          gender: data.gender,
-          birthday: data.birthday,
-        });
+  const onSubmit = async (data: PersonalInfoFormData) => {
+    if (!activeUser) return;
+    try {
+      const payload = buildChangedProfilePayload(data, activeUser);
+
+      if (Object.keys(payload).length === 0) {
+        toast.info("Không có thông tin nào thay đổi.");
+        return;
       }
-      setTimeout(() => setSavedSuccess(false), 3000);
-    }, 700);
+
+      const updatedCustomer = await updateCustomerProfile(payload).unwrap();
+
+      if (updatedCustomer) {
+        dispatch(setCustomerProfile(updatedCustomer));
+      }
+      toast.success("Cập nhật thông tin cá nhân thành công!");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Cập nhật thông tin thất bại, vui lòng thử lại."),
+      );
+    }
   };
+
+  if (!activeUser) {
+    return (
+      <div className="bg-transparent border-0 p-0 sm:bg-surface sm:border sm:border-border sm:rounded-xl sm:p-8 flex items-center justify-center min-h-[350px] w-full">
+        <EmptyState title="Không có dữ liệu, thử lại sau" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-transparent border-0 p-0 sm:bg-surface sm:border sm:border-border sm:rounded-xl sm:p-6 flex flex-col gap-6 text-left">
@@ -67,13 +161,6 @@ export default function PersonalInfoTab({
           Quản lý thông tin hồ sơ của bạn để phục vụ việc giao nhận hàng nhanh chóng
         </p>
       </div>
-
-      {savedSuccess && (
-        <div className="p-3.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-[13px] font-semibold flex items-center gap-2 animate-in fade-in duration-200">
-          <CheckCircle2 size={16} />
-          <span>Cập nhật thông tin cá nhân thành công!</span>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 w-full">
         <div className="flex flex-col gap-1.5">
@@ -121,6 +208,7 @@ export default function PersonalInfoTab({
               {...register("email", { required: "Vui lòng nhập email" })}
               type="email"
               placeholder="Nhập email"
+              disabled
               error={!!errors.email}
               leftIcon={<Mail size={16} />}
             />
@@ -162,12 +250,25 @@ export default function PersonalInfoTab({
             <label className="text-[13px] font-bold text-text-primary">
               Ngày sinh
             </label>
-            <Input
-              {...register("birthday")}
-              type="text"
-              placeholder="DD/MM/YYYY"
-              leftIcon={<Calendar size={16} />}
+            <Controller
+              name="birthday"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  onValueChange={field.onChange}
+                  disableFutureDates={true}
+                  placeholder="Chọn ngày sinh (DD/MM/YYYY)"
+                  error={!!errors.birthday}
+                />
+              )}
             />
+            {errors.birthday && (
+              <span className="text-[11.5px] text-error font-medium">
+                {errors.birthday.message}
+              </span>
+            )}
           </div>
         </div>
 

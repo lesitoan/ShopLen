@@ -1,43 +1,44 @@
 import React from "react";
+import { AlertCircle } from "lucide-react";
 import Button from "./Button";
 
-interface EmptyStateProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+export interface EmptyStateProps {
+  icon?: React.ReactNode;
+  title?: string;
+  description?: string;
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
 }
 
 export default function EmptyState({
-  icon,
-  title,
+  icon = <AlertCircle size={32} />,
+  title = "Không có dữ liệu, thử lại sau",
   description,
   actionLabel,
   onAction,
   className = "",
 }: EmptyStateProps) {
   return (
-    <div className={`flex flex-col items-center justify-center text-center p-8 border border-dashed border-border rounded-2xl bg-white max-w-md mx-auto ${className}`}>
-      {/* Icon Wrapper */}
-      <div className="text-text-secondary/40 mb-4 p-4 rounded-full bg-background shrink-0">
+    <div
+      className={`flex flex-col items-center justify-center text-center p-8 border-0 rounded-2xl bg-surface max-w-md mx-auto w-full min-h-[220px] ${className}`}
+    >
+      <div className="text-text-secondary/40 mb-3 p-3.5 rounded-full bg-background shrink-0">
         {icon}
       </div>
 
-      {/* Title */}
-      <h3 className="text-[18px] font-semibold text-text-primary mb-2">
+      <h3 className="text-[15.5px] font-bold text-text-primary mb-1">
         {title}
       </h3>
 
-      {/* Description */}
-      <p className="text-[13px] text-text-secondary mb-6 max-w-xs leading-relaxed">
-        {description}
-      </p>
+      {description && (
+        <p className="text-[12.5px] text-text-secondary mb-4 max-w-xs leading-relaxed">
+          {description}
+        </p>
+      )}
 
-      {/* CTA Button */}
       {actionLabel && onAction && (
-        <Button variant="primary" size="md" onClick={onAction}>
+        <Button variant="outline" size="sm" onClick={onAction} className="mt-2 text-[13px] font-bold">
           {actionLabel}
         </Button>
       )}

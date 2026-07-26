@@ -28,6 +28,7 @@ Khi làm API hoặc chỉnh contract, ưu tiên file `api/docs/apiImplementation
 - Product options dùng một bảng `productOptions`; mỗi sản phẩm có 0-2 option, hiện chỉ `COLOR` và `SIZE`, values lưu `jsonb`.
 - Order item lưu `productSnapshot` bằng `jsonb` để đơn cũ không phụ thuộc product hiện tại.
 - Error response không có `details`; có `internalMessage?` chỉ ở dev/test.
+- API response uu tien tra du du lieu cho man hinh/case su dung hien tai, khong tra thua object lon. Mutation chi can xac nhan thi tra `success` + `message`; chi tra `data` khi FE can dung ngay hoac de tranh them request.
 - API v1 mount dưới `/api/v1`.
 - Trong `api/src`, dùng path alias `@/*` trỏ tới `src/*` cho mọi import nội bộ; tránh import tương đối dài như `../../utils/...`.
 - `routes/`, `controllers/`, `services/`, `dto/` tách nhánh `admin/` và `client/` khi domain có thể phân biệt theo trang quản trị và storefront.
@@ -55,8 +56,10 @@ api/           → backend, theo MVC (routes/controllers/services/models/dto/typ
 3. **Phân định rõ ràng 2 loại State trong FE**:
    - **Server State**: Do RTK Query quản lý hoàn toàn (tự động cache, tự động re-fetch).
    - **Client Local State**: Do Redux Slices (`src/store/slices/`) quản lý (`cartSlice` lưu LocalStorage qua Redux middleware, `authSlice` lưu thông tin user/token).
-4. **Quy tắc gọi trong Screen Component**:
-   - Các màn hình tại `src/screens/<ten-man>/` chỉ được import và sử dụng trực tiếp các Auto-Generated React Hooks sinh ra từ RTK Query (ví dụ: `useGetProductsQuery()`, `useCreateOrderMutation()`). Tuyệt đối không tự viết lệnh `fetch` hay `axios` trực tiếp trong UI components.
+4. **Quy tắc gọi API trong Component (Khai thác RTK Query trực tiếp tại Subcomponent)**:
+   - Component cha (`index.tsx` của từng screen) KHÔNG đứng ra tập trung gọi API thay cho tất cả component con rồi truyền handler callbacks xuống dưới qua props.
+   - Mỗi subcomponent/tab/modal con (ví dụ: `UserAvatarHeader.tsx`, `PersonalInfoTab.tsx`, `ChangePasswordTab.tsx`) phải tự import và thực thi trực tiếp các RTK Query Auto-Generated React Hooks mutation/query tương ứng (ví dụ: `useUpdateCustomerAvatarMutation()`, `useChangePasswordMutation()`) ngay bên trong component đó khi người dùng thực hiện hành động.
+   - Tuyệt đối không tự viết lệnh `fetch` hay `axios` trực tiếp trong UI components.
 
 ## Quy tắc bất biến (áp dụng mọi lúc, không cần mở references)
 

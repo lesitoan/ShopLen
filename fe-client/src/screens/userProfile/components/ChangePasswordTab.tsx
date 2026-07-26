@@ -2,17 +2,28 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import { toast } from "react-toastify";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { useChangePasswordMutation } from "@/services/api/customerApi";
+import { clearAuthTokens } from "@/services/authStorage";
+import { useAppDispatch } from "@/store/hooks";
+import { clearAuthState } from "@/store/slices/authSlice";
 import { ChangePasswordFormData } from "../types";
 
 export default function ChangePasswordTab() {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState(false);
+
+  const [changePassword, { isLoading: isSubmitting }] =
+    useChangePasswordMutation();
 
   const {
     register,
@@ -31,16 +42,27 @@ export default function ChangePasswordTab() {
 
   const newPasswordValue = watch("newPassword");
 
-  const onSubmit = (data: ChangePasswordFormData) => {
-    setIsSubmitting(true);
+  const onSubmit = async (data: ChangePasswordFormData) => {
     setSuccessMsg(false);
+    try {
+      await changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap();
 
-    setTimeout(() => {
-      setIsSubmitting(false);
       setSuccessMsg(true);
+      toast.success("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
       reset();
-      setTimeout(() => setSuccessMsg(false), 3500);
-    }, 700);
+
+      clearAuthTokens();
+      dispatch(clearAuthState());
+      router.push("/dang-nhap");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Đổi mật khẩu thất bại, vui lòng thử lại."),
+      );
+    }
   };
 
   return (

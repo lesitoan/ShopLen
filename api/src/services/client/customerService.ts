@@ -3,6 +3,7 @@ import type {
   ChangePasswordRequestDto,
   UpdateCustomerProfileRequestDto,
 } from "@/dto/client/authDto.js";
+import { cloudinaryService } from "@/services/cloudinaryService.js";
 import { toCustomerSession } from "@/services/client/authService.js";
 import { AppError } from "@/utils/appError.js";
 import { comparePassword, hashPassword } from "@/utils/hashPassword.js";
@@ -35,11 +36,36 @@ export const customerService = {
         phone: payload.phone === "" ? null : payload.phone,
         gender: payload.gender,
         birthday,
-        avatar: payload.avatar,
       },
     });
 
     return toCustomerSession(customer);
+  },
+
+  async updateAvatar(customerId: string, file?: Express.Multer.File) {
+    if (!file) {
+      throw new AppError("Vui lòng chọn ảnh avatar.", 400, "AVATAR_FILE_REQUIRED");
+    }
+
+    const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+
+    if (!customer || customer.status !== "ACTIVE") {
+      throw new AppError(
+        "Tài khoản không tồn tại hoặc đã bị khóa.",
+        403,
+        "CUSTOMER_LOCKED",
+      );
+    }
+
+    const uploadedImage = await cloudinaryService.uploadImageBuffer(
+      file,
+      "avatars",
+    );
+
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: { avatar: uploadedImage.url },
+    });
   },
 
   async changePassword(customerId: string, payload: ChangePasswordRequestDto) {

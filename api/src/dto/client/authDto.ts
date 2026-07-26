@@ -75,7 +75,6 @@ export const updateCustomerProfileDto = z.object({
     phone: z.string().trim().min(8).max(20).nullable().optional(),
     gender: z.enum(["MALE", "FEMALE", "OTHER"]).nullable().optional(),
     birthday: z.string().date().nullable().optional(),
-    avatar: z.string().url().nullable().optional(),
   }),
 });
 

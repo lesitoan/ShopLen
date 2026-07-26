@@ -5,6 +5,7 @@ import {
 } from "@/dto/client/authDto.js";
 import { customerController } from "@/controllers/client/customerController.js";
 import { customerAuthMiddleware } from "@/middlewares/authMiddleware.js";
+import { avatarUploadMiddleware } from "@/middlewares/uploadMiddleware.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 
@@ -16,6 +17,11 @@ customerRoutes.patch(
   "/me",
   validateMiddleware(updateCustomerProfileDto),
   asyncHandler(customerController.updateMe),
+);
+customerRoutes.patch(
+  "/me/avatar",
+  avatarUploadMiddleware.single("avatar"),
+  asyncHandler(customerController.updateAvatar),
 );
 customerRoutes.patch(
   "/me/password",

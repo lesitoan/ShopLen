@@ -20,6 +20,14 @@ export const customerController = {
     return sendSuccess(response, customer, "Cập nhật hồ sơ thành công.");
   },
 
+  async updateAvatar(request: Request, response: Response) {
+    await customerService.updateAvatar(
+      getCustomerId(request),
+      request.file,
+    );
+    return sendSuccess(response, null, "Cập nhật avatar thành công.");
+  },
+
   async changePassword(request: Request, response: Response) {
     const result = await customerService.changePassword(
       getCustomerId(request),

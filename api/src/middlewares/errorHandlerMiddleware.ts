@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import multer from "multer";
 import { MESSAGES } from "@/constants/messages.js";
 import { AppError } from "@/utils/appError.js";
 
@@ -8,6 +9,24 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
   response,
   _next,
 ) => {
+  if (error instanceof multer.MulterError) {
+    const message =
+      error.code === "LIMIT_FILE_SIZE"
+        ? "File avatar không được vượt quá 2MB."
+        : "File upload không hợp lệ.";
+
+    response.status(400).json({
+      success: false,
+      message,
+      errorCode: error.code,
+      internalMessage:
+        process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+          ? error.message
+          : undefined,
+    });
+    return;
+  }
+
   if (error instanceof AppError) {
     const payload: {
       success: false;

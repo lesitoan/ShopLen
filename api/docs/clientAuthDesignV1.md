@@ -513,18 +513,37 @@ Request:
   "fullName": "Nguyễn Thu Hà",
   "phone": null,
   "gender": "FEMALE",
-  "birthday": "2000-01-01",
-  "avatar": "https://..."
+  "birthday": "2000-01-01"
 }
 ```
 
 Rule:
 
 - `phone` optional và có thể set null/empty.
+- Avatar khong cap nhat qua endpoint nay; dung endpoint upload avatar rieng.
 - Không cho đổi email qua endpoint này trong V1.
 - Không cho client cập nhật `rewardPoints`, `totalSpent`, `totalOrders`, `status`, `isManualLogin`, `isGoogleLogin`, `googleAccountId`.
 
-### 5.12. Change or create password
+### 5.12. Update customer avatar
+
+`PATCH /api/v1/customers/me/avatar`
+
+Protected customer route.
+
+Request:
+
+- Content-Type: `multipart/form-data`
+- Field file: `avatar`
+- Allowed mime types: `image/jpeg`, `image/png`, `image/webp`
+- Max size: 2MB
+
+Behavior:
+
+- Upload avatar len Cloudinary trong folder `${CLOUDINARY_UPLOAD_FOLDER}/avatars`.
+- Cap nhat `customers.avatar` bang Cloudinary secure URL.
+- Response chi tra `success` va `message`; FE goi lai `/customers/me` hoac invalidate cache neu can profile moi.
+
+### 5.13. Change or create password
 
 `PATCH /api/v1/customers/me/password`
 

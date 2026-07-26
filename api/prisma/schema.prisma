@@ -130,28 +130,8 @@ model Customer {
   addresses           CustomerAddress[]
   orders              Order[]
   loyaltyTransactions LoyaltyTransaction[]
-  passwordResetOtps   PasswordResetOtp[]
 
   @@map("customers")
-}
-
-model PasswordResetOtp {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customerId String?   @map("customer_id") @db.Uuid
-  email      String    @db.VarChar(255)
-  otpHash    String    @map("otp_hash")
-  attempts   Int       @default(0)
-  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
-  verifiedAt DateTime? @map("verified_at") @db.Timestamptz(6)
-  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  customer Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
-
-  @@index([email, createdAt], map: "password_reset_otps_email_created_at_idx")
-  @@index([customerId], map: "password_reset_otps_customer_id_idx")
-  @@map("password_reset_otps")
 }
 
 model CustomerAddress {

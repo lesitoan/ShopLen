@@ -12,6 +12,8 @@ import type {
   ResetPasswordRequestDto,
   VerifyPasswordOtpRequestDto,
 } from "@/dto/client/authDto.js";
+import { emailService } from "@/services/emailService.js";
+import { passwordResetOtpService } from "@/services/client/passwordResetOtpService.js";
 import type { AuthData, CustomerSession } from "@/types/clientAuth.type.js";
 import { AppError } from "@/utils/appError.js";
 import { verifyGoogleIdToken } from "@/utils/googleAuth.js";
@@ -71,58 +73,17 @@ function generateOtpCode() {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
-function getOtpExpiresAt() {
-  return new Date(Date.now() + PASSWORD_OTP_EXPIRES_MINUTES * 60 * 1000);
-}
-
 function isDevMode() {
   return env.NODE_ENV === "development" || env.NODE_ENV === "test";
 }
 
-async function findLatestUsableOtp(email: string) {
-  return prisma.passwordResetOtp.findFirst({
-    where: {
-      email,
-      consumedAt: null,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-}
-
 async function assertOtpValid(email: string, otpCode: string, markVerified: boolean) {
-  const otpRecord = await findLatestUsableOtp(email);
-
-  if (!otpRecord) {
-    throw new AppError("Mã xác nhận không đúng.", 400, "OTP_INVALID");
-  }
-
-  if (otpRecord.expiresAt.getTime() < Date.now()) {
-    throw new AppError("Mã xác nhận đã hết hạn.", 400, "OTP_EXPIRED");
-  }
-
-  if (otpRecord.attempts >= PASSWORD_OTP_MAX_ATTEMPTS) {
-    throw new AppError("Mã xác nhận không đúng.", 400, "OTP_INVALID");
-  }
-
-  const isOtpValid = await comparePassword(otpCode, otpRecord.otpHash);
-
-  if (!isOtpValid) {
-    await prisma.passwordResetOtp.update({
-      where: { id: otpRecord.id },
-      data: { attempts: { increment: 1 } },
-    });
-
-    throw new AppError("Mã xác nhận không đúng.", 400, "OTP_INVALID");
-  }
-
-  if (markVerified && !otpRecord.verifiedAt) {
-    await prisma.passwordResetOtp.update({
-      where: { id: otpRecord.id },
-      data: { verifiedAt: new Date() },
-    });
-  }
-
-  return otpRecord;
+  return passwordResetOtpService.assertValid({
+    email,
+    otpCode,
+    maxAttempts: PASSWORD_OTP_MAX_ATTEMPTS,
+    markVerified,
+  });
 }
 
 function ensureCustomerActive(customer: Customer) {
@@ -326,23 +287,18 @@ export const authService = {
 
     const otpCode = generateOtpCode();
 
-    await prisma.$transaction([
-      prisma.passwordResetOtp.updateMany({
-        where: {
-          email: payload.email,
-          consumedAt: null,
-        },
-        data: { consumedAt: new Date() },
-      }),
-      prisma.passwordResetOtp.create({
-        data: {
-          customerId: customer.id,
-          email: payload.email,
-          otpHash: await hashPassword(otpCode),
-          expiresAt: getOtpExpiresAt(),
-        },
-      }),
-    ]);
+    await passwordResetOtpService.create({
+      customerId: customer.id,
+      email: payload.email,
+      otpCode,
+      ttlSeconds: PASSWORD_OTP_EXPIRES_MINUTES * 60,
+    });
+
+    await emailService.sendPasswordResetOtpEmail({
+      to: customer.email,
+      otpCode,
+      expiresInMinutes: PASSWORD_OTP_EXPIRES_MINUTES,
+    });
 
     if (isDevMode()) {
       return { devOtp: otpCode };
@@ -357,7 +313,7 @@ export const authService = {
   },
 
   async resetPassword(payload: ResetPasswordRequestDto) {
-    const otpRecord = await assertOtpValid(payload.email, payload.otpCode, false);
+    await assertOtpValid(payload.email, payload.otpCode, false);
     const customer = await prisma.customer.findUnique({
       where: { email: payload.email },
     });
@@ -366,22 +322,15 @@ export const authService = {
       throw new AppError("Mã xác nhận không đúng.", 400, "OTP_INVALID");
     }
 
-    await prisma.$transaction([
-      prisma.customer.update({
-        where: { id: customer.id },
-        data: {
-          passwordHash: await hashPassword(payload.newPassword),
-          isManualLogin: true,
-        },
-      }),
-      prisma.passwordResetOtp.update({
-        where: { id: otpRecord.id },
-        data: {
-          verifiedAt: otpRecord.verifiedAt ?? new Date(),
-          consumedAt: new Date(),
-        },
-      }),
-    ]);
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: {
+        passwordHash: await hashPassword(payload.newPassword),
+        isManualLogin: true,
+      },
+    });
+
+    await passwordResetOtpService.consume(payload.email);
 
     return { reset: true };
   },

@@ -404,6 +404,7 @@ Behavior:
 
 - Luôn trả message trung tính để không lộ email có tồn tại hay không.
 - Nếu customer tồn tại và có thể login manual, gửi OTP/reset token qua email.
+- OTP reset password luu trong Redis voi TTL 10 phut, key theo email; khong luu PostgreSQL.
 - Nếu customer chỉ có Google login, có thể vẫn gửi flow tạo mật khẩu nếu muốn cho phép đặt mật khẩu.
 
 Response:
@@ -431,6 +432,7 @@ Request:
 Behavior:
 
 - Verify OTP/reset token.
+- Doc OTP tu Redis, tang attempts khi nhap sai va giu nguyen TTL con lai.
 - OTP đúng thì trả success để FE chuyển sang form nhập mật khẩu mới.
 - Không đổi mật khẩu ở endpoint này.
 - Không auto login.
@@ -480,7 +482,7 @@ Behavior:
 - Hash password mới.
 - Set `isManualLogin = true`.
 - Set `passwordHash`.
-- Invalidate OTP/reset token.
+- Xoa Redis key OTP sau khi reset thanh cong.
 - Không auto login trong V1.
 
 Response:

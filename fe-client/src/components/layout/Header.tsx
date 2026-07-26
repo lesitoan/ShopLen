@@ -2,19 +2,28 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { checkIsLoggedIn, deleteCookie } from "@/utils/cookieUtils";
+import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearAuthState } from "@/store/slices/authSlice";
 import DesktopHeader from "./components/DesktopHeader";
 import MobileHeader from "./components/MobileHeader";
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const dispatch = useAppDispatch();
+  const customer = useAppSelector((state) => state.auth.customer);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const isLoggedIn = isMounted && Boolean(customer || hasAuthTokens());
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -30,12 +39,11 @@ export default function Header() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     document.body.style.overflow = "";
-    setIsLoggedIn(checkIsLoggedIn());
   }, [pathname]);
 
   const handleLogout = () => {
-    deleteCookie("isLogin");
-    setIsLoggedIn(false);
+    clearAuthTokens();
+    dispatch(clearAuthState());
     setIsMobileMenuOpen(false);
     router.push("/");
   };
@@ -48,6 +56,7 @@ export default function Header() {
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           handleLogout={handleLogout}
+          customer={customer}
         />
 
         <MobileHeader
@@ -56,6 +65,7 @@ export default function Header() {
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           mobileMenuRef={mobileMenuRef}
           handleLogout={handleLogout}
+          customer={customer}
         />
       </header>
     </div>

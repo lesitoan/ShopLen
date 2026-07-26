@@ -5,8 +5,14 @@ import { ChevronLeft, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import SocialLoginOptions from "./SocialLoginOptions";
-import { RegisterFormData, AuthViewMode } from "../types";
+import { RegisterFormData, AuthViewMode } from "@/types/auth.type";
+import { useLazyGetMeQuery, useRegisterMutation } from "@/services/api/authApi";
+import { saveAuthTokens } from "@/services/authStorage";
+import { useAppDispatch } from "@/store/hooks";
+import { setCustomerProfile } from "@/store/slices/authSlice";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 interface RegisterFormViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
@@ -18,9 +24,12 @@ export default function RegisterFormView({
   onSubmitSuccess,
 }: RegisterFormViewProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [registerCustomer, { isLoading: isRegistering }] =
+    useRegisterMutation();
+  const [getMe, { isFetching: isFetchingProfile }] = useLazyGetMeQuery();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -36,14 +45,20 @@ export default function RegisterFormView({
     mode: "onTouched",
   });
 
-  const onSubmit = (data: RegisterFormData) => {
-    setIsSubmitting(true);
-    console.log("Register form data:", data);
-    setTimeout(() => {
-      setIsSubmitting(false);
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      const tokens = await registerCustomer(data).unwrap();
+      saveAuthTokens(tokens);
+      const customer = await getMe().unwrap();
+      dispatch(setCustomerProfile(customer));
+      toast.success("Đăng ký tài khoản thành công.");
       if (onSubmitSuccess) onSubmitSuccess(data);
-      else router.push("/");
-    }, 600);
+      else router.push("/tai-khoan");
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Đăng ký thất bại, vui lòng thử lại."),
+      );
+    }
   };
 
   return (
@@ -173,14 +188,15 @@ export default function RegisterFormView({
           type="submit"
           variant="primary"
           size="md"
-          disabled={isSubmitting}
+          isLoading={isRegistering || isFetchingProfile}
+          loadingText="Đang tạo tài khoản..."
           className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
         >
-          {isSubmitting ? "Đang tạo tài khoản..." : "Đăng ký"}
+          Đăng ký
         </Button>
       </form>
 
-      <SocialLoginOptions onGoogleLogin={() => console.log("Google Login clicked")} />
+      <SocialLoginOptions />
     </div>
   );
 }

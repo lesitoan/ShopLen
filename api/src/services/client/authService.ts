@@ -47,7 +47,6 @@ export function toCustomerSession(customer: Customer): CustomerSession {
 
 function createAuthData(customer: Customer): AuthData {
   return {
-    customer: toCustomerSession(customer),
     accessToken: signCustomerAccessToken({
       sub: customer.id,
       tokenType: "CUSTOMER",

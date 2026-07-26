@@ -6,11 +6,13 @@ import Button from "@/components/ui/Button";
 interface MobileCartActionBarProps {
   total: number;
   isCheckoutDisabled: boolean;
+  onCheckoutClick: () => void;
 }
 
 export default function MobileCartActionBar({
   total,
   isCheckoutDisabled,
+  onCheckoutClick,
 }: MobileCartActionBarProps) {
   const formatPrice = (price: number) => {
     return price.toLocaleString("vi-VN") + "đ";
@@ -45,16 +47,16 @@ export default function MobileCartActionBar({
             Sản phẩm hết hàng
           </Button>
         ) : (
-          <Link href="/thanh-toan" className="flex-1">
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full py-2.5 text-[12.5px] font-bold rounded-md justify-center gap-1.5"
-            >
-              <span>Thanh toán</span>
-              <ArrowRight size={14} />
-            </Button>
-          </Link>
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            className="flex-1 py-2.5 text-[12.5px] font-bold rounded-md justify-center gap-1.5"
+            onClick={onCheckoutClick}
+          >
+            <span>Thanh toán</span>
+            <ArrowRight size={14} />
+          </Button>
         )}
       </div>
     </div>

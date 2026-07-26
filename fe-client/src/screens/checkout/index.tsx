@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import CheckoutBreadcrumbs from "./components/CheckoutBreadcrumbs";
@@ -9,6 +9,8 @@ import PaymentMethodSelector from "./components/PaymentMethodSelector";
 import OrderReviewItems from "./components/OrderReviewItems";
 import CheckoutSummary from "./components/CheckoutSummary";
 import MobileCheckoutActionBar from "./components/MobileCheckoutActionBar";
+import LoginRequiredModal from "@/components/modals/LoginRequiredModal";
+import { hasAuthTokens } from "@/services/authStorage";
 
 import { CheckoutFormData, CheckoutSummaryData } from "./types";
 import { INITIAL_CHECKOUT_ITEMS } from "./constants";
@@ -16,6 +18,7 @@ import { INITIAL_CHECKOUT_ITEMS } from "./constants";
 export default function CheckoutScreen() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAuthRequiredOpen, setIsAuthRequiredOpen] = useState(false);
 
   const {
     register,
@@ -50,7 +53,18 @@ export default function CheckoutScreen() {
     total,
   };
 
+  useEffect(() => {
+    if (!hasAuthTokens()) {
+      setIsAuthRequiredOpen(true);
+    }
+  }, []);
+
   const onSubmit = (data: CheckoutFormData) => {
+    if (!hasAuthTokens()) {
+      setIsAuthRequiredOpen(true);
+      return;
+    }
+
     setIsSubmitting(true);
     console.log("Order submission payload:", {
       shippingInfo: data,
@@ -108,6 +122,11 @@ export default function CheckoutScreen() {
           />
         </form>
       </div>
+
+      <LoginRequiredModal
+        isOpen={isAuthRequiredOpen}
+        onClose={() => setIsAuthRequiredOpen(false)}
+      />
     </main>
   );
 }

@@ -9,12 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
+    "@reduxjs/toolkit": "^2.12.0",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "photoswipe": "^5.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.82.0",
+    "react-redux": "^9.3.0",
+    "react-toastify": "^11.1.0",
     "swiper": "^14.0.5"
   },
   "devDependencies": {

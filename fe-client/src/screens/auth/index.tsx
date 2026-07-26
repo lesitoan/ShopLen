@@ -9,7 +9,7 @@ import RegisterFormView from "./components/RegisterFormView";
 import ForgotPasswordFormView from "./components/ForgotPasswordFormView";
 import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
 
-import { AuthViewMode } from "./types";
+import { AuthViewMode } from "@/types/auth.type";
 import { AUTH_SHARED_BG_IMAGE, AUTH_BRAND_NAME } from "./constants";
 
 interface AuthScreenProps {
@@ -22,7 +22,7 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
   return (
     <main className="h-screen w-full flex flex-col items-center py-8 px-4 bg-background select-none relative overflow-y-auto">
       {/* MOBILE FULLSCREEN WRAPPER WITH DARK BLURRED COVER BACKGROUND & BOTTOM SHEET */}
-      <div className="lg:hidden fixed inset-0 z-40 bg-black overflow-hidden flex flex-col justify-between">
+      <div className="md:hidden fixed inset-0 z-40 bg-black overflow-hidden flex flex-col justify-between">
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <Image
             src={AUTH_SHARED_BG_IMAGE}
@@ -86,7 +86,7 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
       </div>
 
       {/* DESKTOP SPLIT CONTAINER WITH FULL COVER LEFT BANNER */}
-      <div className="hidden lg:flex max-w-5xl w-full bg-surface border border-border rounded-3xl overflow-hidden flex-row items-stretch min-h-[560px] relative z-10 my-auto shrink-0">
+      <div className="hidden md:flex max-w-4xl lg:max-w-5xl w-full bg-surface border border-border rounded-3xl overflow-hidden flex-row items-stretch min-h-[500px] md:min-h-[560px] relative z-10 my-auto shrink-0">
         <div className="w-1/2 p-8 flex flex-col justify-between relative overflow-hidden border-r border-border/60">
           <Image
             src={AUTH_SHARED_BG_IMAGE}

@@ -6,8 +6,13 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
 import SocialLoginOptions from "./SocialLoginOptions";
-import { LoginFormData, AuthViewMode } from "../types";
-import { setCookie } from "@/utils/cookieUtils";
+import { LoginFormData, AuthViewMode } from "@/types/auth.type";
+import { useLazyGetMeQuery, useLoginMutation } from "@/services/api/authApi";
+import { saveAuthTokens } from "@/services/authStorage";
+import { useAppDispatch } from "@/store/hooks";
+import { setCustomerProfile } from "@/store/slices/authSlice";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { toast } from "react-toastify";
 
 import { useRouter } from "next/navigation";
 
@@ -21,8 +26,10 @@ export default function LoginFormView({
   onSubmitSuccess,
 }: LoginFormViewProps) {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
+  const [getMe, { isFetching: isFetchingProfile }] = useLazyGetMeQuery();
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -38,19 +45,26 @@ export default function LoginFormView({
     mode: "onTouched",
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    setIsSubmitting(true);
-    // Fake login: set cookie isLogin = true
-    setCookie("isLogin", "true", 7);
-
-    setTimeout(() => {
-      setIsSubmitting(false);
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      const tokens = await login({
+        email: data.email,
+        password: data.password,
+      }).unwrap();
+      saveAuthTokens(tokens);
+      const customer = await getMe().unwrap();
+      dispatch(setCustomerProfile(customer));
+      toast.success("Đăng nhập thành công.");
       if (onSubmitSuccess) {
         onSubmitSuccess(data);
       } else {
         router.push("/tai-khoan");
       }
-    }, 600);
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, "Đăng nhập thất bại, vui lòng thử lại."),
+      );
+    }
   };
 
   return (
@@ -170,7 +184,7 @@ export default function LoginFormView({
           type="submit"
           variant="primary"
           size="md"
-          isLoading={isSubmitting}
+          isLoading={isLoggingIn || isFetchingProfile}
           loadingText="Đang xử lý..."
           className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
         >
@@ -178,7 +192,7 @@ export default function LoginFormView({
         </Button>
       </form>
 
-      <SocialLoginOptions onGoogleLogin={() => console.log("Google Login clicked")} />
+      <SocialLoginOptions />
     </div>
   );
 }

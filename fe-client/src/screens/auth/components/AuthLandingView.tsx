@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import SocialLoginOptions from "./SocialLoginOptions";
-import { AuthViewMode } from "../types";
+import { AuthViewMode } from "@/types/auth.type";
 
 interface AuthLandingViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
@@ -49,7 +49,7 @@ export default function AuthLandingView({ onSwitchView }: AuthLandingViewProps) 
         </Button>
       </div>
 
-      <SocialLoginOptions onGoogleLogin={() => console.log("Google Login clicked")} />
+      <SocialLoginOptions />
     </div>
   );
 }

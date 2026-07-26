@@ -20,12 +20,14 @@ import SearchModal from "@/components/modals/SearchModal";
 import CartModal from "@/components/modals/CartModal";
 import UserMenuModal from "@/components/modals/UserMenuModal";
 import { CartItem, NAV_ITEMS, INITIAL_RECENT_SEARCHES, KEYWORD_SUGGESTIONS, INITIAL_CART_ITEMS } from "../constants";
+import type { CustomerSession } from "@/types/auth.type";
 
 interface DesktopHeaderProps {
   isLoggedIn: boolean;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleLogout: () => void;
+  customer: CustomerSession | null;
 }
 
 export default function DesktopHeader({
@@ -33,6 +35,7 @@ export default function DesktopHeader({
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   handleLogout,
+  customer,
 }: DesktopHeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -289,8 +292,8 @@ export default function DesktopHeader({
               title="Tài khoản cá nhân"
             >
               <Image
-                src="/logo.png"
-                alt="Nguyễn Thị Ngọc Kiều"
+                src={customer?.avatar || "/logo.png"}
+                alt={customer?.fullName || "Tài khoản cá nhân"}
                 fill
                 sizes="40px"
                 className="object-cover"
@@ -301,6 +304,15 @@ export default function DesktopHeader({
               onClose={() => setIsUserMenuOpen(false)}
               triggerRef={userMenuRef}
               onLogout={handleLogout}
+              user={
+                customer
+                  ? {
+                      fullName: customer.fullName,
+                      email: customer.email,
+                      avatar: customer.avatar || "/logo.png",
+                    }
+                  : undefined
+              }
             />
           </div>
         ) : (

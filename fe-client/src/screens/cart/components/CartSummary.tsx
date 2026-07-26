@@ -7,11 +7,13 @@ import { CartSummaryData } from "../types";
 interface CartSummaryProps {
   summary: CartSummaryData;
   isCheckoutDisabled: boolean;
+  onCheckoutClick: () => void;
 }
 
 export default function CartSummary({
   summary,
   isCheckoutDisabled,
+  onCheckoutClick,
 }: CartSummaryProps) {
   const formatPrice = (price: number) => {
     return price.toLocaleString("vi-VN") + "đ";
@@ -97,16 +99,16 @@ export default function CartSummary({
             Vui lòng xóa sản phẩm hết hàng
           </Button>
         ) : (
-          <Link href="/thanh-toan" className="w-full">
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full py-3.5 text-[14px] font-bold rounded-md justify-center gap-2"
-            >
-              <span>Tiến hành đặt hàng</span>
-              <ArrowRight size={16} />
-            </Button>
-          </Link>
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            className="w-full py-3.5 text-[14px] font-bold rounded-md justify-center gap-2"
+            onClick={onCheckoutClick}
+          >
+            <span>Tiến hành đặt hàng</span>
+            <ArrowRight size={16} />
+          </Button>
         )}
 
         <Link href="/san-pham" className="w-full">

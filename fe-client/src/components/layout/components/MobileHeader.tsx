@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ChevronDown, ChevronRight, LogIn, UserPlus, LogOut } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { NAV_ITEMS } from "../constants";
+import type { CustomerSession } from "@/types/auth.type";
 
 interface MobileHeaderProps {
   isLoggedIn: boolean;
@@ -14,6 +15,7 @@ interface MobileHeaderProps {
   setIsMobileMenuOpen: (val: boolean) => void;
   mobileMenuRef: React.RefObject<HTMLDivElement | null>;
   handleLogout: () => void;
+  customer: CustomerSession | null;
 }
 
 export default function MobileHeader({
@@ -22,6 +24,7 @@ export default function MobileHeader({
   setIsMobileMenuOpen,
   mobileMenuRef,
   handleLogout,
+  customer,
 }: MobileHeaderProps) {
   const [mounted, setMounted] = useState(false);
   const [renderMobileMenu, setRenderMobileMenu] = useState(false);
@@ -147,8 +150,8 @@ export default function MobileHeader({
               >
                 <div className="relative w-10 h-10 rounded-full overflow-hidden border border-primary/20 shrink-0 bg-surface">
                   <Image
-                    src="/logo.png"
-                    alt="Nguyễn Thị Ngọc Kiều"
+                    src={customer?.avatar || "/logo.png"}
+                    alt={customer?.fullName || "Tài khoản cá nhân"}
                     fill
                     sizes="40px"
                     className="object-cover"
@@ -156,10 +159,10 @@ export default function MobileHeader({
                 </div>
                 <div className="flex flex-col min-w-0 text-left flex-1">
                   <span className="text-[13.5px] font-bold text-text-primary truncate">
-                    Nguyễn Thị Ngọc Kiều
+                    {customer?.fullName || "Tài khoản cá nhân"}
                   </span>
                   <span className="text-[11.5px] text-text-secondary truncate">
-                    demo@gmail.com
+                    {customer?.email || ""}
                   </span>
                 </div>
                 <ChevronRight size={16} className="text-text-secondary shrink-0" />

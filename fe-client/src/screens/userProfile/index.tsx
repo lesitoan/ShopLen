@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ProfileSidebar from "./components/ProfileSidebar";
 import PersonalInfoTab from "./components/PersonalInfoTab";
@@ -9,28 +9,77 @@ import AddressTab from "./components/AddressTab";
 import ChangePasswordTab from "./components/ChangePasswordTab";
 import MobileProfileView from "./components/MobileProfileView";
 import { ProfileTab, UserProfile } from "./types";
-import { DEMO_USER, MOCK_ORDERS, MOCK_ADDRESSES } from "./constants";
-import { deleteCookie, checkIsLoggedIn } from "@/utils/cookieUtils";
+import { MOCK_ORDERS, MOCK_ADDRESSES } from "./constants";
+import { useGetMeQuery } from "@/services/api/authApi";
+import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { clearAuthState, setCustomerProfile } from "@/store/slices/authSlice";
+import UserProfileSkeleton from "@/components/skeletons/userProfile/UserProfileSkeleton";
 
 export default function UserProfileScreen() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const cachedCustomer = useAppSelector((state) => state.auth.customer);
+  const shouldFetchProfile = hasAuthTokens();
+  const { data: customer, isFetching, isError } = useGetMeQuery(undefined, {
+    skip: !shouldFetchProfile,
+  });
   const [activeTab, setActiveTab] = useState<ProfileTab>("PROFILE");
-  const [user, setUser] = useState<UserProfile>(DEMO_USER);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    if (!checkIsLoggedIn()) {
+    if (!shouldFetchProfile) {
       router.push("/dang-nhap");
     }
-  }, [router]);
+  }, [router, shouldFetchProfile]);
+
+  useEffect(() => {
+    if (customer) {
+      dispatch(setCustomerProfile(customer));
+    }
+  }, [customer, dispatch]);
+
+  useEffect(() => {
+    if (isError) {
+      clearAuthTokens();
+      dispatch(clearAuthState());
+      router.push("/dang-nhap");
+    }
+  }, [dispatch, isError, router]);
+
+  const profileUser = useMemo<UserProfile | null>(() => {
+    const profile = customer ?? cachedCustomer;
+
+    if (!profile) {
+      return null;
+    }
+
+    return {
+      id: profile.id,
+      fullName: profile.fullName,
+      email: profile.email,
+      phone: profile.phone ?? "",
+      gender:
+        profile.gender === "MALE"
+          ? "Nam"
+          : profile.gender === "FEMALE"
+            ? "Nữ"
+            : "Khác",
+      birthday: profile.birthday ?? "",
+      avatar: profile.avatar || "/logo.png",
+    };
+  }, [cachedCustomer, customer]);
 
   const handleLogout = () => {
-    deleteCookie("isLogin");
+    clearAuthTokens();
+    dispatch(clearAuthState());
     router.push("/");
   };
 
-  if (!isMounted) return null;
+  if (!isMounted || isFetching || !profileUser) {
+    return <UserProfileSkeleton />;
+  }
 
   return (
     <main className="flex-1 py-8 text-left">
@@ -38,7 +87,7 @@ export default function UserProfileScreen() {
         <div className="hidden md:grid grid-cols-12 gap-8 items-start">
           <div className="col-span-4 lg:col-span-3 sticky top-24">
             <ProfileSidebar
-              user={user}
+              user={profileUser}
               activeTab={activeTab}
               onTabChange={setActiveTab}
               onLogout={handleLogout}
@@ -47,7 +96,7 @@ export default function UserProfileScreen() {
 
           <div className="col-span-8 lg:col-span-9">
             {activeTab === "PROFILE" && (
-              <PersonalInfoTab user={user} onUpdateSuccess={setUser} />
+              <PersonalInfoTab user={profileUser} onUpdateSuccess={() => undefined} />
             )}
             {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
             {activeTab === "ADDRESSES" && (
@@ -59,13 +108,13 @@ export default function UserProfileScreen() {
 
         <div className="block md:hidden">
           <MobileProfileView
-            user={user}
+            user={profileUser}
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onLogout={handleLogout}
           >
             {activeTab === "PROFILE" && (
-              <PersonalInfoTab user={user} onUpdateSuccess={setUser} />
+              <PersonalInfoTab user={profileUser} onUpdateSuccess={() => undefined} />
             )}
             {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
             {activeTab === "ADDRESSES" && (

@@ -17,7 +17,6 @@ export type CustomerSession = {
 };
 
 export type AuthData = {
-  customer: CustomerSession;
   accessToken: string;
   refreshToken: string;
 };

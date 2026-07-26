@@ -1,95 +1,190 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { ChevronLeft, Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  ChevronLeft,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { ForgotPasswordStep1Data, ForgotPasswordStep2Data, AuthViewMode } from "../types";
+import {
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useVerifyPasswordOtpMutation,
+} from "@/services/api/authApi";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { toast } from "react-toastify";
+import type {
+  AuthViewMode,
+  ForgotPasswordEmailFormData,
+  ForgotPasswordResetFormData,
+} from "@/types/auth.type";
 
 interface ForgotPasswordFormViewProps {
   onSwitchView: (mode: AuthViewMode) => void;
 }
 
+type ForgotPasswordStep = 1 | 2 | 3;
+
 export default function ForgotPasswordFormView({
   onSwitchView,
 }: ForgotPasswordFormViewProps) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<ForgotPasswordStep>(1);
   const [sentEmail, setSentEmail] = useState("");
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
+  const [verifiedOtp, setVerifiedOtp] = useState("");
+  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [otpError, setOtpError] = useState("");
+  const [apiError, setApiError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [forgotPassword, { isLoading: isSending }] =
+    useForgotPasswordMutation();
+  const [verifyPasswordOtp, { isLoading: isVerifying }] =
+    useVerifyPasswordOtpMutation();
+  const [resetPassword, { isLoading: isResetting }] =
+    useResetPasswordMutation();
 
   const {
-    register: registerStep1,
-    handleSubmit: handleSubmitStep1,
-    formState: { errors: errorsStep1 },
-  } = useForm<ForgotPasswordStep1Data>({
+    register: registerEmail,
+    handleSubmit: handleSubmitEmail,
+    formState: { errors: emailErrors },
+  } = useForm<ForgotPasswordEmailFormData>({
     defaultValues: { email: "" },
     mode: "onTouched",
   });
 
   const {
-    register: registerStep2,
-    handleSubmit: handleSubmitStep2,
-    formState: { errors: errorsStep2 },
-  } = useForm<ForgotPasswordStep2Data>({
-    defaultValues: { email: "", otpCode: "", newPassword: "" },
+    register: registerReset,
+    handleSubmit: handleSubmitReset,
+    getValues,
+    formState: { errors: resetErrors },
+  } = useForm<ForgotPasswordResetFormData>({
+    defaultValues: { newPassword: "", confirmPassword: "" },
     mode: "onTouched",
   });
 
-  const onStep1Submit = (data: ForgotPasswordStep1Data) => {
-    setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
+  const fullOtp = otpDigits.join("");
+
+  const onEmailSubmit = async (data: ForgotPasswordEmailFormData) => {
+    setApiError(null);
+    setOtpError("");
+    setDevOtp(null);
+
+    try {
+      const response = await forgotPassword(data).unwrap();
       setSentEmail(data.email);
+      setDevOtp(response.devOtp ?? null);
+      setOtpDigits(Array(6).fill(""));
+      setVerifiedOtp("");
       setStep(2);
-    }, 600);
+      toast.success("Đã gửi mã OTP về email.");
+    } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        "Không thể gửi mã OTP, vui lòng thử lại.",
+      );
+      setApiError(message);
+      toast.error(message);
+    }
   };
 
   const handleOtpChange = (index: number, val: string) => {
     if (!/^[0-9]?$/.test(val)) return;
     setOtpError("");
+    setApiError(null);
+
     const updated = [...otpDigits];
     updated[index] = val;
     setOtpDigits(updated);
 
     if (val && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
-      if (nextInput) nextInput.focus();
+      document.getElementById(`otp-input-${index + 1}`)?.focus();
     }
   };
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-input-${index - 1}`);
-      if (prevInput) prevInput.focus();
+  const handleOtpKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === "Backspace" && !otpDigits[index] && index > 0) {
+      document.getElementById(`otp-input-${index - 1}`)?.focus();
     }
   };
 
-  const onStep2Submit = (data: ForgotPasswordStep2Data) => {
-    const fullOtp = otpDigits.join("");
+  const onVerifyOtp = async () => {
     if (fullOtp.length < 6) {
-      setOtpError("Vui lòng nhập đủ 6 chữ số mã xác nhận");
+      const message = "Vui lòng nhập đủ 6 chữ số mã xác nhận";
+      setOtpError(message);
+      toast.error(message);
       return;
     }
 
-    setIsResetting(true);
-    console.log("Password reset payload:", {
-      email: sentEmail,
-      otpCode: fullOtp,
-      newPassword: data.newPassword,
-    });
+    setApiError(null);
+    setOtpError("");
 
-    setTimeout(() => {
-      setIsResetting(false);
+    try {
+      await verifyPasswordOtp({
+        email: sentEmail,
+        otpCode: fullOtp,
+      }).unwrap();
+      setVerifiedOtp(fullOtp);
+      setStep(3);
+      toast.success("Xác minh OTP thành công.");
+    } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        "Mã OTP không hợp lệ, vui lòng thử lại.",
+      );
+      setApiError(message);
+      toast.error(message);
+    }
+  };
+
+  const onResetSubmit = async (data: ForgotPasswordResetFormData) => {
+    setApiError(null);
+
+    try {
+      await resetPassword({
+        email: sentEmail,
+        otpCode: verifiedOtp,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap();
       setIsSuccess(true);
-      setTimeout(() => {
-        onSwitchView("LOGIN");
-      }, 1500);
-    }, 800);
+      toast.success("Khôi phục mật khẩu thành công.");
+      window.setTimeout(() => onSwitchView("LOGIN"), 1500);
+    } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        "Không thể đổi mật khẩu, vui lòng thử lại.",
+      );
+      setApiError(message);
+      toast.error(message);
+    }
+  };
+
+  const handleBack = () => {
+    setApiError(null);
+    setOtpError("");
+
+    if (step === 3) {
+      setStep(2);
+      return;
+    }
+
+    if (step === 2) {
+      setStep(1);
+      return;
+    }
+
+    onSwitchView("LOGIN");
   };
 
   return (
@@ -97,11 +192,11 @@ export default function ForgotPasswordFormView({
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={() => (step === 2 ? setStep(1) : onSwitchView("LOGIN"))}
+          onClick={handleBack}
           className="p-1.5 -ml-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-surface transition-colors flex items-center gap-1 text-[13px] font-medium"
         >
           <ChevronLeft size={18} />
-          <span>{step === 2 ? "Quay lại nhập mail" : "Quay lại đăng nhập"}</span>
+          <span>{step === 1 ? "Quay lại đăng nhập" : "Quay lại"}</span>
         </button>
 
         <Link
@@ -119,7 +214,9 @@ export default function ForgotPasswordFormView({
         <p className="text-[12.5px] text-text-secondary mt-1">
           {step === 1
             ? "Nhập email đã đăng ký để nhận mã OTP khôi phục 6 số"
-            : `Đã gửi mã xác nhận 6 số về email: ${sentEmail}`}
+            : step === 2
+              ? `Đã gửi mã xác nhận 6 số về email: ${sentEmail}`
+              : "Nhập mật khẩu mới cho tài khoản của bạn"}
         </p>
       </div>
 
@@ -133,45 +230,60 @@ export default function ForgotPasswordFormView({
             Đang chuyển hướng sang màn hình đăng nhập...
           </p>
         </div>
-      ) : step === 1 ? (
-        <form onSubmit={handleSubmitStep1(onStep1Submit)} className="flex flex-col gap-4 mt-2">
+      ) : null}
+
+      {!isSuccess && step === 1 ? (
+        <form
+          onSubmit={handleSubmitEmail(onEmailSubmit)}
+          className="flex flex-col gap-4 mt-2"
+        >
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-text-primary">
               Địa chỉ email đăng ký
             </label>
             <Input
-              {...registerStep1("email", {
+              {...registerEmail("email", {
                 required: "Vui lòng nhập địa chỉ email",
                 pattern: {
                   value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Email không hợp lệ (ví dụ: example@gmail.com)",
+                  message: "Email không hợp lệ",
                 },
               })}
               type="email"
               placeholder="Nhập email của bạn"
-              error={!!errorsStep1.email}
+              error={!!emailErrors.email}
               leftIcon={<Mail size={16} />}
             />
-            {errorsStep1.email && (
+            {emailErrors.email ? (
               <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
                 <AlertCircle size={13} />
-                <span>{errorsStep1.email.message}</span>
+                <span>{emailErrors.email.message}</span>
               </div>
-            )}
+            ) : null}
           </div>
+
+          {apiError ? (
+            <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
+              <AlertCircle size={13} />
+              <span>{apiError}</span>
+            </div>
+          ) : null}
 
           <Button
             type="submit"
             variant="primary"
             size="md"
-            disabled={isSending}
+            isLoading={isSending}
+            loadingText="Đang gửi mã..."
             className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
           >
-            {isSending ? "Đang gửi mã..." : "Gửi mã 6 số về email"}
+            Gửi mã 6 số về email
           </Button>
         </form>
-      ) : (
-        <form onSubmit={handleSubmitStep2(onStep2Submit)} className="flex flex-col gap-4">
+      ) : null}
+
+      {!isSuccess && step === 2 ? (
+        <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label className="text-[13px] font-bold text-text-primary flex items-center justify-between">
               <span>Mã xác thực OTP (6 chữ số)</span>
@@ -190,29 +302,57 @@ export default function ForgotPasswordFormView({
                   key={index}
                   id={`otp-input-${index}`}
                   type="text"
+                  inputMode="numeric"
                   maxLength={1}
                   value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  onChange={(event) =>
+                    handleOtpChange(index, event.target.value)
+                  }
+                  onKeyDown={(event) => handleOtpKeyDown(index, event)}
                   className="w-11 h-12 text-center text-[18px] font-bold text-text-primary bg-surface border border-border rounded-xl focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all"
                 />
               ))}
             </div>
 
-            {otpError && (
+            {devOtp ? (
+              <p className="text-[11.5px] text-text-secondary">
+                Mã test dev: {devOtp}
+              </p>
+            ) : null}
+
+            {otpError || apiError ? (
               <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
                 <AlertCircle size={13} />
-                <span>{otpError}</span>
+                <span>{otpError || apiError}</span>
               </div>
-            )}
+            ) : null}
           </div>
 
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            isLoading={isVerifying}
+            loadingText="Đang xác minh..."
+            className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
+            onClick={onVerifyOtp}
+          >
+            Xác minh OTP
+          </Button>
+        </div>
+      ) : null}
+
+      {!isSuccess && step === 3 ? (
+        <form
+          onSubmit={handleSubmitReset(onResetSubmit)}
+          className="flex flex-col gap-4"
+        >
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-text-primary">
               Mật khẩu mới
             </label>
             <Input
-              {...registerStep2("newPassword", {
+              {...registerReset("newPassword", {
                 required: "Vui lòng nhập mật khẩu mới",
                 minLength: {
                   value: 6,
@@ -220,8 +360,8 @@ export default function ForgotPasswordFormView({
                 },
               })}
               type={showPassword ? "text" : "password"}
-              placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
-              error={!!errorsStep2.newPassword}
+              placeholder="Nhập mật khẩu mới"
+              error={!!resetErrors.newPassword}
               leftIcon={<Lock size={16} />}
               rightIcon={
                 <button
@@ -234,25 +374,69 @@ export default function ForgotPasswordFormView({
                 </button>
               }
             />
-            {errorsStep2.newPassword && (
+            {resetErrors.newPassword ? (
               <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
                 <AlertCircle size={13} />
-                <span>{errorsStep2.newPassword.message}</span>
+                <span>{resetErrors.newPassword.message}</span>
               </div>
-            )}
+            ) : null}
           </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-bold text-text-primary">
+              Xác nhận mật khẩu mới
+            </label>
+            <Input
+              {...registerReset("confirmPassword", {
+                required: "Vui lòng nhập lại mật khẩu mới",
+                validate: (value) =>
+                  value === getValues("newPassword") ||
+                  "Mật khẩu xác nhận không trùng khớp",
+              })}
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Nhập lại mật khẩu mới"
+              error={!!resetErrors.confirmPassword}
+              leftIcon={<Lock size={16} />}
+              rightIcon={
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="text-text-secondary hover:text-text-primary transition-colors focus:outline-none p-1"
+                  aria-label={
+                    showConfirmPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                  }
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+            />
+            {resetErrors.confirmPassword ? (
+              <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
+                <AlertCircle size={13} />
+                <span>{resetErrors.confirmPassword.message}</span>
+              </div>
+            ) : null}
+          </div>
+
+          {apiError ? (
+            <div className="flex items-center gap-1 text-[11.5px] text-error font-medium">
+              <AlertCircle size={13} />
+              <span>{apiError}</span>
+            </div>
+          ) : null}
 
           <Button
             type="submit"
             variant="primary"
             size="md"
-            disabled={isResetting}
+            isLoading={isResetting}
+            loadingText="Đang xử lý..."
             className="w-full py-3 text-[14px] font-bold rounded-xl justify-center mt-2"
           >
-            {isResetting ? "Đang xử lý..." : "Khôi phục mật khẩu"}
+            Khôi phục mật khẩu
           </Button>
         </form>
-      )}
+      ) : null}
     </div>
   );
 }

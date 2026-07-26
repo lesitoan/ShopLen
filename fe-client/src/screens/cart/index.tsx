@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import CartBreadcrumbs from "./components/CartBreadcrumbs";
 import FreeshipProgressBar from "./components/FreeshipProgressBar";
 import CartItemList from "./components/CartItemList";
@@ -9,6 +10,8 @@ import CartSummary from "./components/CartSummary";
 import CartEmptyState from "./components/CartEmptyState";
 import CartRelatedProducts from "./components/CartRelatedProducts";
 import MobileCartActionBar from "./components/MobileCartActionBar";
+import LoginRequiredModal from "@/components/modals/LoginRequiredModal";
+import { hasAuthTokens } from "@/services/authStorage";
 
 import { CartItem, Voucher, CartSummaryData } from "./types";
 import {
@@ -20,9 +23,11 @@ import {
 } from "./constants";
 
 export default function CartScreen() {
+  const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART_ITEMS);
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [usePoints, setUsePoints] = useState(false);
+  const [isAuthRequiredOpen, setIsAuthRequiredOpen] = useState(false);
 
   const handleQtyChange = (id: number, delta: number) => {
     setCartItems((prev) =>
@@ -67,6 +72,15 @@ export default function CartScreen() {
   };
 
   const hasOutOfStockItem = cartItems.some((item) => !item.isAvailable || item.stock <= 0);
+
+  const handleCheckoutClick = () => {
+    if (!hasAuthTokens()) {
+      setIsAuthRequiredOpen(true);
+      return;
+    }
+
+    router.push("/thanh-toan");
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -113,6 +127,7 @@ export default function CartScreen() {
             <CartSummary
               summary={summaryData}
               isCheckoutDisabled={hasOutOfStockItem}
+              onCheckoutClick={handleCheckoutClick}
             />
           </div>
         </div>
@@ -123,6 +138,12 @@ export default function CartScreen() {
       <MobileCartActionBar
         total={total}
         isCheckoutDisabled={hasOutOfStockItem}
+        onCheckoutClick={handleCheckoutClick}
+      />
+
+      <LoginRequiredModal
+        isOpen={isAuthRequiredOpen}
+        onClose={() => setIsAuthRequiredOpen(false)}
       />
     </main>
   );

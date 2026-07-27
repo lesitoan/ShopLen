@@ -1,51 +1,152 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { CATEGORIES } from "../constants";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import CategoryGridSkeleton from "@/components/skeletons/home/CategoryGridSkeleton";
+import { useGetCategoriesQuery, Category } from "@/services/api/categoryApi";
+
+const ITEMS_PER_PAGE = 6;
 
 export default function CategoryGrid() {
+  const { data: apiCategories = [], isLoading, isError, refetch } = useGetCategoriesQuery();
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const activeSlideRef = useRef<HTMLDivElement | null>(null);
+  const [containerHeight, setContainerHeight] = useState<number | undefined>(undefined);
+
+  // Phân chia danh mục thành các trang (mỗi trang tối đa 6 item)
+  const categoryPages: Category[][] = [];
+  for (let i = 0; i < apiCategories.length; i += ITEMS_PER_PAGE) {
+    categoryPages.push(apiCategories.slice(i, i + ITEMS_PER_PAGE));
+  }
+
+  const totalPages = categoryPages.length;
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
+
+  // Cập nhật chiều cao container co giãn linh hoạt theo số lượng item của trang hiện tại
+  useEffect(() => {
+    const updateHeight = () => {
+      if (activeSlideRef.current) {
+        setContainerHeight(activeSlideRef.current.offsetHeight);
+      }
+    };
+
+    updateHeight();
+
+    const timer = setTimeout(updateHeight, 50);
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, [currentPage, apiCategories, isLoading]);
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-16">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 flex flex-col justify-between">
-          <div>
-            <h2 className="text-[20px] md:text-[22px] font-bold text-text-primary mb-2 leading-tight">
-              DANH MỤC SẢN PHẨM
-            </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-8 flex flex-col justify-start items-start overflow-hidden w-full">
+          <div className="w-full">
+            <div className="flex items-center justify-between gap-4 mb-2">
+              <h2 className="text-[20px] md:text-[22px] font-bold text-text-primary leading-tight">
+                DANH MỤC SẢN PHẨM
+              </h2>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={currentPage === 0}
+                    onClick={handlePrevPage}
+                    className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-text-primary hover:bg-primary-light hover:text-secondary hover:border-primary/50 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-primary disabled:hover:border-border"
+                    title="Trang trước"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={currentPage >= totalPages - 1}
+                    onClick={handleNextPage}
+                    className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-text-primary hover:bg-primary-light hover:text-secondary hover:border-primary/50 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-text-primary disabled:hover:border-border"
+                    title="Trang tiếp theo"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <p className="text-[12px] md:text-[13px] text-text-secondary leading-relaxed mb-6">
               Khám phá các danh mục sản phẩm len handmade được yêu thích tại Tiệm Len Nhà Kiều.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {CATEGORIES.map((category) => (
-              <Link
-                key={category.id}
-                href={`/san-pham?category=${category.slug}`}
-                className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg hover:border-primary transition-all duration-300 cursor-pointer group"
+          <div
+            className="w-full overflow-hidden transition-[height] duration-500 ease-in-out"
+            style={{ height: containerHeight ? `${containerHeight}px` : "auto" }}
+          >
+            {isLoading ? (
+              <CategoryGridSkeleton />
+            ) : isError || apiCategories.length === 0 ? (
+              <div className="min-h-[220px] border-0 bg-transparent flex items-center justify-center w-full">
+                <EmptyState
+                  title="Không có dữ liệu, thử lại sau"
+                  actionLabel="Tải lại"
+                  onAction={() => refetch()}
+                />
+              </div>
+            ) : (
+              <div
+                className="flex items-start transition-transform duration-500 ease-in-out w-full"
+                style={{ transform: `translateX(-${currentPage * 100}%)` }}
               >
-                <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-background border border-border transition-transform duration-300 group-hover:scale-105">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                {categoryPages.map((pageItems, pageIdx) => (
+                  <div
+                    key={pageIdx}
+                    ref={pageIdx === currentPage ? activeSlideRef : null}
+                    className="w-full shrink-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-start content-start"
+                  >
+                    {pageItems.map((category: Category) => (
+                      <Link
+                        key={category.id}
+                        href={`/san-pham?category=${category.slug}`}
+                        className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg hover:border-primary transition-all duration-300 cursor-pointer group h-auto"
+                      >
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-background border border-border transition-transform duration-300 group-hover:scale-105">
+                          <img
+                            src={category.image || "/logo.png"}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
 
-                <div className="flex flex-col">
-                  <span className="text-[12px] font-bold text-text-primary tracking-wide transition-colors group-hover:text-secondary line-clamp-1">
-                    {category.name}
-                  </span>
-                  <span className="text-[10px] text-text-secondary group-hover:text-secondary font-medium transition-colors inline-flex items-center gap-1 mt-1">
-                    <span>Xem ngay</span>
-                    <ArrowRight size={10} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </Link>
-            ))}
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-[12px] font-bold text-text-primary tracking-wide transition-colors group-hover:text-secondary line-clamp-1">
+                            {category.name}
+                          </span>
+                          <span className="text-[10px] text-text-secondary group-hover:text-secondary font-medium transition-colors inline-flex items-center gap-1 mt-1">
+                            <span>Xem ngay</span>
+                            <ArrowRight
+                              size={10}
+                              className="transition-transform duration-300 group-hover:translate-x-1"
+                            />
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

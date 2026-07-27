@@ -1,32 +1,15 @@
 import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
+import type {
+  CustomerAddress,
+  CreateCustomerAddressRequest,
+  UpdateCustomerAddressRequest,
+} from "@/types/customerAddress.type";
 
-export interface CustomerAddress {
-  id: string;
-  fullName: string;
-  phone: string;
-  provinceName: string;
-  districtName?: string | null;
-  wardName?: string | null;
-  addressLine: string;
-  isDefault: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface CreateCustomerAddressRequest {
-  fullName: string;
-  phone: string;
-  provinceName: string;
-  addressLine: string;
-  districtName?: string;
-  wardName?: string;
-  isDefault?: boolean;
-}
-
-export interface UpdateCustomerAddressRequest {
-  id: string;
-  isDefault: boolean;
-}
+export type {
+  CustomerAddress,
+  CreateCustomerAddressRequest,
+  UpdateCustomerAddressRequest,
+};
 
 export const customerAddressApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

@@ -641,3 +641,94 @@ Không cần Google client secret cho flow FE gửi Google ID token lên API.
 10. Tạo helper tạo, lưu, verify và invalidate OTP reset password.
 11. Mount route dưới `/api/v1/auth`.
 12. Bảo vệ `/api/v1/customers/me` và `/api/v1/orders` bằng customer auth middleware.
+
+### 5.14. List customer addresses
+
+`GET /api/v1/addresses`
+
+Protected customer route.
+
+Behavior:
+
+- Lay danh sach dia chi cua customer dang dang nhap.
+- Sap xep dia chi default len dau, sau do theo `createdAt` moi nhat.
+- Response tra `success`, `message`, va `data`.
+
+Response data item:
+
+```json
+{
+  "id": "uuid",
+  "fullName": "Nguyen Thu Ha",
+  "phone": "0901234567",
+  "provinceName": "Ho Chi Minh",
+  "districtName": "Quan 1",
+  "wardName": "Phuong Ben Nghe",
+  "addressLine": "Toa nha, so nha, ten duong, phuong/xa",
+  "isDefault": true,
+  "createdAt": "2026-07-27T00:00:00.000Z",
+  "updatedAt": "2026-07-27T00:00:00.000Z"
+}
+```
+
+### 5.15. Create customer address
+
+`POST /api/v1/addresses`
+
+Protected customer route.
+
+Request:
+
+```json
+{
+  "fullName": "Nguyen Thu Ha",
+  "phone": "0901234567",
+  "provinceName": "Ho Chi Minh",
+  "addressLine": "Toa nha, so nha, ten duong, phuong/xa",
+  "districtName": "Quan 1",
+  "wardName": "Phuong Ben Nghe",
+  "isDefault": true
+}
+```
+
+Required fields: `fullName`, `phone`, `provinceName`, `addressLine`.
+
+Behavior:
+
+- Dia chi dau tien tu dong la default.
+- Neu `isDefault = true`, cac dia chi cu cua customer se bi set `isDefault = false`.
+- Response chi tra `success` va `message`.
+
+### 5.16. Update customer address
+
+`PATCH /api/v1/addresses/:id`
+
+Protected customer route.
+
+V1 request chi cho cap nhat `isDefault`:
+
+```json
+{
+  "isDefault": true
+}
+```
+
+Behavior:
+
+- Chi cap nhat dia chi thuoc customer dang dang nhap.
+- Hien tai chi cho update `isDefault`; sau nay co the mo rong them cac field dia chi khac tren cung endpoint nay.
+- Neu `isDefault = true`, cac dia chi cu cua customer se bi set `isDefault = false`.
+- Neu dia chi khong ton tai hoac khong thuoc customer, tra `CUSTOMER_ADDRESS_NOT_FOUND`.
+- Response chi tra `success` va `message`.
+
+### 5.17. Delete customer address
+
+`DELETE /api/v1/addresses/:id`
+
+Protected customer route.
+
+Behavior:
+
+- Chi xoa dia chi thuoc customer dang dang nhap.
+- Neu dia chi khong ton tai hoac khong thuoc customer, tra `CUSTOMER_ADDRESS_NOT_FOUND`.
+- Response chi tra `success` va `message`.

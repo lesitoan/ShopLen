@@ -29,10 +29,10 @@ export const customerController = {
   },
 
   async changePassword(request: Request, response: Response) {
-    const result = await customerService.changePassword(
+    await customerService.changePassword(
       getCustomerId(request),
       request.body,
     );
-    return sendSuccess(response, result, "Cập nhật mật khẩu thành công.");
+    return sendSuccess(response, null, "Cập nhật mật khẩu thành công.");
   },
 };

@@ -109,7 +109,5 @@ export const customerService = {
         isManualLogin: true,
       },
     });
-
-    return { changed: true };
   },
 };

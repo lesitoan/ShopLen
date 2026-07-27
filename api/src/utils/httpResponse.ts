@@ -8,7 +8,7 @@ export function sendSuccess<TData>(
   return response.json({
     success: true,
     message,
-    data,
+    ...(data !== undefined && data !== null && data ? { data } : {}),
   });
 }
 

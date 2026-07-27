@@ -8,6 +8,8 @@ import OrderHistoryTab from "./components/OrderHistoryTab";
 import AddressTab from "./components/addressTab/AddressTab";
 import ChangePasswordTab from "./components/ChangePasswordTab";
 import MobileProfileView from "./components/MobileProfileView";
+import Modal from "@/components/ui/Modal";
+import useModal from "@/hooks/useModal";
 import { ProfileTab } from "./types";
 import { MOCK_ORDERS, TAB_SLUG_MAP, SLUG_TO_TAB_MAP } from "./constants";
 import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
@@ -21,6 +23,12 @@ export default function UserProfileScreen() {
   const dispatch = useAppDispatch();
   const customer = useAppSelector((state) => state.auth.customer);
   const isAuthenticated = hasAuthTokens();
+
+  const {
+    isOpen: isLogoutModalOpen,
+    openModal: openLogoutModal,
+    closeModal: closeLogoutModal,
+  } = useModal();
 
   const tabParam = searchParams.get("tab");
   const initialTab: ProfileTab =
@@ -54,9 +62,10 @@ export default function UserProfileScreen() {
     }
   };
 
-  const handleLogout = () => {
+  const handleConfirmLogout = () => {
     clearAuthTokens();
     dispatch(clearAuthState());
+    closeLogoutModal();
     router.push("/");
   };
 
@@ -72,7 +81,7 @@ export default function UserProfileScreen() {
             <ProfileSidebar
               activeTab={activeTab}
               onTabChange={handleTabChange}
-              onLogout={handleLogout}
+              onLogout={openLogoutModal}
             />
           </div>
 
@@ -89,7 +98,7 @@ export default function UserProfileScreen() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             onBackToMenu={() => router.push("/tai-khoan", { scroll: false })}
-            onLogout={handleLogout}
+            onLogout={openLogoutModal}
           >
             {activeTab === "PROFILE" && <PersonalInfoTab />}
             {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
@@ -98,6 +107,17 @@ export default function UserProfileScreen() {
           </MobileProfileView>
         </div>
       </div>
+
+      <Modal
+        isOpen={isLogoutModalOpen}
+        onClose={closeLogoutModal}
+        title="Xác nhận đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?"
+        onConfirm={handleConfirmLogout}
+        confirmLabel="Đăng xuất"
+        cancelLabel="Hủy"
+        isDestructive={true}
+      />
     </main>
   );
 }

@@ -7,6 +7,8 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuthState } from "@/store/slices/authSlice";
 import DesktopHeader from "./components/DesktopHeader";
 import MobileHeader from "./components/MobileHeader";
+import Modal from "@/components/ui/Modal";
+import useModal from "@/hooks/useModal";
 
 export default function Header() {
   const pathname = usePathname();
@@ -16,6 +18,12 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const isLoggedIn = isMounted && Boolean(customer || hasAuthTokens());
+
+  const {
+    isOpen: isLogoutModalOpen,
+    openModal: openLogoutModal,
+    closeModal: closeLogoutModal,
+  } = useModal();
 
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -41,10 +49,11 @@ export default function Header() {
     document.body.style.overflow = "";
   }, [pathname]);
 
-  const handleLogout = () => {
+  const handleConfirmLogout = () => {
     clearAuthTokens();
     dispatch(clearAuthState());
     setIsMobileMenuOpen(false);
+    closeLogoutModal();
     router.push("/");
   };
 
@@ -55,7 +64,7 @@ export default function Header() {
           isLoggedIn={isLoggedIn}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
-          handleLogout={handleLogout}
+          handleLogout={openLogoutModal}
           customer={customer}
         />
 
@@ -64,10 +73,21 @@ export default function Header() {
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           mobileMenuRef={mobileMenuRef}
-          handleLogout={handleLogout}
+          handleLogout={openLogoutModal}
           customer={customer}
         />
       </header>
+
+      <Modal
+        isOpen={isLogoutModalOpen}
+        onClose={closeLogoutModal}
+        title="Xác nhận đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi tài khoản không?"
+        onConfirm={handleConfirmLogout}
+        confirmLabel="Đăng xuất"
+        cancelLabel="Hủy"
+        isDestructive={true}
+      />
     </div>
   );
 }

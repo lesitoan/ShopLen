@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProfileSidebar from "./components/ProfileSidebar";
 import PersonalInfoTab from "./components/PersonalInfoTab";
 import OrderHistoryTab from "./components/OrderHistoryTab";
-import AddressTab from "./components/AddressTab";
+import AddressTab from "./components/addressTab/AddressTab";
 import ChangePasswordTab from "./components/ChangePasswordTab";
 import MobileProfileView from "./components/MobileProfileView";
 import { ProfileTab } from "./types";
-import { MOCK_ORDERS, MOCK_ADDRESSES } from "./constants";
+import { MOCK_ORDERS, TAB_SLUG_MAP, SLUG_TO_TAB_MAP } from "./constants";
 import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuthState } from "@/store/slices/authSlice";
@@ -17,10 +17,18 @@ import UserProfileSkeleton from "@/components/skeletons/userProfile/UserProfileS
 
 export default function UserProfileScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const customer = useAppSelector((state) => state.auth.customer);
   const isAuthenticated = hasAuthTokens();
-  const [activeTab, setActiveTab] = useState<ProfileTab>("PROFILE");
+
+  const tabParam = searchParams.get("tab");
+  const initialTab: ProfileTab =
+    tabParam && SLUG_TO_TAB_MAP[tabParam]
+      ? SLUG_TO_TAB_MAP[tabParam]
+      : "PROFILE";
+
+  const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -29,6 +37,22 @@ export default function UserProfileScreen() {
       router.push("/dang-nhap");
     }
   }, [router, isAuthenticated]);
+
+  useEffect(() => {
+    if (tabParam && SLUG_TO_TAB_MAP[tabParam]) {
+      setActiveTab(SLUG_TO_TAB_MAP[tabParam]);
+    } else if (!tabParam) {
+      setActiveTab("PROFILE");
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (newTab: ProfileTab) => {
+    setActiveTab(newTab);
+    const slug = TAB_SLUG_MAP[newTab];
+    if (slug) {
+      router.push(`/tai-khoan?tab=${slug}`, { scroll: false });
+    }
+  };
 
   const handleLogout = () => {
     clearAuthTokens();
@@ -47,7 +71,7 @@ export default function UserProfileScreen() {
           <div className="col-span-4 lg:col-span-3 sticky top-24">
             <ProfileSidebar
               activeTab={activeTab}
-              onTabChange={setActiveTab}
+              onTabChange={handleTabChange}
               onLogout={handleLogout}
             />
           </div>
@@ -55,9 +79,7 @@ export default function UserProfileScreen() {
           <div className="col-span-8 lg:col-span-9">
             {activeTab === "PROFILE" && <PersonalInfoTab />}
             {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
-            {activeTab === "ADDRESSES" && (
-              <AddressTab addresses={MOCK_ADDRESSES} />
-            )}
+            {activeTab === "ADDRESSES" && <AddressTab />}
             {activeTab === "CHANGE_PASSWORD" && <ChangePasswordTab />}
           </div>
         </div>
@@ -65,14 +87,13 @@ export default function UserProfileScreen() {
         <div className="block md:hidden">
           <MobileProfileView
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
+            onBackToMenu={() => router.push("/tai-khoan", { scroll: false })}
             onLogout={handleLogout}
           >
             {activeTab === "PROFILE" && <PersonalInfoTab />}
             {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
-            {activeTab === "ADDRESSES" && (
-              <AddressTab addresses={MOCK_ADDRESSES} />
-            )}
+            {activeTab === "ADDRESSES" && <AddressTab />}
             {activeTab === "CHANGE_PASSWORD" && <ChangePasswordTab />}
           </MobileProfileView>
         </div>

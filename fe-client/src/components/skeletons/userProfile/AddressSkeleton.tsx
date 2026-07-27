@@ -3,13 +3,16 @@ import Skeleton from "../Skeleton";
 
 export default function AddressSkeleton() {
   return (
-    <div className="bg-surface border border-border rounded-xl p-6 space-y-6">
+    <div className="bg-transparent border-0 p-0 sm:bg-surface sm:border sm:border-border sm:rounded-xl sm:p-6 space-y-6 text-left">
       <div className="flex justify-between items-center">
-        <Skeleton className="w-40 h-6 rounded-md" />
-        <Skeleton className="w-36 h-9 rounded-md" />
+        <div className="space-y-1">
+          <Skeleton className="w-40 h-6 rounded-md" />
+          <Skeleton className="w-64 h-4 rounded-md" />
+        </div>
+        <Skeleton className="w-36 h-9 rounded-md shrink-0" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-4">
         {Array.from({ length: 2 }).map((_, i) => (
           <div
             key={i}
@@ -17,13 +20,13 @@ export default function AddressSkeleton() {
           >
             <div className="flex items-center justify-between">
               <Skeleton className="w-28 h-5 rounded" />
-              <Skeleton className="w-20 h-5 rounded-full" />
+              <Skeleton className="w-16 h-5 rounded-md" />
             </div>
             <Skeleton className="w-36 h-4 rounded" />
             <Skeleton className="w-full h-4 rounded" />
-            <div className="flex gap-2 pt-2">
-              <Skeleton className="w-16 h-8 rounded-md" />
-              <Skeleton className="w-16 h-8 rounded-md" />
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
+              <Skeleton className="w-28 h-7 rounded-md" />
+              <Skeleton className="w-8 h-7 rounded-md" />
             </div>
           </div>
         ))}

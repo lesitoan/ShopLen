@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useSearchParams } from "next/navigation";
 import { User, ShoppingBag, MapPin, KeyRound, LogOut, ChevronRight, ArrowLeft } from "lucide-react";
 import UserAvatarHeader from "./UserAvatarHeader";
 import { useAppSelector } from "@/store/hooks";
-import type { CustomerSession } from "@/types/auth.type";
 import { ProfileTab } from "../types";
 
 interface MobileProfileViewProps {
   activeTab: ProfileTab;
   onTabChange: (tab: ProfileTab) => void;
+  onBackToMenu: () => void;
   onLogout: () => void;
   children: React.ReactNode;
 }
@@ -17,11 +18,14 @@ interface MobileProfileViewProps {
 export default function MobileProfileView({
   activeTab,
   onTabChange,
+  onBackToMenu,
   onLogout,
   children,
 }: MobileProfileViewProps) {
+  const searchParams = useSearchParams();
   const activeUser = useAppSelector((state) => state.auth.customer);
-  const [selectedMobileTab, setSelectedMobileTab] = useState<ProfileTab | null>(null);
+
+  const hasTabParam = searchParams.has("tab");
 
   const menuList: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
     { id: "PROFILE", label: "Thông tin cá nhân", icon: <User size={18} /> },
@@ -30,10 +34,7 @@ export default function MobileProfileView({
     { id: "CHANGE_PASSWORD", label: "Đổi mật khẩu", icon: <KeyRound size={18} /> },
   ];
 
-  const handleSelectTab = (tabId: ProfileTab) => {
-    onTabChange(tabId);
-    setSelectedMobileTab(tabId);
-  };
+  const currentTabItem = menuList.find((m) => m.id === activeTab);
 
   const mobileSubtitle = activeUser
     ? `${activeUser.phone ?? ""}${activeUser.phone && activeUser.email ? " • " : ""}${activeUser.email}`
@@ -41,19 +42,23 @@ export default function MobileProfileView({
 
   return (
     <div className="flex flex-col gap-5 w-full text-left md:hidden">
-      {selectedMobileTab ? (
-        <div className="flex items-center gap-3 pb-2 border-b border-border/60">
-          <button
-            type="button"
-            onClick={() => setSelectedMobileTab(null)}
-            className="p-1.5 -ml-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-surface"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <span className="text-[16px] font-bold text-text-primary">
-            {menuList.find((m) => m.id === selectedMobileTab)?.label}
-          </span>
-        </div>
+      {hasTabParam ? (
+        <>
+          <div className="flex items-center gap-3 pb-2 border-b border-border/60">
+            <button
+              type="button"
+              onClick={onBackToMenu}
+              className="p-1.5 -ml-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-surface"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <span className="text-[16px] font-bold text-text-primary">
+              {currentTabItem?.label ?? "Thông tin cá nhân"}
+            </span>
+          </div>
+
+          <div className="w-full">{children}</div>
+        </>
       ) : (
         <>
           <div className="bg-surface border border-border rounded-xl p-4">
@@ -69,7 +74,7 @@ export default function MobileProfileView({
               <button
                 key={item.id}
                 type="button"
-                onClick={() => handleSelectTab(item.id)}
+                onClick={() => onTabChange(item.id)}
                 className="flex items-center justify-between p-3.5 rounded-lg hover:bg-background transition-colors text-[14px] font-semibold text-text-primary"
               >
                 <div className="flex items-center gap-3">
@@ -98,8 +103,6 @@ export default function MobileProfileView({
           </div>
         </>
       )}
-
-      {selectedMobileTab && <div className="w-full">{children}</div>}
     </div>
   );
 }

@@ -1,4 +1,18 @@
-import { UserProfile, OrderSummary, AddressItem } from "./types";
+import { UserProfile, OrderSummary, AddressItem, ProfileTab } from "./types";
+
+export const TAB_SLUG_MAP: Record<ProfileTab, string> = {
+  PROFILE: "thong-tin",
+  ORDERS: "don-hang",
+  ADDRESSES: "dia-chi",
+  CHANGE_PASSWORD: "doi-mat-khau",
+};
+
+export const SLUG_TO_TAB_MAP: Record<string, ProfileTab> = {
+  "thong-tin": "PROFILE",
+  "don-hang": "ORDERS",
+  "dia-chi": "ADDRESSES",
+  "doi-mat-khau": "CHANGE_PASSWORD",
+};
 
 export const DEMO_USER: UserProfile = {
   id: "USR-2026-8888",

@@ -4,7 +4,7 @@ import { AlertCircle, User, Phone, Mail, MapPin, FileText } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import { CheckoutFormData } from "../types";
-import { PROVINCE_OPTIONS } from "../constants";
+import { PROVINCE_OPTIONS } from "@/constants/location";
 
 interface ShippingFormProps {
   register: UseFormRegister<CheckoutFormData>;

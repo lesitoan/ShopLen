@@ -1297,3 +1297,98 @@ Không cần promotion error code trong v1.
 9. Admin orders.
 10. Dashboard cơ bản.
 11. Customer profile/orders/address.
+
+### Client categories public update
+
+`GET /api/v1/categories`
+
+Public endpoint, khong can auth.
+
+Dung cho:
+
+- Trang chu: hien thi danh muc co anh.
+- Trang san pham: hien thi bo loc loai san pham.
+
+Khong phan trang. Chi tra category `ACTIVE`.
+
+Sort:
+
+1. `displayOrder` tang dan.
+2. `name` tang dan.
+
+Response `data[]`:
+
+```ts
+type PublicCategory = {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  image?: string | null;
+  displayOrder: number;
+};
+```
+
+Khong tra `status`, `createdAt`, `updatedAt`.
+
+### Client product list API update
+
+`GET /api/v1/products`
+
+Public endpoint, khong can auth.
+
+Query params:
+
+- `page`: number, default `1`, min `1`.
+- `limit`: number, default `12`, min `1`, max `60`.
+- `sort`: `NEWEST` | `PRICE_ASC` | `PRICE_DESC` | `BEST_SELLING`, default `NEWEST`.
+- `categoryId`: UUID category.
+- `categorySlug`: slug category.
+- `search`: tim theo `name`, `code`, `shortDescription`.
+- `highlightType`: `HOT_PRODUCT` | `TODAY_DEAL` | `HOT_TIKTOK`.
+- `minPrice`: number, filter theo gia hien thi `salePrice ?? originalPrice`.
+- `maxPrice`: number, filter theo gia hien thi `salePrice ?? originalPrice`.
+
+Rules:
+
+- Chi tra product `ACTIVE` va `deletedAt = null`.
+- Khong tra field SEO/detail HTML trong list.
+- Thumbnail lay tu `productImages.isThumbnail = true`.
+
+Response:
+
+```ts
+type ProductListResponse = {
+  items: Array<{
+    id: string;
+    code: string;
+    name: string;
+    slug: string;
+    shortDescription?: string | null;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+    thumbnail: {
+      id: string;
+      url: string;
+      altText?: string | null;
+    } | null;
+    originalPrice: number;
+    salePrice?: number | null;
+    price: number;
+    stockQuantity: number;
+    soldCount: number;
+    highlightType?: "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK" | null;
+    highlightLabel?: string | null;
+  }>;
+  pagination: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+};
+```

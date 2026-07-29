@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, ProductOptionType } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
 import type { ProductListQueryDto } from "@/dto/client/productDto.js";
 
@@ -87,18 +87,10 @@ function buildWhere(query: ProductListQueryDto): Prisma.ProductWhereInput {
       deletedAt: null,
     },
   ];
+  const categoryIds = query.categoryIds ?? [];
 
-  if (query.categoryId) {
-    andFilters.push({ categoryId: query.categoryId });
-  }
-
-  if (query.categorySlug) {
-    andFilters.push({
-      category: {
-        slug: query.categorySlug,
-        status: "ACTIVE",
-      },
-    });
+  if (categoryIds.length > 0) {
+    andFilters.push({ categoryId: { in: [...new Set(categoryIds)] } });
   }
 
   if (query.search) {
@@ -108,6 +100,23 @@ function buildWhere(query: ProductListQueryDto): Prisma.ProductWhereInput {
         { code: { contains: query.search, mode: "insensitive" } },
         { shortDescription: { contains: query.search, mode: "insensitive" } },
       ],
+    });
+  }
+
+  if (query.colorCodes && query.colorCodes.length > 0) {
+    const colorCodes = [...new Set(query.colorCodes)];
+
+    andFilters.push({
+      options: {
+        some: {
+          optionType: ProductOptionType.COLOR,
+          OR: colorCodes.map((colorCode) => ({
+            values: {
+              array_contains: [{ code: colorCode }],
+            },
+          })),
+        },
+      },
     });
   }
 

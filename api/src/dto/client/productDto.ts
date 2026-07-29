@@ -1,5 +1,36 @@
 import { z } from "zod";
 
+function parseListQueryValue(value: unknown) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const rawValues = Array.isArray(value) ? value : [value];
+
+  return rawValues
+    .flatMap((item) => String(item).split(","))
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+const categoryIdsQueryDto = z.preprocess(
+  parseListQueryValue,
+  z.array(z.string().uuid()).optional(),
+);
+
+const colorCodesQueryDto = z.preprocess(
+  parseListQueryValue,
+  z
+    .array(
+      z
+        .string()
+        .trim()
+        .transform((value) => value.toUpperCase())
+        .pipe(z.string().regex(/^[A-Z0-9_]+$/)),
+    )
+    .optional(),
+);
+
 export const productListQueryDto = z.object({
   query: z
     .object({
@@ -8,9 +39,9 @@ export const productListQueryDto = z.object({
       sort: z
         .enum(["NEWEST", "PRICE_ASC", "PRICE_DESC", "BEST_SELLING"])
         .default("NEWEST"),
-      categoryId: z.string().uuid().optional(),
-      categorySlug: z.string().trim().min(1).max(180).optional(),
+      categoryIds: categoryIdsQueryDto,
       search: z.string().trim().min(1).max(120).optional(),
+      colorCodes: colorCodesQueryDto,
       highlightType: z
         .enum(["HOT_PRODUCT", "TODAY_DEAL", "HOT_TIKTOK"])
         .optional(),

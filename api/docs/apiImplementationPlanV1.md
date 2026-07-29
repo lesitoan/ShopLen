@@ -1343,9 +1343,9 @@ Query params:
 - `page`: number, default `1`, min `1`.
 - `limit`: number, default `12`, min `1`, max `60`.
 - `sort`: `NEWEST` | `PRICE_ASC` | `PRICE_DESC` | `BEST_SELLING`, default `NEWEST`.
-- `categoryId`: UUID category.
-- `categorySlug`: slug category.
+- `categoryIds`: danh sach UUID category, ho tro dang comma `id1,id2` hoac repeated query `categoryIds=id1&categoryIds=id2`.
 - `search`: tim theo `name`, `code`, `shortDescription`.
+- `colorCodes`: danh sach code mau, ho tro dang comma `RED,GREEN` hoac repeated query `colorCodes=RED&colorCodes=GREEN`.
 - `highlightType`: `HOT_PRODUCT` | `TODAY_DEAL` | `HOT_TIKTOK`.
 - `minPrice`: number, filter theo gia hien thi `salePrice ?? originalPrice`.
 - `maxPrice`: number, filter theo gia hien thi `salePrice ?? originalPrice`.
@@ -1353,6 +1353,8 @@ Query params:
 Rules:
 
 - Chi tra product `ACTIVE` va `deletedAt = null`.
+- Loc danh muc chi dung `categoryIds`; neu loc 1 danh muc van truyen 1 id trong `categoryIds`.
+- Loc mau dung `colorCodes` theo `productOptions.optionType = COLOR` va `values[].code`; khong loc theo label hien thi.
 - Khong tra field SEO/detail HTML trong list.
 - Thumbnail lay tu `productImages.isThumbnail = true`.
 

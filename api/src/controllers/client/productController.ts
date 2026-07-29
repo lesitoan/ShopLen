@@ -10,8 +10,10 @@ export const productController = {
     );
     return sendSuccess(response, products);
   },
-  async getProductDetail(request: Request, response: Response) {
-    const product = await productService.getProductDetail(request.params.id);
+  async getProductDetailBySlug(request: Request, response: Response) {
+    const product = await productService.getProductDetailBySlug(
+      request.params.slug,
+    );
     return sendSuccess(response, product);
   },
 };

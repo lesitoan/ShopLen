@@ -60,6 +60,12 @@ export const productListQueryDto = z.object({
     ),
 });
 
+export const productSlugParamDto = z.object({
+  params: z.object({
+    slug: z.string().trim().min(1).max(220),
+  }),
+});
+
 export type ProductListQueryDto = z.infer<
   typeof productListQueryDto
 >["query"];

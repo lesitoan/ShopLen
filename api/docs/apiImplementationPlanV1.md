@@ -1394,3 +1394,57 @@ type ProductListResponse = {
   };
 };
 ```
+
+### Client product detail API update
+
+`GET /api/v1/products/:slug`
+
+Public endpoint, khong can auth.
+
+Rules:
+
+- Lay product theo `slug`.
+- Chi tra product `ACTIVE` va `deletedAt = null`.
+- Neu khong tim thay tra 404 `PRODUCT_NOT_FOUND`.
+- Detail duoc phep tra `descriptionHtml`, `careInstructionHtml`, tat ca anh va product options de FE render man chi tiet.
+
+Response `data`:
+
+```ts
+type ProductDetailResponse = {
+  id: string;
+  code: string;
+  name: string;
+  slug: string;
+  shortDescription?: string | null;
+  descriptionHtml?: string | null;
+  careInstructionHtml?: string | null;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  images: Array<{
+    id: string;
+    url: string;
+    altText?: string | null;
+    displayOrder: number;
+    isThumbnail: boolean;
+  }>;
+  options: Array<{
+    id: string;
+    optionType: "COLOR" | "SIZE";
+    name: string;
+    displayOrder: number;
+    values: unknown;
+  }>;
+  originalPrice: number;
+  salePrice?: number | null;
+  price: number;
+  stockQuantity: number;
+  soldCount: number;
+  highlightType?: "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK" | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+};
+```

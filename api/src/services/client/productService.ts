@@ -1,6 +1,7 @@
 import { Prisma, ProductOptionType } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
 import type { ProductListQueryDto } from "@/dto/client/productDto.js";
+import { AppError } from "@/utils/appError.js";
 
 type ProductSort = ProductListQueryDto["sort"];
 
@@ -76,7 +77,32 @@ function formatProductListItem(
     price: product.salePrice ?? product.originalPrice,
     stockQuantity: product.stockQuantity,
     soldCount: product.soldCount,
-    highlightType: product.highlightType
+    highlightType: product.highlightType,
+  };
+}
+
+function formatProductDetail(
+  product: NonNullable<Awaited<ReturnType<typeof findProductBySlug>>>,
+) {
+  return {
+    id: product.id,
+    code: product.code,
+    name: product.name,
+    slug: product.slug,
+    shortDescription: product.shortDescription,
+    descriptionHtml: product.descriptionHtml,
+    careInstructionHtml: product.careInstructionHtml,
+    category: product.category,
+    images: product.images,
+    options: product.options,
+    originalPrice: product.originalPrice,
+    salePrice: product.salePrice,
+    price: product.salePrice ?? product.originalPrice,
+    stockQuantity: product.stockQuantity,
+    soldCount: product.soldCount,
+    highlightType: product.highlightType,
+    metaTitle: product.metaTitle,
+    metaDescription: product.metaDescription,
   };
 }
 
@@ -176,6 +202,59 @@ function findProducts(args: {
   });
 }
 
+function findProductBySlug(slug: string) {
+  return prisma.product.findFirst({
+    where: {
+      slug,
+      status: "ACTIVE",
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      slug: true,
+      shortDescription: true,
+      descriptionHtml: true,
+      careInstructionHtml: true,
+      originalPrice: true,
+      salePrice: true,
+      stockQuantity: true,
+      soldCount: true,
+      highlightType: true,
+      metaTitle: true,
+      metaDescription: true,
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      images: {
+        orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+          displayOrder: true,
+          isThumbnail: true,
+        },
+      },
+      options: {
+        orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          optionType: true,
+          name: true,
+          displayOrder: true,
+          values: true,
+        },
+      },
+    },
+  });
+}
+
 export const productService = {
   async listProducts(query: ProductListQueryDto) {
     const page = query.page;
@@ -205,7 +284,17 @@ export const productService = {
     };
   },
 
-  async getProductDetail(productId: string) {
-    return { productId };
+  async getProductDetailBySlug(slug: string) {
+    const product = await findProductBySlug(slug);
+
+    if (!product) {
+      throw new AppError(
+        "Sản phẩm không tồn tại.",
+        404,
+        "PRODUCT_NOT_FOUND",
+      );
+    }
+
+    return formatProductDetail(product);
   },
 };

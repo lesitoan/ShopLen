@@ -80,7 +80,7 @@ export default function ProductCard({
 
         <button
           onClick={handleWishlistClick}
-          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200 z-10"
+          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200 z-2"
         >
           <Heart
             size={16}

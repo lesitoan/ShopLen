@@ -35,8 +35,8 @@ export interface ProductListParams {
   page?: number;
   limit?: number;
   sort?: "NEWEST" | "PRICE_ASC" | "PRICE_DESC" | "BEST_SELLING";
-  categoryId?: string;
-  categorySlug?: string;
+  categoryIds?: string[];
+  colorCodes?: string[];
   search?: string;
   highlightType?: "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK";
   minPrice?: number;

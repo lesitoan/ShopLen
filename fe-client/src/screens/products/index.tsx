@@ -1,151 +1,47 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useState } from "react";
 import Link from "next/link";
 import { SlidersHorizontal } from "lucide-react";
 import ProductCard from "@/components/product/ProductCard";
-import Button from "@/components/ui/Button";
 import Select from "@/components/ui/Select";
 import Pagination from "@/components/ui/Pagination";
+import EmptyState from "@/components/ui/EmptyState";
+import ProductGridSkeleton from "@/components/skeletons/product/ProductGridSkeleton";
 
-import { CATALOG_PRODUCTS } from "./constants";
 import FilterContent from "./components/FilterContent";
 import FilterModal from "./components/FilterModal";
 import useStickySidebar from "./hooks/useStickySidebar";
+import { useProductFilters } from "./hooks/useProductFilters";
+import { useGetProductsQuery, ProductItem } from "@/services/api/productApi";
 
 const SORT_OPTIONS = [
-  { value: "best_seller", label: "Bán chạy nhất" },
-  { value: "newest", label: "Mới nhất" },
-  { value: "price_asc", label: "Giá: Thấp đến Cao" },
-  { value: "price_desc", label: "Giá: Cao đến Thấp" },
+  { value: "BEST_SELLING", label: "Bán chạy nhất" },
+  { value: "NEWEST", label: "Mới nhất" },
+  { value: "PRICE_ASC", label: "Giá: Thấp đến Cao" },
+  { value: "PRICE_DESC", label: "Giá: Cao đến Thấp" },
   { value: "discount", label: "Khuyến mãi tốt nhất" },
 ];
 
 export default function ProductsScreen() {
-  const searchParams = useSearchParams();
   const { sidebarRef, style: sidebarStyle } = useStickySidebar();
+  const { filters, queryParams, hasActiveFilters, actions } = useProductFilters();
 
-  const [search, setSearch] = useState("");
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(300000);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortOption, setSortOption] = useState("best_seller");
-  const [currentPage, setCurrentPage] = useState(1);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  useEffect(() => {
-    const searchParam = searchParams.get("search") || "";
-    const categoryParam = searchParams.get("category") || "";
-    const sortParam = searchParams.get("sort") || "";
+  const { data: apiResponse, isLoading, isFetching, isError, refetch } = useGetProductsQuery(queryParams);
 
-    if (searchParam) {
-      setSearch(searchParam);
-    }
-    if (categoryParam) {
-      setSelectedCategories([categoryParam]);
-    }
-    if (sortParam) {
-      setSortOption(sortParam);
-    }
-  }, [searchParams]);
+  const products = apiResponse?.items || [];
+  const pagination = apiResponse?.pagination;
+  const totalItems = pagination?.totalItems ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
 
-  const toggleCategory = (slug: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(slug) ? prev.filter((c) => c !== slug) : [...prev, slug]
-    );
-    setCurrentPage(1);
+  const handleClearAll = () => {
+    actions.clearAllFilters();
   };
 
-  const toggleColor = (name: string) => {
-    setSelectedColors((prev) =>
-      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
-    );
-    setCurrentPage(1);
-  };
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-    setCurrentPage(1);
-  };
-
-  const clearAllFilters = () => {
-    setSearch("");
-    setMinPrice(0);
-    setMaxPrice(300000);
-    setSelectedCategories([]);
-    setSelectedColors([]);
-    setSelectedTags([]);
-    setCurrentPage(1);
-  };
-
-  const hasActiveFilters =
-    search !== "" ||
-    minPrice !== 0 ||
-    maxPrice !== 300000 ||
-    selectedCategories.length > 0 ||
-    selectedColors.length > 0 ||
-    selectedTags.length > 0;
-
-  const filteredProducts = CATALOG_PRODUCTS.filter((product) => {
-    if (search && !product.name.toLowerCase().includes(search.toLowerCase())) {
-      return false;
-    }
-    if (product.price < minPrice || product.price > maxPrice) {
-      return false;
-    }
-    if (
-      selectedCategories.length > 0 &&
-      !selectedCategories.includes(product.category)
-    ) {
-      return false;
-    }
-    if (selectedColors.length > 0 && !selectedColors.includes(product.color)) {
-      return false;
-    }
-    if (selectedTags.length > 0) {
-      const hasMatchingTag = product.tags.some((t) =>
-        selectedTags.includes(t)
-      );
-      if (!hasMatchingTag) return false;
-    }
-    return true;
-  });
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortOption === "price_asc") {
-      return a.price - b.price;
-    }
-    if (sortOption === "price_desc") {
-      return b.price - a.price;
-    }
-    if (sortOption === "best_seller") {
-      return b.reviews - a.reviews;
-    }
-    if (sortOption === "newest") {
-      return b.id - a.id;
-    }
-    if (sortOption === "discount") {
-      const discountA = a.originalPrice ? a.originalPrice - a.price : 0;
-      const discountB = b.originalPrice ? b.originalPrice - b.price : 0;
-      return discountB - discountA;
-    }
-    return 0;
-  });
-
-  const itemsPerPage = 12;
-  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
-  const displayedProducts = sortedProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handlePageChange = (newPage: number) => {
+    actions.setPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -170,7 +66,7 @@ export default function ProductsScreen() {
 
           <div className="flex flex-col md:flex-row md:items-center justify-between py-3 border-b border-border/60 gap-3 shrink-0 text-left">
             <div className="text-[13px] font-medium text-text-secondary select-none order-2 md:order-1 mt-1 md:mt-0">
-              Tìm thấy <span className="text-secondary font-bold">{sortedProducts.length}</span> sản phẩm
+              Tìm thấy <span className="text-secondary font-bold">{totalItems}</span> sản phẩm
             </div>
 
             <div className="flex items-center justify-end md:justify-start gap-3 w-full md:w-auto order-1 md:order-2">
@@ -185,11 +81,8 @@ export default function ProductsScreen() {
               <div className="w-44 select-none">
                 <Select
                   options={SORT_OPTIONS}
-                  value={sortOption}
-                  onChange={(val) => {
-                    setSortOption(val);
-                    setCurrentPage(1);
-                  }}
+                  value={filters.sort}
+                  onChange={actions.setSort}
                   placeholder="Sắp xếp theo"
                 />
               </div>
@@ -209,7 +102,7 @@ export default function ProductsScreen() {
                   </h3>
                   {hasActiveFilters && (
                     <button
-                      onClick={clearAllFilters}
+                      onClick={handleClearAll}
                       className="text-[11px] font-bold text-secondary hover:text-primary transition-colors underline"
                     >
                       Xóa bộ lọc
@@ -218,69 +111,59 @@ export default function ProductsScreen() {
                 </div>
 
                 <div className="p-5 pt-4 overflow-y-auto no-scrollbar flex-1">
-                  <FilterContent
-                    search={search}
-                    setSearch={setSearch}
-                    minPrice={minPrice}
-                    setMinPrice={setMinPrice}
-                    maxPrice={maxPrice}
-                    setMaxPrice={setMaxPrice}
-                    selectedCategories={selectedCategories}
-                    toggleCategory={toggleCategory}
-                    selectedColors={selectedColors}
-                    toggleColor={toggleColor}
-                    selectedTags={selectedTags}
-                    toggleTag={toggleTag}
-                  />
+                  <FilterContent filters={filters} actions={actions} />
                 </div>
               </div>
             </div>
 
             <div className="md:col-span-9 flex flex-col w-full h-full justify-between">
-              {displayedProducts.length > 0 ? (
+              {isLoading || isFetching ? (
+                <ProductGridSkeleton count={12} className="!grid-cols-2 sm:!grid-cols-3 lg:!grid-cols-4" />
+              ) : isError || products.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center bg-surface border border-border rounded-lg p-8 w-full shadow-sm">
+                  <EmptyState
+                    title="Không tìm thấy sản phẩm nào khớp với bộ lọc của bạn."
+                    actionLabel="Thiết lập lại bộ lọc"
+                    onAction={handleClearAll}
+                  />
+                </div>
+              ) : (
                 <div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full py-1">
-                    {displayedProducts.map((product) => (
+                    {products.map((product: ProductItem) => (
                       <ProductCard
                         key={product.id}
                         id={product.id}
                         slug={product.slug}
                         name={product.name}
-                        price={product.price}
-                        originalPrice={product.originalPrice}
+                        price={product.price ?? product.salePrice ?? product.originalPrice ?? 0}
+                        originalPrice={
+                          product.salePrice && product.originalPrice ? product.originalPrice : undefined
+                        }
                         rating={product.rating}
                         reviews={product.reviews}
-                        image={product.image}
-                        badge={product.badge}
-                        badgeLabel={product.badgeLabel}
-                        onAddToCart={() =>
-                          console.log("Added to cart:", product.name)
+                        soldCount={product.soldCount}
+                        image={product.thumbnail?.url || product.image || "/logo.png"}
+                        badge={
+                          product.highlightType === "TODAY_DEAL"
+                            ? "sale"
+                            : product.highlightType === "HOT_TIKTOK"
+                            ? "hotTiktok"
+                            : "bestSeller"
                         }
+                        badgeLabel={product.highlightLabel || undefined}
                       />
                     ))}
                   </div>
 
                   {totalPages > 1 && (
                     <Pagination
-                      currentPage={currentPage}
+                      currentPage={filters.page}
                       totalPages={totalPages}
                       onPageChange={handlePageChange}
                       className="mt-10 mb-4"
                     />
                   )}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 text-center bg-surface border border-border rounded-lg p-8 w-full shadow-sm">
-                  <p className="text-[13px] text-text-secondary font-medium mb-4 select-none">
-                    Không tìm thấy sản phẩm nào khớp với bộ lọc của bạn.
-                  </p>
-                  <Button
-                    variant="primary"
-                    onClick={clearAllFilters}
-                    className="rounded-md px-5 py-2 text-xs font-bold"
-                  >
-                    Thiết lập lại bộ lọc
-                  </Button>
                 </div>
               )}
             </div>
@@ -305,22 +188,9 @@ export default function ProductsScreen() {
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        onClear={clearAllFilters}
+        onClear={handleClearAll}
       >
-        <FilterContent
-          search={search}
-          setSearch={setSearch}
-          minPrice={minPrice}
-          setMinPrice={setMinPrice}
-          maxPrice={maxPrice}
-          setMaxPrice={setMaxPrice}
-          selectedCategories={selectedCategories}
-          toggleCategory={toggleCategory}
-          selectedColors={selectedColors}
-          toggleColor={toggleColor}
-          selectedTags={selectedTags}
-          toggleTag={toggleTag}
-        />
+        <FilterContent filters={filters} actions={actions} />
       </FilterModal>
     </>
   );

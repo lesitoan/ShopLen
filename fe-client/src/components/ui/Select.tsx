@@ -48,7 +48,7 @@ export default function Select({
   };
 
   return (
-    <div ref={dropdownRef} className="relative w-full text-[14px]">
+    <div ref={dropdownRef} className={`relative w-full text-[14px] ${isOpen ? "z-40" : ""}`}>
       {/* Trigger Button */}
       <button
         type="button"
@@ -71,7 +71,7 @@ export default function Select({
 
       {/* Options Dropdown */}
       {isOpen && (
-        <ul className="absolute z-10 w-full mt-1.5 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+        <ul className="absolute z-50 w-full mt-1.5 bg-surface border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-1 duration-150">
           {options.map((option) => (
             <li
               key={option.value}

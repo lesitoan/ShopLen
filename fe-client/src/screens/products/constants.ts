@@ -5,6 +5,7 @@ export interface CategoryFilterItem {
 
 export interface ColorFilterItem {
   name: string;
+  value: string;
   hex: string;
 }
 
@@ -34,16 +35,16 @@ export const CATEGORY_FILTERS: CategoryFilterItem[] = [
 ];
 
 export const COLOR_FILTERS: ColorFilterItem[] = [
-  { name: "Xanh", hex: "#3B82F6" },
-  { name: "Đỏ", hex: "#EF4444" },
-  { name: "Vàng", hex: "#F59E0B" },
-  { name: "Cam", hex: "#F97316" },
-  { name: "Đen", hex: "#111827" },
-  { name: "Tím", hex: "#8B5CF6" },
-  { name: "Hồng", hex: "#F9B4C7" },
-  { name: "Trắng", hex: "#FFFFFF" },
-  { name: "Nâu", hex: "#78350F" },
-  { name: "Kem", hex: "#FEF3C7" },
+  { name: "Xanh", value: "BLUE", hex: "#3B82F6" },
+  { name: "Đỏ", value: "RED", hex: "#EF4444" },
+  { name: "Vàng", value: "YELLOW", hex: "#F59E0B" },
+  { name: "Cam", value: "ORANGE", hex: "#F97316" },
+  { name: "Đen", value: "BLACK", hex: "#111827" },
+  { name: "Tím", value: "PURPLE", hex: "#8B5CF6" },
+  { name: "Hồng", value: "PINK", hex: "#F9B4C7" },
+  { name: "Trắng", value: "WHITE", hex: "#FFFFFF" },
+  { name: "Nâu", value: "BROWN", hex: "#78350F" },
+  { name: "Kem", value: "CREAM", hex: "#FEF3C7" },
 ];
 
 export const SUGGESTED_TAGS: string[] = [

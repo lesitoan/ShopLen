@@ -2,9 +2,19 @@ import React from "react";
 
 interface DescriptionTabProps {
   productName: string;
+  descriptionHtml?: string | null;
 }
 
-export default function DescriptionTab({ productName }: DescriptionTabProps) {
+export default function DescriptionTab({ productName, descriptionHtml }: DescriptionTabProps) {
+  if (descriptionHtml) {
+    return (
+      <div
+        className="space-y-4 animate-in fade-in duration-200 text-left text-[13px] text-text-secondary leading-relaxed prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4 animate-in fade-in duration-200 text-left text-[13px] text-text-secondary leading-relaxed">
       <p>

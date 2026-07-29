@@ -1,58 +1,75 @@
-import React from "react";
-import { Star, Minus, Plus, ShoppingBag, Heart } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { Minus, Plus, ShoppingBag } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import VariantSelector from "./VariantSelector";
-
-interface ColorOption {
-  name: string;
-  hex: string;
-}
-
-interface ProductItem {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviews: number;
-  image: string;
-  badge?: "new" | "bestSeller" | "hotTiktok" | "sale" | "limited" | "soldOut";
-  badgeLabel?: string;
-  category: string;
-  color: string;
-}
+import { COLOR_FILTERS } from "@/screens/products/constants";
+import type { ProductDetail } from "@/types/product.type";
 
 interface ProductInfoProps {
-  product: ProductItem;
-  quantity: number;
-  handleQtyChange: (delta: number) => void;
-  availableColors: ColorOption[];
-  selectedColor: string;
-  setSelectedColor: (color: string) => void;
-  isLiked: boolean;
-  setIsLiked: (liked: boolean) => void;
-  onAddToCart: () => void;
-  onBuyNow: () => void;
+  product: ProductDetail;
+  onAddToCart?: (color: string, quantity: number) => void;
+  onBuyNow?: (color: string, quantity: number) => void;
 }
 
 export default function ProductInfo({
   product,
-  quantity,
-  handleQtyChange,
-  availableColors,
-  selectedColor,
-  setSelectedColor,
-  isLiked,
-  setIsLiked,
   onAddToCart,
   onBuyNow,
 }: ProductInfoProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState("");
+
+  const badge =
+    product.highlightType === "TODAY_DEAL"
+      ? "sale"
+      : product.highlightType === "HOT_TIKTOK"
+      ? "hotTiktok"
+      : undefined;
+  const badgeLabel = product.highlightLabel || undefined;
+
+  const availableColors = useMemo(() => {
+    if (!product) return [];
+    const colorOption = product.options?.find(
+      (opt) => opt.optionType === "COLOR"
+    );
+
+    if (colorOption && colorOption.values.length > 0) {
+      return colorOption.values.map((val) => ({
+        name: val.label || val.value,
+        code: val.code || val.value,
+        hex: val.hex || COLOR_FILTERS.find((c) => c.value === val.code)?.hex || "#E5E7EB",
+      }));
+    }
+
+    return COLOR_FILTERS.slice(0, 4).map((c) => ({
+      name: c.name,
+      code: c.value,
+      hex: c.hex,
+    }));
+  }, [product]);
+
+  useEffect(() => {
+    if (availableColors.length > 0) {
+      setSelectedColor(availableColors[0].name);
+    }
+  }, [availableColors]);
+
+  const handleQtyChange = (delta: number) => {
+    setQuantity((prev) => Math.max(1, prev + delta));
+  };
+
+  const price = product.price ?? product.salePrice ?? product.originalPrice ?? 0;
+  const originalPrice =
+    product.salePrice && product.originalPrice ? product.originalPrice : undefined;
+  const reviewsCount = product.reviews ?? 0;
+  const soldCountVal = product.soldCount ?? reviewsCount * 4 + 8;
+
   return (
     <div className="flex flex-col text-left">
-      {product.badge && (
+      {badge && (
         <div className="mb-2">
-          <Badge variant={product.badge}>{product.badgeLabel || ""}</Badge>
+          <Badge variant={badge}>{badgeLabel || ""}</Badge>
         </div>
       )}
 
@@ -60,42 +77,23 @@ export default function ProductInfo({
         {product.name}
       </h1>
 
-      <div className="flex items-center gap-4 text-xs text-text-secondary mb-4 select-none">
-        <div className="flex items-center gap-1 font-medium">
-          <div className="flex items-center text-secondary">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <Star
-                key={idx}
-                size={14}
-                fill={idx < Math.floor(product.rating) ? "currentColor" : "none"}
-                className="stroke-[2.5]"
-              />
-            ))}
-          </div>
-          <span className="text-text-primary font-bold ml-1">
-            {product.rating}
-          </span>
-          <span className="text-text-secondary/80">
-            ({product.reviews} đánh giá)
-          </span>
-        </div>
-        <div className="w-px h-3.5 bg-border/80" />
+      <div className="flex items-center text-xs text-text-secondary mb-4 select-none">
         <span className="font-semibold text-text-primary">
-          Đã bán {product.reviews * 4 + 8}
+          Đã bán {soldCountVal}
         </span>
       </div>
 
       <div className="flex items-baseline gap-3.5 p-4 rounded-lg bg-surface/50 border border-border/40 mb-6 select-none">
         <span className="text-[22px] md:text-[26px] font-bold text-secondary">
-          {product.price.toLocaleString("vi-VN")}đ
+          {price.toLocaleString("vi-VN")}đ
         </span>
-        {product.originalPrice && (
+        {originalPrice && originalPrice > price && (
           <>
             <span className="text-[13px] md:text-[14px] text-text-secondary/70 line-through">
-              {product.originalPrice.toLocaleString("vi-VN")}đ
+              {originalPrice.toLocaleString("vi-VN")}đ
             </span>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-error text-white">
-              Giảm {Math.round((1 - product.price / product.originalPrice) * 100)}%
+              Giảm {Math.round((1 - price / originalPrice) * 100)}%
             </span>
           </>
         )}
@@ -106,15 +104,18 @@ export default function ProductInfo({
           Mô tả ngắn
         </h4>
         <p className="text-[13px] text-text-secondary leading-relaxed">
-          Sản phẩm móc khóa bông bằng len được hoàn thiện thủ công vô cùng tinh xảo và tỉ mỉ. Thích hợp sử dụng làm móc treo cặp sách, trang trí balo, ví cầm tay, làm quà tặng đáng yêu dành tặng bạn bè hoặc người thương trong các dịp đặc biệt.
+          {product.shortDescription ||
+            "Sản phẩm móc khóa bông bằng len được hoàn thiện thủ công vô cùng tinh xảo và tỉ mỉ. Thích hợp sử dụng làm móc treo cặp sách, trang trí balo, ví cầm tay, làm quà tặng đáng yêu dành tặng bạn bè hoặc người thương trong các dịp đặc biệt."}
         </p>
       </div>
 
-      <VariantSelector
-        availableColors={availableColors}
-        selectedColor={selectedColor}
-        setSelectedColor={setSelectedColor}
-      />
+      {availableColors.length > 0 && (
+        <VariantSelector
+          availableColors={availableColors}
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
+        />
+      )}
 
       <div className="mb-6 select-none">
         <h4 className="text-[12px] font-bold text-text-secondary uppercase mb-2.5 select-none">
@@ -143,7 +144,7 @@ export default function ProductInfo({
         <Button
           variant="outline"
           size="md"
-          onClick={onAddToCart}
+          onClick={() => onAddToCart && onAddToCart(selectedColor, quantity)}
           className="flex-1 py-2.5 font-semibold rounded-md border-primary text-secondary hover:bg-primary-light/50 flex items-center justify-center gap-2 text-xs"
         >
           <ShoppingBag size={15} />
@@ -152,21 +153,11 @@ export default function ProductInfo({
         <Button
           variant="primary"
           size="md"
-          onClick={onBuyNow}
+          onClick={() => onBuyNow && onBuyNow(selectedColor, quantity)}
           className="flex-1 py-2.5 font-bold rounded-md flex items-center justify-center gap-2 text-xs"
         >
           Mua ngay
         </Button>
-        <button
-          onClick={() => setIsLiked(!isLiked)}
-          className={`p-2.5 rounded-md border transition-all duration-200 active:scale-90 ${
-            isLiked
-              ? "border-primary/20 bg-primary-light text-primary"
-              : "border-border text-text-secondary hover:text-text-primary bg-surface"
-          }`}
-        >
-          <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
-        </button>
       </div>
 
       <div className="mt-8 pt-6 border-t border-border/60 flex flex-col gap-2.5 text-xs text-text-secondary font-medium">

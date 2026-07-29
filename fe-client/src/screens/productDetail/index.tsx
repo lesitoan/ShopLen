@@ -1,40 +1,47 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { CATALOG_PRODUCTS, COLOR_FILTERS } from "@/screens/products/constants";
+import {
+  useGetProductDetailBySlugQuery,
+  useGetProductsQuery,
+} from "@/services/api/productApi";
 
-// Sub-components
 import Gallery from "./components/Gallery";
 import ProductGrid from "@/components/product/ProductGrid";
 import Breadcrumbs from "./components/Breadcrumbs";
 import ProductInfo from "./components/ProductInfo";
 import DetailTabs from "./components/DetailTabs";
 import MobileActionBar from "./components/MobileActionBar";
+import ProductInfoSkeleton from "@/components/skeletons/product/ProductInfoSkeleton";
 
 interface ProductDetailScreenProps {
   slug: string;
 }
 
 export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) {
-  const numericId = Number(slug.replace("sp-", ""));
-  const product = CATALOG_PRODUCTS.find((p) => p.id === numericId);
+  const {
+    data: product,
+    isLoading,
+    isError,
+  } = useGetProductDetailBySlugQuery(slug);
 
-  const [selectedColor, setSelectedColor] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [isLiked, setIsLiked] = useState(false);
+  const { data: relatedResponse } = useGetProductsQuery(
+    product?.category?.slug
+      ? { categorySlug: product.category.slug, limit: 4 }
+      : undefined
+  );
 
-  useEffect(() => {
-    if (product) {
-      setSelectedColor(product.color);
-    }
-  }, [product]);
+  const relatedProducts = useMemo(() => {
+    if (!relatedResponse?.items) return [];
+    return relatedResponse.items.filter((p) => p.slug !== slug).slice(0, 4);
+  }, [relatedResponse, slug]);
 
-  if (!product) {
+  if (!isLoading && (isError || !product)) {
     return (
-      <main className="flex-1 flex flex-col items-center justify-center py-16 text-center px-4">
+      <main className="flex-1 flex flex-col items-center justify-center py-20 text-center px-4">
         <h2 className="text-[18px] font-bold text-text-primary mb-4 select-none">
           Không tìm thấy sản phẩm
         </h2>
@@ -51,77 +58,64 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     );
   }
 
-  const galleryImages = [
-    product.image,
-    "/images/products/moc-khoa-gau.png",
-    "/images/products/moc-khoa-ech.png",
-  ];
-
-  const availableColors = Array.from(
-    new Set([product.color, "Kem", "Hồng", "Vàng"])
-  ).map((colorName) => {
-    const filterColor = COLOR_FILTERS.find((c) => c.name === colorName);
-    return {
-      name: colorName,
-      hex: filterColor ? filterColor.hex : "#E5E7EB",
-    };
-  });
-
-  const relatedProducts = CATALOG_PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
-
-  const handleQtyChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, prev + delta));
+  const handleAddToCart = (color?: string, quantity?: number) => {
+    if (product) {
+      console.log("Add to cart:", product.name, quantity, color);
+    }
   };
 
-  const handleAddToCart = () => {
-    console.log("Add to cart:", product.name, quantity, selectedColor);
-  };
-
-  const handleBuyNow = () => {
-    console.log("Buy now:", product.name, quantity, selectedColor);
+  const handleBuyNow = (color?: string, quantity?: number) => {
+    if (product) {
+      console.log("Buy now:", product.name, quantity, color);
+    }
   };
 
   return (
     <div className="flex-1 flex flex-col pb-20 md:pb-0">
       <main className="flex-1 py-8">
         <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">
-          <Breadcrumbs productName={product.name} />
+          {!isLoading && product && <Breadcrumbs productName={product.name} />}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start">
             <Gallery
-              productName={product.name}
-              mainImage={product.image}
-              galleryImages={galleryImages}
+              productName={product?.name || "Sản phẩm"}
+              images={product?.images}
+              isLoading={isLoading}
             />
 
-            <ProductInfo
-              product={product}
-              quantity={quantity}
-              handleQtyChange={handleQtyChange}
-              availableColors={availableColors}
-              selectedColor={selectedColor}
-              setSelectedColor={setSelectedColor}
-              isLiked={isLiked}
-              setIsLiked={setIsLiked}
-              onAddToCart={handleAddToCart}
-              onBuyNow={handleBuyNow}
-            />
+            {isLoading ? (
+              <ProductInfoSkeleton />
+            ) : (
+              product && (
+                <ProductInfo
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onBuyNow={handleBuyNow}
+                />
+              )
+            )}
           </div>
 
-          <DetailTabs productName={product.name} />
+          {!isLoading && product && (
+            <>
+              <DetailTabs
+                productName={product.name}
+                descriptionHtml={product.descriptionHtml}
+                careInstructionHtml={product.careInstructionHtml}
+              />
 
-          <ProductGrid products={relatedProducts} />
+              <ProductGrid products={relatedProducts} />
+            </>
+          )}
         </div>
       </main>
 
-      <MobileActionBar
-        isLiked={isLiked}
-        setIsLiked={setIsLiked}
-        onAddToCart={handleAddToCart}
-        onBuyNow={handleBuyNow}
-      />
+      {!isLoading && product && (
+        <MobileActionBar
+          onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNow}
+        />
+      )}
     </div>
   );
 }

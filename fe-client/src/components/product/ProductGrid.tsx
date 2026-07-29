@@ -1,28 +1,13 @@
 import React from "react";
 import ProductCard from "./ProductCard";
 
-interface ProductItem {
-  id?: number | string;
-  slug?: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  rating?: number;
-  reviews?: number;
-  image: string;
-  badge?: "new" | "bestSeller" | "hotTiktok" | "sale" | "limited" | "soldOut";
-  badgeLabel?: string;
-  category?: string;
-  color?: string;
-}
-
 interface ProductGridProps {
-  products: ProductItem[];
+  products: any[];
   title?: string;
 }
 
 export default function ProductGrid({ products, title = "SẢN PHẨM TƯƠNG TỰ" }: ProductGridProps) {
-  if (products.length === 0) return null;
+  if (!products || products.length === 0) return null;
 
   return (
     <div className="mt-16 pt-10 border-t border-border/80 text-left">
@@ -36,13 +21,19 @@ export default function ProductGrid({ products, title = "SẢN PHẨM TƯƠNG T�
             id={p.id}
             slug={p.slug}
             name={p.name}
-            price={p.price}
-            originalPrice={p.originalPrice}
+            price={p.price ?? p.salePrice ?? p.originalPrice ?? 0}
+            originalPrice={p.salePrice && p.originalPrice ? p.originalPrice : undefined}
             rating={p.rating}
             reviews={p.reviews}
-            image={p.image}
-            badge={p.badge}
-            badgeLabel={p.badgeLabel}
+            image={p.thumbnail?.url || p.image || (p.images && p.images[0]?.url) || "/logo.png"}
+            badge={
+              p.highlightType === "TODAY_DEAL"
+                ? "sale"
+                : p.highlightType === "HOT_TIKTOK"
+                ? "hotTiktok"
+                : p.badge
+            }
+            badgeLabel={p.highlightLabel || p.badgeLabel}
             onAddToCart={() => console.log("Added to cart:", p.name)}
           />
         ))}

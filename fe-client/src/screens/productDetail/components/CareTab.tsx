@@ -1,6 +1,19 @@
 import React from "react";
 
-export default function CareTab() {
+interface CareTabProps {
+  careInstructionHtml?: string | null;
+}
+
+export default function CareTab({ careInstructionHtml }: CareTabProps) {
+  if (careInstructionHtml) {
+    return (
+      <div
+        className="space-y-4 animate-in fade-in duration-200 text-left text-[13px] text-text-secondary leading-relaxed prose max-w-none"
+        dangerouslySetInnerHTML={{ __html: careInstructionHtml }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4 animate-in fade-in duration-200 text-left text-[13px] text-text-secondary leading-relaxed">
       <p>

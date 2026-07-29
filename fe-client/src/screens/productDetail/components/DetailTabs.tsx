@@ -5,9 +5,15 @@ import DiscussionTab from "./DiscussionTab";
 
 interface DetailTabsProps {
   productName: string;
+  descriptionHtml?: string | null;
+  careInstructionHtml?: string | null;
 }
 
-export default function DetailTabs({ productName }: DetailTabsProps) {
+export default function DetailTabs({
+  productName,
+  descriptionHtml,
+  careInstructionHtml,
+}: DetailTabsProps) {
   const [activeTab, setActiveTab] = useState<"description" | "care" | "discussion">("description");
 
   return (
@@ -41,13 +47,17 @@ export default function DetailTabs({ productName }: DetailTabsProps) {
               : "border-transparent text-text-secondary hover:text-text-primary"
           }`}
         >
-          Thảo luận (4)
+          Thảo luận
         </button>
       </div>
 
       <div className="py-2">
-        {activeTab === "description" && <DescriptionTab productName={productName} />}
-        {activeTab === "care" && <CareTab />}
+        {activeTab === "description" && (
+          <DescriptionTab productName={productName} descriptionHtml={descriptionHtml} />
+        )}
+        {activeTab === "care" && (
+          <CareTab careInstructionHtml={careInstructionHtml} />
+        )}
         {activeTab === "discussion" && <DiscussionTab />}
       </div>
     </div>

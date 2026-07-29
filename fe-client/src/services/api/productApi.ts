@@ -3,9 +3,10 @@ import type {
   ProductItem,
   ProductListParams,
   ProductListResponse,
+  ProductDetail,
 } from "@/types/product.type";
 
-export type { ProductItem, ProductListParams, ProductListResponse };
+export type { ProductItem, ProductListParams, ProductListResponse, ProductDetail };
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -17,7 +18,12 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<ProductListResponse>,
       providesTags: ["Product"],
     }),
+    getProductDetailBySlug: builder.query<ProductDetail, string>({
+      query: (slug) => `/products/${slug}`,
+      transformResponse: unwrapApiResponse<ProductDetail>,
+      providesTags: (result, error, slug) => [{ type: "Product", id: slug }],
+    }),
   }),
 });
 
-export const { useGetProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetProductDetailBySlugQuery } = productApi;

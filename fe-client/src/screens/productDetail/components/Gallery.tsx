@@ -1,23 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import PhotoSwipeLightbox from "photoswipe/lightbox";
 import "photoswipe/dist/photoswipe.css";
+import type { ProductDetailImage } from "@/types/product.type";
+import Skeleton from "@/components/skeletons/Skeleton";
 
 interface GalleryProps {
   productName: string;
-  mainImage: string;
-  galleryImages: string[];
+  images?: ProductDetailImage[] | string[];
+  mainImage?: string;
+  galleryImages?: string[];
+  isLoading?: boolean;
 }
 
-export default function Gallery({ productName, mainImage, galleryImages }: GalleryProps) {
-  const [activeImage, setActiveImage] = useState(mainImage);
+export default function Gallery({
+  productName,
+  images,
+  mainImage: initialMainImage,
+  galleryImages: initialGalleryImages,
+  isLoading = false,
+}: GalleryProps) {
+  const imageList = useMemo(() => {
+    if (initialGalleryImages && initialGalleryImages.length > 0) {
+      return initialGalleryImages;
+    }
+    if (images && images.length > 0) {
+      return images.map((img) => (typeof img === "string" ? img : img.url));
+    }
+    if (initialMainImage) {
+      return [initialMainImage];
+    }
+    return ["/logo.png"];
+  }, [images, initialMainImage, initialGalleryImages]);
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const activeIndex = selectedIndex < imageList.length ? selectedIndex : 0;
+  const activeImage = imageList[activeIndex] || imageList[0] || "/logo.png";
 
   useEffect(() => {
-    setActiveImage(mainImage);
-  }, [mainImage]);
-
-  useEffect(() => {
+    if (isLoading) return;
     const lightbox = new PhotoSwipeLightbox({
       gallery: "#product-gallery",
       children: "a",
@@ -28,32 +51,38 @@ export default function Gallery({ productName, mainImage, galleryImages }: Galle
     return () => {
       lightbox.destroy();
     };
-  }, []);
+  }, [isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="aspect-square w-full rounded-lg" />
+        <div className="flex gap-2.5 py-1">
+          <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
+          <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
+          <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
+        </div>
+      </div>
+    );
+  }
 
   const handleMainImageClick = () => {
-    const activeIdx = galleryImages.indexOf(activeImage);
-    if (activeIdx !== -1) {
-      const link = document.getElementById(`pswp-link-${activeIdx}`);
+    if (activeIndex !== -1) {
+      const link = document.getElementById(`pswp-link-${activeIndex}`);
       link?.click();
     }
   };
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const activeIdx = galleryImages.indexOf(activeImage);
-    if (activeIdx !== -1) {
-      const prevIdx = (activeIdx - 1 + galleryImages.length) % galleryImages.length;
-      setActiveImage(galleryImages[prevIdx]);
-    }
+    const prevIdx = (activeIndex - 1 + imageList.length) % imageList.length;
+    setSelectedIndex(prevIdx);
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const activeIdx = galleryImages.indexOf(activeImage);
-    if (activeIdx !== -1) {
-      const nextIdx = (activeIdx + 1) % galleryImages.length;
-      setActiveImage(galleryImages[nextIdx]);
-    }
+    const nextIdx = (activeIndex + 1) % imageList.length;
+    setSelectedIndex(nextIdx);
   };
 
   return (
@@ -75,7 +104,7 @@ export default function Gallery({ productName, mainImage, galleryImages }: Galle
           <Maximize2 size={16} />
         </div>
 
-        {galleryImages.length > 1 && (
+        {imageList.length > 1 && (
           <>
             <button
               onClick={handlePrevImage}
@@ -101,9 +130,8 @@ export default function Gallery({ productName, mainImage, galleryImages }: Galle
         }
       `}</style>
 
-      {/* Hidden gallery links for PhotoSwipe */}
       <div id="product-gallery" className="hidden">
-        {galleryImages.map((img, idx) => (
+        {imageList.map((img, idx) => (
           <a
             key={idx}
             id={`pswp-link-${idx}`}
@@ -118,27 +146,29 @@ export default function Gallery({ productName, mainImage, galleryImages }: Galle
         ))}
       </div>
 
-      <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 select-none">
-        {galleryImages.map((img, idx) => (
-          <button
-            key={idx}
-            onClick={() => setActiveImage(img)}
-            className={`relative w-20 h-20 rounded-lg overflow-hidden border bg-surface flex-shrink-0 transition-all duration-200 ${
-              activeImage === img
-                ? "border-primary ring-2 ring-primary/20 scale-95"
-                : "border-border/60 hover:border-text-secondary/50"
-            }`}
-          >
-            <Image
-              src={img}
-              alt={`${productName} thumbnail ${idx + 1}`}
-              fill
-              sizes="80px"
-              className="object-cover"
-            />
-          </button>
-        ))}
-      </div>
+      {imageList.length > 0 && (
+        <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 select-none">
+          {imageList.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedIndex(idx)}
+              className={`relative w-20 h-20 rounded-lg overflow-hidden border bg-surface flex-shrink-0 transition-all duration-200 ${
+                activeIndex === idx
+                  ? "border-primary ring-2 ring-primary/20 scale-95"
+                  : "border-border/60 hover:border-text-secondary/50"
+              }`}
+            >
+              <Image
+                src={img}
+                alt={`${productName} thumbnail ${idx + 1}`}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

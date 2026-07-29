@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 
 interface ProductCardProps {
   id?: number | string;
+  slug?: string;
   name: string;
   price: number;
   originalPrice?: number;
@@ -20,6 +21,7 @@ interface ProductCardProps {
 
 export default function ProductCard({
   id,
+  slug,
   name,
   price,
   originalPrice,
@@ -112,10 +114,12 @@ export default function ProductCard({
     </>
   );
 
-  if (id) {
+  const productHref = slug ? `/san-pham/${slug}` : id ? `/san-pham/${id}` : "#";
+
+  if (slug || id) {
     return (
       <Link
-        href={`/san-pham/sp-${id}`}
+        href={productHref}
         className="group relative bg-surface rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full cursor-pointer"
       >
         {cardContent}

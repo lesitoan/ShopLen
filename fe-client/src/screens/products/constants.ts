@@ -10,6 +10,7 @@ export interface ColorFilterItem {
 
 export interface ProductItem {
   id: number;
+  slug?: string;
   name: string;
   price: number;
   originalPrice?: number;

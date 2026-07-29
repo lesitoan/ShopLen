@@ -11,12 +11,14 @@ import CheckoutSummary from "./components/CheckoutSummary";
 import MobileCheckoutActionBar from "./components/MobileCheckoutActionBar";
 import LoginRequiredModal from "@/components/modals/LoginRequiredModal";
 import { hasAuthTokens } from "@/services/authStorage";
-
-import { CheckoutFormData, CheckoutSummaryData } from "./types";
-import { INITIAL_CHECKOUT_ITEMS } from "./constants";
+import { useAppSelector } from "@/store/hooks";
+import { CartSummaryData } from "@/types/cart.type";
+import { CheckoutFormData } from "./types";
 
 export default function CheckoutScreen() {
   const router = useRouter();
+  const cartItems = useAppSelector((state) => state.cart.items);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAuthRequiredOpen, setIsAuthRequiredOpen] = useState(false);
 
@@ -38,14 +40,13 @@ export default function CheckoutScreen() {
     mode: "onTouched",
   });
 
-  const cartItems = INITIAL_CHECKOUT_ITEMS;
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingFee = subtotal >= 700000 ? 0 : 30000;
+  const shippingFee = subtotal === 0 ? 0 : 30000;
   const voucherDiscount = 0;
   const pointsDiscount = 0;
   const total = Math.max(0, subtotal + shippingFee - voucherDiscount - pointsDiscount);
 
-  const summaryData: CheckoutSummaryData = {
+  const summaryData: CartSummaryData = {
     subtotal,
     shippingFee,
     voucherDiscount,
@@ -78,6 +79,25 @@ export default function CheckoutScreen() {
       router.push(`/thanh-toan/qr/${mockOrderId}`);
     }, 800);
   };
+
+  if (cartItems.length === 0) {
+    return (
+      <main className="flex-1 py-16 text-center px-4">
+        <h2 className="text-[18px] font-bold text-text-primary mb-3">
+          Giỏ hàng của bạn đang trống
+        </h2>
+        <p className="text-[13px] text-text-secondary mb-6">
+          Vui lòng thêm sản phẩm vào giỏ hàng trước khi tiến hành thanh toán.
+        </p>
+        <button
+          onClick={() => router.push("/san-pham")}
+          className="px-6 py-2.5 bg-secondary text-white font-bold text-xs rounded-md"
+        >
+          Quay lại cửa hàng
+        </button>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 py-8 pb-28 md:pb-0 text-left">

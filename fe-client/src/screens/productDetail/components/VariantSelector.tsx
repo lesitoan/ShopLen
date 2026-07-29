@@ -17,34 +17,50 @@ export default function VariantSelector({
   setSelectedColor,
 }: VariantSelectorProps) {
   return (
-    <div className="mb-6">
-      <h4 className="text-[12px] font-bold text-text-secondary uppercase mb-2.5 select-none">
-        Màu sắc chọn lựa
-      </h4>
-      <div className="flex items-center gap-3 py-1 select-none">
-        {availableColors.map((color) => (
-          <button
-            key={color.name}
-            onClick={() => setSelectedColor(color.name)}
-            className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200 ${
-              selectedColor === color.name
-                ? "border-primary ring-2 ring-primary/30 scale-110"
-                : "border-border/80 hover:scale-105"
-            }`}
-            style={{ backgroundColor: color.hex }}
-            title={color.name}
-          >
-            {selectedColor === color.name && (
-              <div
-                className={`w-2.5 h-2.5 rounded-full ${
-                  color.name === "Trắng" || color.name === "Kem"
-                    ? "bg-text-primary"
-                    : "bg-white"
-                }`}
-              />
-            )}
-          </button>
-        ))}
+    <div className="mb-6 select-none">
+      <div className="flex items-center gap-2 mb-2.5">
+        <h4 className="text-[12px] font-bold text-text-secondary uppercase">
+          Màu sắc chọn lựa:
+        </h4>
+        <span className="text-[13px] font-bold text-text-primary">
+          {selectedColor ? (
+            <span className="text-secondary">{selectedColor}</span>
+          ) : (
+            <span className="text-error font-medium text-[12px] animate-pulse">
+              (Chưa chọn màu)
+            </span>
+          )}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3 py-1">
+        {availableColors.map((color) => {
+          const isSelected = selectedColor === color.name;
+          return (
+            <button
+              key={color.name}
+              type="button"
+              onClick={() => setSelectedColor(color.name)}
+              className={`relative w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200 ${
+                isSelected
+                  ? "border-primary ring-2 ring-primary/40 scale-110 shadow-sm"
+                  : "border-border/80 hover:scale-105 hover:border-primary/40"
+              }`}
+              style={{ backgroundColor: color.hex }}
+              title={color.name}
+            >
+              {isSelected && (
+                <div
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    color.name === "Trắng" || color.name === "Kem"
+                      ? "bg-text-primary"
+                      : "bg-white"
+                  }`}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,48 +1,11 @@
-import { CartItem, Voucher } from "./types";
+import { CartItem, Voucher } from "@/types/cart.type";
 import { CATALOG_PRODUCTS } from "@/screens/products/constants";
 
-export const FREESHIP_THRESHOLD = 700000;
 export const STANDARD_SHIPPING_FEE = 30000;
-export const LOYALTY_POINTS_CONVERSION_RATE = 100; // 1 điểm = 100đ
-export const MOCK_USER_POINTS = 500; // 500 điểm = 50.000đ
+export const LOYALTY_POINTS_CONVERSION_RATE = 100;
+export const MOCK_USER_POINTS = 500;
 
-export const INITIAL_CART_ITEMS: CartItem[] = [
-  {
-    id: 1,
-    name: "Móc khóa Thỏ Bông Len Handmade",
-    category: "Thú bông",
-    color: "Hồng nhạt",
-    price: 45000,
-    originalPrice: 55000,
-    quantity: 2,
-    image: "/images/products/moc-khoa-tho.png",
-    stock: 15,
-    isAvailable: true,
-  },
-  {
-    id: 2,
-    name: "Móc khóa Hoa Tinh Tú Sắc Màu",
-    category: "Hoa len",
-    color: "Vàng chanh",
-    price: 35000,
-    originalPrice: 40000,
-    quantity: 1,
-    image: "/images/products/moc-khoa-hoa.png",
-    stock: 3,
-    isAvailable: true,
-  },
-  {
-    id: 3,
-    name: "Móc khóa Ếch Xanh Đội Mũ Len",
-    category: "Động vật",
-    color: "Xanh lá",
-    price: 50000,
-    quantity: 1,
-    image: "/images/products/moc-khoa-ech.png",
-    stock: 0,
-    isAvailable: false,
-  },
-];
+export const INITIAL_CART_ITEMS: CartItem[] = [];
 
 export const AVAILABLE_VOUCHERS: Voucher[] = [
   {

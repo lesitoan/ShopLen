@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Ticket, Coins, Check, AlertCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { Voucher } from "../types";
+import { Voucher } from "@/types/cart.type";
 import { AVAILABLE_VOUCHERS, MOCK_USER_POINTS, LOYALTY_POINTS_CONVERSION_RATE } from "../constants";
 
 interface VoucherAndPointsProps {
@@ -58,7 +58,6 @@ export default function VoucherAndPoints({
 
   return (
     <div className="bg-surface border border-border rounded-xl p-4 md:p-6 mt-4 flex flex-col gap-4">
-      {/* Voucher section */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 text-[14px] font-bold text-text-primary">

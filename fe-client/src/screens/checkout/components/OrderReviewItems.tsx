@@ -2,10 +2,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Edit3 } from "lucide-react";
-import { CheckoutCartItem } from "../types";
+import { CartItem } from "@/types/cart.type";
 
 interface OrderReviewItemsProps {
-  items: CheckoutCartItem[];
+  items: CartItem[];
 }
 
 export default function OrderReviewItems({ items }: OrderReviewItemsProps) {

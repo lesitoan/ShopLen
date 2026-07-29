@@ -7,6 +7,7 @@ import { ToastContainer, type ToastPosition } from "react-toastify";
 import { useLazyGetMeQuery } from "@/services/api/authApi";
 import { hasAuthTokens } from "@/services/authStorage";
 import { setCustomerProfile } from "@/store/slices/authSlice";
+import { hydrateCart } from "@/store/slices/cartSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { store } from "@/store";
 import type { ReactNode } from "react";
@@ -31,7 +32,7 @@ export default function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <Provider store={store}>
-      <AuthSessionHydrator />
+      <AppHydrator />
       <GoogleOAuthProvider
         clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ""}
       >
@@ -52,11 +53,13 @@ export default function AppProviders({ children }: { children: ReactNode }) {
   );
 }
 
-function AuthSessionHydrator() {
+function AppHydrator() {
   const dispatch = useAppDispatch();
   const [getMe] = useLazyGetMeQuery();
 
   useEffect(() => {
+    dispatch(hydrateCart());
+
     if (!hasAuthTokens()) {
       return;
     }

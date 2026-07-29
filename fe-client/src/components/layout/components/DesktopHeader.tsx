@@ -12,15 +12,15 @@ import {
   ChevronDown,
   Menu,
   X,
-  LogIn,
-  UserPlus,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import SearchModal from "@/components/modals/SearchModal";
 import CartModal from "@/components/modals/CartModal";
 import UserMenuModal from "@/components/modals/UserMenuModal";
-import { CartItem, NAV_ITEMS, INITIAL_RECENT_SEARCHES, KEYWORD_SUGGESTIONS, INITIAL_CART_ITEMS } from "../constants";
+import { NAV_ITEMS, INITIAL_RECENT_SEARCHES, KEYWORD_SUGGESTIONS } from "../constants";
 import type { CustomerSession } from "@/types/auth.type";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateQuantity, removeFromCart, clearCart } from "@/store/slices/cartSlice";
 
 interface DesktopHeaderProps {
   isLoggedIn: boolean;
@@ -37,13 +37,16 @@ export default function DesktopHeader({
   handleLogout,
   customer,
 }: DesktopHeaderProps) {
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const [mounted, setMounted] = useState(false);
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [recentSearches, setRecentSearches] = useState<string[]>(INITIAL_RECENT_SEARCHES);
-  const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART_ITEMS);
   const keywordSuggestions = KEYWORD_SUGGESTIONS;
 
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,9 +54,12 @@ export default function DesktopHeader({
   const cartRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // Dark mode init
+  const cartCount = mounted ? cartItems.reduce((acc, item) => acc + item.quantity, 0) : 0;
+
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -66,7 +72,6 @@ export default function DesktopHeader({
     }
   }, []);
 
-  // Click outside handler
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
@@ -115,27 +120,20 @@ export default function DesktopHeader({
 
   const clearRecentSearches = () => setRecentSearches([]);
 
-  const handleRemoveItem = (id: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveItem = (id: number | string) => {
+    dispatch(removeFromCart(id));
   };
 
-  const handleQtyChange = (id: number, delta: number) => {
-    setCartItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : item;
-        }
-        return item;
-      })
-    );
+  const handleQtyChange = (id: number | string, delta: number) => {
+    dispatch(updateQuantity({ id, delta }));
   };
 
-  const handleClearCart = () => setCartItems([]);
+  const handleClearCart = () => {
+    dispatch(clearCart());
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between transition-all duration-300">
-      {/* Logo */}
       <Link href="/" className="flex items-center gap-3 group shrink-0">
         <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden border border-primary/10 group-hover:border-primary transition-all duration-300">
           <Image
@@ -157,7 +155,6 @@ export default function DesktopHeader({
         </div>
       </Link>
 
-      {/* Desktop Nav */}
       <nav className="hidden md:flex items-center gap-1 lg:gap-3" ref={dropdownRef}>
         {NAV_ITEMS.map((item) => {
           if (item.children) {
@@ -199,9 +196,7 @@ export default function DesktopHeader({
         })}
       </nav>
 
-      {/* Right icons */}
       <div className="flex items-center gap-2 lg:gap-3">
-        {/* Search */}
         <div className="relative" ref={searchRef}>
           <Button
             variant="secondary"
@@ -233,7 +228,6 @@ export default function DesktopHeader({
           />
         </div>
 
-        {/* Cart */}
         <div className="relative" ref={cartRef}>
           <Button
             variant="secondary"
@@ -259,14 +253,13 @@ export default function DesktopHeader({
             isOpen={isCartOpen}
             onClose={() => setIsCartOpen(false)}
             triggerRef={cartRef}
-            cartItems={cartItems}
+            cartItems={mounted ? cartItems : []}
             onQtyChange={handleQtyChange}
             onRemoveItem={handleRemoveItem}
             onClearAll={handleClearCart}
           />
         </div>
 
-        {/* Dark mode */}
         <Button
           variant="secondary"
           size="md"
@@ -278,7 +271,6 @@ export default function DesktopHeader({
           {isDarkMode ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} />}
         </Button>
 
-        {/* User menu (desktop only) */}
         {isLoggedIn ? (
           <div className="relative hidden md:block" ref={userMenuRef}>
             <button
@@ -334,7 +326,6 @@ export default function DesktopHeader({
           </div>
         )}
 
-        {/* Hamburger (mobile only) */}
         <Button
           variant="secondary"
           size="md"

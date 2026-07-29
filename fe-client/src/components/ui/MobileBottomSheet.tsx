@@ -23,8 +23,8 @@ export default function MobileBottomSheet({
   showDragHandle = true,
   showCloseButton = true,
   maxHeightClass = "max-h-[85vh]",
-  paddingClass = "py-4 pb-6",
-  headerPaddingClass = "px-5",
+  paddingClass = "px-5 py-4 pb-6",
+  headerPaddingClass = "px-0",
   children,
 }: MobileBottomSheetProps) {
   const [mounted, setMounted] = useState(false);

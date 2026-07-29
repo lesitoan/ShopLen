@@ -87,6 +87,26 @@
   }
 }
 
+/* Custom Toast notification margins on mobile */
+@media (max-width: 767px) {
+  .Toastify__toast-container--top-center,
+  .Toastify__toast-container--top-left,
+  .Toastify__toast-container--top-right {
+    top: 12px !important;
+    left: 14px !important;
+    right: 14px !important;
+    width: auto !important;
+    transform: none !important;
+    padding: 0 !important;
+  }
+
+  .Toastify__toast {
+    margin-bottom: 8px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
 @keyframes pulseDot {
   0%, 80%, 100% {
     transform: scale(0.6);

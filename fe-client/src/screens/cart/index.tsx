@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import CartBreadcrumbs from "./components/CartBreadcrumbs";
-import FreeshipProgressBar from "./components/FreeshipProgressBar";
 import CartItemList from "./components/CartItemList";
 import VoucherAndPoints from "./components/VoucherAndPoints";
 import CartSummary from "./components/CartSummary";
@@ -12,11 +11,10 @@ import CartRelatedProducts from "./components/CartRelatedProducts";
 import MobileCartActionBar from "./components/MobileCartActionBar";
 import LoginRequiredModal from "@/components/modals/LoginRequiredModal";
 import { hasAuthTokens } from "@/services/authStorage";
-
-import { CartItem, Voucher, CartSummaryData } from "./types";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { updateQuantity, removeFromCart, clearCart } from "@/store/slices/cartSlice";
+import { Voucher, CartSummaryData } from "@/types/cart.type";
 import {
-  INITIAL_CART_ITEMS,
-  FREESHIP_THRESHOLD,
   STANDARD_SHIPPING_FEE,
   MOCK_USER_POINTS,
   LOYALTY_POINTS_CONVERSION_RATE,
@@ -24,38 +22,30 @@ import {
 
 export default function CartScreen() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART_ITEMS);
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
   const [usePoints, setUsePoints] = useState(false);
   const [isAuthRequiredOpen, setIsAuthRequiredOpen] = useState(false);
 
-  const handleQtyChange = (id: number, delta: number) => {
-    setCartItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          if (newQty <= 0) return item;
-          const maxQty = Math.min(newQty, item.stock);
-          return { ...item, quantity: maxQty };
-        }
-        return item;
-      })
-    );
+  const handleQtyChange = (id: number | string, delta: number) => {
+    dispatch(updateQuantity({ id, delta }));
   };
 
-  const handleRemoveItem = (id: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveItem = (id: number | string) => {
+    dispatch(removeFromCart(id));
   };
 
   const handleClearAll = () => {
-    setCartItems([]);
+    dispatch(clearCart());
     setAppliedVoucher(null);
     setUsePoints(false);
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const shippingFee = subtotal >= FREESHIP_THRESHOLD || subtotal === 0 ? 0 : STANDARD_SHIPPING_FEE;
+  const shippingFee = subtotal === 0 ? 0 : STANDARD_SHIPPING_FEE;
 
   const voucherDiscount = appliedVoucher ? appliedVoucher.discountAmount : 0;
   const pointsDiscount = usePoints ? MOCK_USER_POINTS * LOYALTY_POINTS_CONVERSION_RATE : 0;
@@ -65,13 +55,12 @@ export default function CartScreen() {
   const summaryData: CartSummaryData = {
     subtotal,
     shippingFee,
-    freeshipThreshold: FREESHIP_THRESHOLD,
     voucherDiscount,
     pointsDiscount,
     total,
   };
 
-  const hasOutOfStockItem = cartItems.some((item) => !item.isAvailable || item.stock <= 0);
+  const hasOutOfStockItem = cartItems.some((item) => !item.isAvailable || (item.stock !== undefined && item.stock <= 0));
 
   const handleCheckoutClick = () => {
     if (!hasAuthTokens()) {
@@ -102,8 +91,6 @@ export default function CartScreen() {
         <h1 className="text-center text-[24px] md:text-[28px] font-bold text-text-primary mb-6">
           Giỏ hàng
         </h1>
-
-        <FreeshipProgressBar subtotal={subtotal} />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-8 flex flex-col gap-4">

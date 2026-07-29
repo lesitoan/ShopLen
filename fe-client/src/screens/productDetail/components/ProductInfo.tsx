@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { toast } from "react-toastify";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import VariantSelector from "./VariantSelector";
@@ -8,18 +9,23 @@ import type { ProductDetail } from "@/types/product.type";
 
 interface ProductInfoProps {
   product: ProductDetail;
+  selectedColor: string;
+  setSelectedColor: (color: string) => void;
+  quantity: number;
+  setQuantity: React.Dispatch<React.SetStateAction<number>>;
   onAddToCart?: (color: string, quantity: number) => void;
   onBuyNow?: (color: string, quantity: number) => void;
 }
 
 export default function ProductInfo({
   product,
+  selectedColor,
+  setSelectedColor,
+  quantity,
+  setQuantity,
   onAddToCart,
   onBuyNow,
 }: ProductInfoProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState("");
-
   const badge =
     product.highlightType === "TODAY_DEAL"
       ? "sale"
@@ -49,14 +55,28 @@ export default function ProductInfo({
     }));
   }, [product]);
 
-  useEffect(() => {
-    if (availableColors.length > 0) {
-      setSelectedColor(availableColors[0].name);
-    }
-  }, [availableColors]);
-
   const handleQtyChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
+  };
+
+  const handleAddToCartClick = () => {
+    if (availableColors.length > 0 && !selectedColor) {
+      toast.warning("Vui lòng chọn màu sắc trước khi thêm vào giỏ hàng!");
+      return;
+    }
+    if (onAddToCart) {
+      onAddToCart(selectedColor || "Mặc định", quantity);
+    }
+  };
+
+  const handleBuyNowClick = () => {
+    if (availableColors.length > 0 && !selectedColor) {
+      toast.warning("Vui lòng chọn màu sắc trước khi mua hàng!");
+      return;
+    }
+    if (onBuyNow) {
+      onBuyNow(selectedColor || "Mặc định", quantity);
+    }
   };
 
   const price = product.price ?? product.salePrice ?? product.originalPrice ?? 0;
@@ -144,7 +164,7 @@ export default function ProductInfo({
         <Button
           variant="outline"
           size="md"
-          onClick={() => onAddToCart && onAddToCart(selectedColor, quantity)}
+          onClick={handleAddToCartClick}
           className="flex-1 py-2.5 font-semibold rounded-md border-primary text-secondary hover:bg-primary-light/50 flex items-center justify-center gap-2 text-xs"
         >
           <ShoppingBag size={15} />
@@ -153,7 +173,7 @@ export default function ProductInfo({
         <Button
           variant="primary"
           size="md"
-          onClick={() => onBuyNow && onBuyNow(selectedColor, quantity)}
+          onClick={handleBuyNowClick}
           className="flex-1 py-2.5 font-bold rounded-md flex items-center justify-center gap-2 text-xs"
         >
           Mua ngay

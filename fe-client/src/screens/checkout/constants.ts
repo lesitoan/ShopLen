@@ -1,5 +1,4 @@
-import { CheckoutCartItem } from "./types";
-
+import { CartItem } from "@/types/cart.type";
 
 export const SINGLE_PAYMENT_METHOD = {
   id: "qr_bank",
@@ -8,21 +7,4 @@ export const SINGLE_PAYMENT_METHOD = {
   icon: "/images/icons/vietqr.png",
 };
 
-export const INITIAL_CHECKOUT_ITEMS: CheckoutCartItem[] = [
-  {
-    id: 1,
-    name: "Móc khóa Thỏ Bông Len Handmade",
-    color: "Hồng nhạt",
-    price: 45000,
-    quantity: 2,
-    image: "/images/products/moc-khoa-tho.png",
-  },
-  {
-    id: 2,
-    name: "Móc khóa Hoa Tinh Tú Sắc Màu",
-    color: "Vàng chanh",
-    price: 35000,
-    quantity: 1,
-    image: "/images/products/moc-khoa-hoa.png",
-  },
-];
+export const INITIAL_CHECKOUT_ITEMS: CartItem[] = [];

@@ -34,7 +34,6 @@ export default function ProductGrid({ products, title = "SẢN PHẨM TƯƠNG T�
                 : p.badge
             }
             badgeLabel={p.highlightLabel || p.badgeLabel}
-            onAddToCart={() => console.log("Added to cart:", p.name)}
           />
         ))}
       </div>

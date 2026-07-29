@@ -3,7 +3,8 @@ import { UseFormRegister, FieldErrors, Control, Controller } from "react-hook-fo
 import { ArrowRight, Lock, AlertCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
-import { CheckoutSummaryData, CheckoutFormData } from "../types";
+import { CartSummaryData as CheckoutSummaryData } from "@/types/cart.type";
+import { CheckoutFormData } from "../types";
 
 interface CheckoutSummaryProps {
   summary: CheckoutSummaryData;

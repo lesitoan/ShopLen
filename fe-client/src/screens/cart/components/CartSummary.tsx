@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { ShieldCheck, RotateCcw, ArrowRight } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { CartSummaryData } from "../types";
+import { CartSummaryData } from "@/types/cart.type";
 
 interface CartSummaryProps {
   summary: CartSummaryData;
@@ -122,7 +122,6 @@ export default function CartSummary({
         </Link>
       </div>
 
-      {/* Trust Badges */}
       <div className="border-t border-border/60 pt-4 flex flex-col gap-2.5 text-[12px] text-text-secondary">
         <div className="flex items-center gap-2">
           <ShieldCheck size={16} className="text-secondary shrink-0" />

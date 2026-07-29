@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 
 interface ProductCardProps {
@@ -15,8 +15,6 @@ interface ProductCardProps {
   image: string;
   badge?: "new" | "bestSeller" | "hotTiktok" | "sale" | "limited" | "soldOut";
   badgeLabel?: string;
-  onAddToCart?: () => void;
-  onToggleWishlist?: () => void;
 }
 
 export default function ProductCard({
@@ -25,24 +23,12 @@ export default function ProductCard({
   name,
   price,
   originalPrice,
-  rating,
   reviews,
   soldCount,
   image,
   badge,
   badgeLabel,
-  onAddToCart,
-  onToggleWishlist,
 }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setIsWishlisted(!isWishlisted);
-    if (onToggleWishlist) onToggleWishlist();
-  };
-
   const formatPrice = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -78,15 +64,12 @@ export default function ProductCard({
           </div>
         )}
 
-        <button
-          onClick={handleWishlistClick}
-          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-border flex items-center justify-center text-text-secondary hover:text-red-500 hover:border-red-100 hover:bg-red-50/50 transition-all duration-200 z-2"
+        <div
+          className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm border border-border/80 flex items-center justify-center text-text-secondary group-hover:text-secondary group-hover:bg-primary-light group-hover:border-primary/30 transition-all duration-200 z-2 shadow-sm"
+          title="Xem chi tiết sản phẩm"
         >
-          <Heart
-            size={16}
-            className={`transition-colors duration-200 ${isWishlisted ? "fill-red-500 text-red-500" : ""}`}
-          />
-        </button>
+          <ShoppingCart size={15} />
+        </div>
       </div>
 
       <div className="p-4 flex flex-col flex-1">

@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "react-toastify";
 import Button from "@/components/ui/Button";
 import {
   useGetProductDetailBySlugQuery,
   useGetProductsQuery,
 } from "@/services/api/productApi";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { addToCart } from "@/store/slices/cartSlice";
 
 import Gallery from "./components/Gallery";
 import ProductGrid from "@/components/product/ProductGrid";
@@ -22,6 +26,13 @@ interface ProductDetailScreenProps {
 }
 
 export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) {
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector((state) => state.cart.items);
+
+  const [selectedColor, setSelectedColor] = useState("");
+  const [quantity, setQuantity] = useState(1);
+
   const {
     data: product,
     isLoading,
@@ -38,6 +49,12 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     if (!relatedResponse?.items) return [];
     return relatedResponse.items.filter((p) => p.slug !== slug).slice(0, 4);
   }, [relatedResponse, slug]);
+
+  const hasColors = useMemo(() => {
+    if (!product?.options) return false;
+    const colorOpt = product.options.find((opt) => opt.optionType === "COLOR");
+    return Boolean(colorOpt && colorOpt.values.length > 0);
+  }, [product]);
 
   if (!isLoading && (isError || !product)) {
     return (
@@ -58,16 +75,56 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     );
   }
 
-  const handleAddToCart = (color?: string, quantity?: number) => {
-    if (product) {
-      console.log("Add to cart:", product.name, quantity, color);
+  const handleAddToCart = (color?: string, qty?: number) => {
+    if (!product) return;
+
+    const chosenColor = color ?? selectedColor;
+    const chosenQty = qty ?? quantity;
+
+    if (hasColors && !chosenColor) {
+      toast.warning("Vui lòng chọn màu sắc trước khi thêm vào giỏ hàng!");
+      return;
     }
+
+    const colorVal = chosenColor || "Mặc định";
+    const itemId = `${product.id}-${colorVal}`;
+    const isExisting = cartItems.some(
+      (item) => String(item.id) === String(itemId)
+    );
+
+    if (cartItems.length >= 10 && !isExisting) {
+      toast.warning("Giỏ hàng chỉ được chứa tối đa 10 sản phẩm khác loại!");
+      return;
+    }
+
+    dispatch(addToCart({ product, color: colorVal, quantity: chosenQty }));
+    toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
-  const handleBuyNow = (color?: string, quantity?: number) => {
-    if (product) {
-      console.log("Buy now:", product.name, quantity, color);
+  const handleBuyNow = (color?: string, qty?: number) => {
+    if (!product) return;
+
+    const chosenColor = color ?? selectedColor;
+    const chosenQty = qty ?? quantity;
+
+    if (hasColors && !chosenColor) {
+      toast.warning("Vui lòng chọn màu sắc trước khi mua hàng!");
+      return;
     }
+
+    const colorVal = chosenColor || "Mặc định";
+    const itemId = `${product.id}-${colorVal}`;
+    const isExisting = cartItems.some(
+      (item) => String(item.id) === String(itemId)
+    );
+
+    if (cartItems.length >= 10 && !isExisting) {
+      toast.warning("Giỏ hàng chỉ được chứa tối đa 10 sản phẩm khác loại!");
+      return;
+    }
+
+    dispatch(addToCart({ product, color: colorVal, quantity: chosenQty }));
+    router.push("/gio-hang");
   };
 
   return (
@@ -89,6 +146,10 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
               product && (
                 <ProductInfo
                   product={product}
+                  selectedColor={selectedColor}
+                  setSelectedColor={setSelectedColor}
+                  quantity={quantity}
+                  setQuantity={setQuantity}
                   onAddToCart={handleAddToCart}
                   onBuyNow={handleBuyNow}
                 />
@@ -112,8 +173,8 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
 
       {!isLoading && product && (
         <MobileActionBar
-          onAddToCart={handleAddToCart}
-          onBuyNow={handleBuyNow}
+          onAddToCart={() => handleAddToCart(selectedColor, quantity)}
+          onBuyNow={() => handleBuyNow(selectedColor, quantity)}
         />
       )}
     </div>

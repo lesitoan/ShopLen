@@ -1,5 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CartItem, CartState, AddToCartPayload } from "@/types/cart.type";
+import {
+  CartItem,
+  CartState,
+  AddToCartPayload,
+  StoredCartItem,
+  CartProductItemResponse,
+} from "@/types/cart.type";
 
 const CART_STORAGE_KEY = "shoplen_cart";
 
@@ -7,7 +13,35 @@ const loadCartFromStorage = (): CartItem[] => {
   if (typeof window === "undefined") return [];
   try {
     const data = localStorage.getItem(CART_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const items: StoredCartItem[] = JSON.parse(data);
+    if (!Array.isArray(items)) return [];
+
+    return items.map((rawItem: any) => {
+      const productId = rawItem.productId || String(rawItem.id).split("-")[0];
+      const optionCode =
+        rawItem.optionCode || rawItem.colorCode || rawItem.color || "DEFAULT";
+      const itemId = rawItem.id || `${productId}-${optionCode}`;
+      const quantity =
+        typeof rawItem.quantity === "number" && rawItem.quantity > 0
+          ? rawItem.quantity
+          : 1;
+
+      return {
+        id: itemId,
+        productId,
+        quantity,
+        color: rawItem.color || rawItem.colorName || optionCode,
+        colorCode: optionCode,
+        name: rawItem.name || "",
+        category: rawItem.category || "Móc khóa",
+        price: typeof rawItem.price === "number" ? rawItem.price : 0,
+        originalPrice: rawItem.originalPrice,
+        image: rawItem.image || "/logo.png",
+        stock: rawItem.stock ?? 99,
+        isAvailable: rawItem.isAvailable ?? true,
+      };
+    });
   } catch (error) {
     console.error("Failed to load cart from localStorage", error);
     return [];
@@ -17,7 +51,13 @@ const loadCartFromStorage = (): CartItem[] => {
 const saveCartToStorage = (items: CartItem[]) => {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    const minimalItems: StoredCartItem[] = items.map((item) => ({
+      id: String(item.id),
+      productId: item.productId || String(item.id).split("-")[0],
+      quantity: item.quantity,
+      optionCode: item.colorCode || item.color || "DEFAULT",
+    }));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(minimalItems));
   } catch (error) {
     console.error("Failed to save cart to localStorage", error);
   }
@@ -39,15 +79,18 @@ export const cartSlice = createSlice({
     },
 
     addToCart: (state, action: PayloadAction<AddToCartPayload>) => {
-      const { product, color, quantity } = action.payload;
+      const { product, color, colorCode, quantity } = action.payload;
       const addQty = quantity && quantity > 0 ? quantity : 1;
-      const colorVal = color || "Mặc định";
-      const itemId = `${product.id}-${colorVal}`;
+      const optCode = colorCode || color || "DEFAULT";
+      const colorName = color || colorCode || "Mặc định";
+      const productId = String(product.id);
+      const itemId = `${productId}-${optCode}`;
 
       const existingIndex = state.items.findIndex(
         (item) =>
           String(item.id) === String(itemId) ||
-          (String(item.id).startsWith(String(product.id)) && item.color === colorVal)
+          ((item.productId === productId || String(item.id).startsWith(productId)) &&
+            (item.colorCode === optCode || item.color === colorName))
       );
 
       if (existingIndex !== -1) {
@@ -55,6 +98,9 @@ export const cartSlice = createSlice({
         const newQty = item.quantity + addQty;
         const maxStock = item.stock && item.stock > 0 ? item.stock : 99;
         item.quantity = Math.min(newQty, maxStock);
+        item.productId = productId;
+        item.colorCode = optCode;
+        item.color = colorName;
         state.error = null;
         saveCartToStorage(state.items);
         return;
@@ -85,9 +131,11 @@ export const cartSlice = createSlice({
 
       const newItem: CartItem = {
         id: itemId,
+        productId,
         name: product.name,
         category: categoryVal,
-        color: colorVal,
+        color: colorName,
+        colorCode: optCode,
         price: priceVal,
         originalPrice: originalPriceVal,
         quantity: addQty,
@@ -132,6 +180,99 @@ export const cartSlice = createSlice({
       saveCartToStorage(state.items);
     },
 
+    syncCartWithApiData: (
+      state,
+      action: PayloadAction<CartProductItemResponse[]>
+    ) => {
+      const freshProducts = action.payload;
+      const productMap = new Map(freshProducts.map((p) => [p.id, p]));
+
+      const updatedItems: CartItem[] = [];
+
+      for (const item of state.items) {
+        const productId = item.productId || String(item.id).split("-")[0];
+        const freshProd = productMap.get(productId);
+
+        // Remove if product not in API response, or is unavailable, or stock <= 0
+        if (!freshProd || !freshProd.isAvailable || freshProd.stockQuantity <= 0) {
+          continue;
+        }
+
+        // Validate product option code against freshProd.options
+        let matchedOptionLabel = item.color;
+        const currentCode = (item.colorCode || item.color || "").toLowerCase();
+
+        if (
+          currentCode &&
+          currentCode !== "default" &&
+          currentCode !== "mặc định" &&
+          freshProd.options &&
+          freshProd.options.length > 0
+        ) {
+          const colorOption = freshProd.options.find(
+            (opt) => opt.optionType === "COLOR"
+          );
+
+          if (colorOption && Array.isArray(colorOption.values) && colorOption.values.length > 0) {
+            let matchedVal: any = null;
+
+            for (const val of colorOption.values) {
+              if (typeof val === "string") {
+                if (val.toLowerCase() === currentCode) {
+                  matchedVal = val;
+                  break;
+                }
+              } else if (typeof val === "object" && val !== null) {
+                const vCode = (val.code || val.value || val.label || val.name || "").toLowerCase();
+                const vLabel = (val.label || val.value || val.name || val.code || "").toLowerCase();
+                if (vCode === currentCode || vLabel === currentCode) {
+                  matchedVal = val;
+                  break;
+                }
+              }
+            }
+
+            if (!matchedVal) {
+              // Option code not found in backend DB -> REMOVE item!
+              continue;
+            }
+
+            if (typeof matchedVal === "object" && matchedVal !== null) {
+              matchedOptionLabel = matchedVal.label || matchedVal.name || matchedVal.value || item.color;
+            } else if (typeof matchedVal === "string") {
+              matchedOptionLabel = matchedVal;
+            }
+          }
+        }
+
+        const updatedPrice = freshProd.price;
+        const updatedOriginalPrice =
+          freshProd.salePrice && freshProd.originalPrice
+            ? freshProd.originalPrice
+            : undefined;
+        const updatedQty = Math.min(item.quantity, freshProd.stockQuantity);
+
+        updatedItems.push({
+          ...item,
+          productId,
+          name: freshProd.name || item.name,
+          category: freshProd.category?.name || item.category,
+          color: matchedOptionLabel || item.color,
+          colorCode: item.colorCode || item.color,
+          price: updatedPrice,
+          originalPrice: updatedOriginalPrice,
+          image: freshProd.image || item.image,
+          stock: freshProd.stockQuantity,
+          isAvailable: true,
+          quantity: updatedQty,
+        });
+      }
+
+      state.items = updatedItems;
+      state.error = null;
+      saveCartToStorage(state.items);
+    },
+
     clearCart: (state) => {
       state.items = [];
       state.error = null;
@@ -149,8 +290,10 @@ export const {
   addToCart,
   updateQuantity,
   removeFromCart,
+  syncCartWithApiData,
   clearCart,
   clearCartError,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
+

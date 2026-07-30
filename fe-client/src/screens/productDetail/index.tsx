@@ -75,6 +75,40 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     );
   }
 
+  const resolveColorInfo = (chosenColor?: string) => {
+    if (!product || !chosenColor) {
+      return { colorName: chosenColor || "Mặc định", colorCode: chosenColor || "DEFAULT" };
+    }
+
+    const colorOption = product.options?.find((opt) => opt.optionType === "COLOR");
+    let colorName = chosenColor;
+    let colorCode = chosenColor;
+
+    if (colorOption && Array.isArray(colorOption.values)) {
+      const matched: any = colorOption.values.find((val: any) => {
+        if (typeof val === "string") return val === chosenColor;
+        return (
+          val.code === chosenColor ||
+          val.value === chosenColor ||
+          val.label === chosenColor ||
+          val.name === chosenColor
+        );
+      });
+
+      if (matched) {
+        if (typeof matched === "object") {
+          colorCode = matched.code || matched.value || matched.label || matched.name || chosenColor;
+          colorName = matched.label || matched.name || matched.value || matched.code || chosenColor;
+        } else {
+          colorCode = matched;
+          colorName = matched;
+        }
+      }
+    }
+
+    return { colorName, colorCode };
+  };
+
   const handleAddToCart = (color?: string, qty?: number) => {
     if (!product) return;
 
@@ -86,8 +120,8 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    const colorVal = chosenColor || "Mặc định";
-    const itemId = `${product.id}-${colorVal}`;
+    const { colorName, colorCode } = resolveColorInfo(chosenColor);
+    const itemId = `${product.id}-${colorCode}`;
     const isExisting = cartItems.some(
       (item) => String(item.id) === String(itemId)
     );
@@ -97,7 +131,7 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    dispatch(addToCart({ product, color: colorVal, quantity: chosenQty }));
+    dispatch(addToCart({ product, color: colorName, colorCode, quantity: chosenQty }));
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
@@ -112,8 +146,8 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    const colorVal = chosenColor || "Mặc định";
-    const itemId = `${product.id}-${colorVal}`;
+    const { colorName, colorCode } = resolveColorInfo(chosenColor);
+    const itemId = `${product.id}-${colorCode}`;
     const isExisting = cartItems.some(
       (item) => String(item.id) === String(itemId)
     );
@@ -123,7 +157,7 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    dispatch(addToCart({ product, color: colorVal, quantity: chosenQty }));
+    dispatch(addToCart({ product, color: colorName, colorCode, quantity: chosenQty }));
     router.push("/gio-hang");
   };
 

@@ -4,12 +4,20 @@ export interface CartItem {
   name: string;
   category?: string;
   color?: string;
+  colorCode?: string;
   price: number;
   originalPrice?: number;
   quantity: number;
   image: string;
   stock?: number;
   isAvailable?: boolean;
+}
+
+export interface StoredCartItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  optionCode: string;
 }
 
 export interface CartState {
@@ -34,6 +42,7 @@ export interface AddToCartPayload {
     stock?: number;
   };
   color?: string;
+  colorCode?: string;
   quantity?: number;
 }
 
@@ -50,4 +59,41 @@ export interface CartSummaryData {
   voucherDiscount: number;
   pointsDiscount: number;
   total: number;
+}
+
+export interface CartProductOptionValue {
+  label?: string;
+  value?: string;
+  code?: string;
+  hex?: string;
+  [key: string]: any;
+}
+
+export interface CartProductOption {
+  id: string;
+  optionType: "COLOR" | "SIZE" | string;
+  name: string;
+  displayOrder: number;
+  values: CartProductOptionValue[] | string[] | any;
+}
+
+export interface CartProductItemResponse {
+  id: string;
+  code: string | null;
+  name: string | null;
+  slug: string | null;
+  category: { id: string; name: string; slug: string } | null;
+  image: string | null;
+  imageAlt: string | null;
+  originalPrice: number | null;
+  salePrice: number | null;
+  price: number;
+  stockQuantity: number;
+  isAvailable: boolean;
+  unavailableReason: "PRODUCT_UNAVAILABLE" | "OUT_OF_STOCK" | "PRODUCT_NOT_FOUND" | null;
+  options: CartProductOption[];
+}
+
+export interface CartProductsResponseData {
+  items: CartProductItemResponse[];
 }

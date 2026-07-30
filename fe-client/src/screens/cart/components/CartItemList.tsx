@@ -50,10 +50,10 @@ export default function CartItemList({
         </div>
 
         <div className="hidden md:grid grid-cols-12 gap-4 pb-3 border-b border-border text-[12px] font-bold text-text-secondary uppercase">
-          <div className="col-span-6">Sản phẩm</div>
+          <div className="col-span-5">Sản phẩm</div>
           <div className="col-span-2 text-center">Đơn giá</div>
           <div className="col-span-2 text-center">Số lượng</div>
-          <div className="col-span-2 text-right">Tạm tính</div>
+          <div className="col-span-3 text-right">Tạm tính</div>
         </div>
 
         <div className="divide-y divide-border/60">
@@ -68,7 +68,7 @@ export default function CartItemList({
                   isOutOfStock ? "opacity-75 bg-background/50 rounded-lg p-2 md:p-0" : ""
                 }`}
               >
-                <div className="col-span-6 w-full flex items-center gap-3.5">
+                <div className="col-span-5 w-full flex items-center gap-3.5">
                   <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border border-border/80 shrink-0 bg-background">
                     <Image
                       src={item.image}
@@ -103,7 +103,7 @@ export default function CartItemList({
                   </div>
                 </div>
 
-                <div className="col-span-2 w-full md:w-auto flex md:flex-col justify-between md:justify-center items-center text-center">
+                <div className="col-span-2 w-full flex md:flex-col justify-between md:justify-center items-center text-center">
                   <span className="md:hidden text-[12px] text-text-secondary">Đơn giá:</span>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[13.5px] font-bold text-text-primary">
@@ -117,9 +117,9 @@ export default function CartItemList({
                   </div>
                 </div>
 
-                <div className="col-span-2 w-full md:w-auto flex md:justify-center items-center justify-between">
+                <div className="col-span-2 w-full flex items-center justify-between md:justify-center">
                   <span className="md:hidden text-[12px] text-text-secondary">Số lượng:</span>
-                  <div className="flex items-center border border-border rounded-md bg-surface overflow-hidden">
+                  <div className="flex items-center border border-border rounded-md bg-surface overflow-hidden shrink-0">
                     <button
                       onClick={() => onQtyChange(item.id, -1)}
                       disabled={isOutOfStock}
@@ -127,7 +127,7 @@ export default function CartItemList({
                     >
                       -
                     </button>
-                    <span className="w-8 text-center text-[12px] font-bold text-text-primary">
+                    <span className="w-9 text-center text-[12px] font-bold text-text-primary px-1">
                       {item.quantity}
                     </span>
                     <button
@@ -140,7 +140,7 @@ export default function CartItemList({
                   </div>
                 </div>
 
-                <div className="col-span-2 w-full md:w-auto flex items-center justify-between md:justify-end gap-3">
+                <div className="col-span-3 w-full flex items-center justify-between md:justify-end gap-3">
                   <span className="md:hidden text-[12px] text-text-secondary">Tạm tính:</span>
                   <span className="text-[14px] font-bold text-secondary">
                     {formatPrice(item.price * item.quantity)}
@@ -148,7 +148,7 @@ export default function CartItemList({
 
                   <button
                     onClick={() => onRemoveItem(item.id)}
-                    className="text-text-secondary/60 hover:text-error p-1.5 rounded-md hover:bg-background transition-colors ml-2"
+                    className="text-text-secondary/60 hover:text-error p-1.5 rounded-md hover:bg-background transition-colors ml-1 shrink-0"
                     title="Xóa sản phẩm"
                   >
                     <Trash2 size={16} />

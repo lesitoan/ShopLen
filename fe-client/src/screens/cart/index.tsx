@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CartBreadcrumbs from "./components/CartBreadcrumbs";
 import CartItemList from "./components/CartItemList";
@@ -9,25 +9,52 @@ import CartSummary from "./components/CartSummary";
 import CartEmptyState from "./components/CartEmptyState";
 import CartRelatedProducts from "./components/CartRelatedProducts";
 import MobileCartActionBar from "./components/MobileCartActionBar";
-import LoginRequiredModal from "@/components/modals/LoginRequiredModal";
-import { hasAuthTokens } from "@/services/authStorage";
+import Modal from "@/components/ui/Modal";
+import CartSkeleton from "@/components/skeletons/cart/CartSkeleton";
+import { useModal } from "@/hooks/useModal";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { updateQuantity, removeFromCart, clearCart } from "@/store/slices/cartSlice";
+import { updateQuantity, removeFromCart, clearCart, syncCartWithApiData } from "@/store/slices/cartSlice";
+import { useGetCartProductsMutation } from "@/services/api/cartApi";
 import { Voucher, CartSummaryData } from "@/types/cart.type";
-import {
-  STANDARD_SHIPPING_FEE,
-  MOCK_USER_POINTS,
-  LOYALTY_POINTS_CONVERSION_RATE,
-} from "./constants";
+import { STANDARD_SHIPPING_FEE } from "./constants";
 
 export default function CartScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
+  const [getCartProducts, { isLoading: isSyncing }] = useGetCartProductsMutation();
+  const [mounted, setMounted] = useState(false);
 
   const [appliedVoucher, setAppliedVoucher] = useState<Voucher | null>(null);
-  const [usePoints, setUsePoints] = useState(false);
-  const [isAuthRequiredOpen, setIsAuthRequiredOpen] = useState(false);
+  const confirmClearModal = useModal();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+    const productIds = Array.from(
+      new Set(
+        cartItems
+          .map((item) => item.productId || String(item.id).split("-")[0])
+          .filter((id) => Boolean(id) && id.length > 0)
+      )
+    );
+
+    if (productIds.length > 0) {
+      getCartProducts({ ids: productIds })
+        .unwrap()
+        .then((res) => {
+          if (res && Array.isArray(res.items)) {
+            dispatch(syncCartWithApiData(res.items));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to sync cart on CartScreen:", err);
+        });
+    }
+  }, []);
 
   const handleQtyChange = (id: number | string, delta: number) => {
     dispatch(updateQuantity({ id, delta }));
@@ -37,10 +64,10 @@ export default function CartScreen() {
     dispatch(removeFromCart(id));
   };
 
-  const handleClearAll = () => {
+  const handleConfirmClearAll = () => {
     dispatch(clearCart());
     setAppliedVoucher(null);
-    setUsePoints(false);
+    confirmClearModal.closeModal();
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -48,9 +75,9 @@ export default function CartScreen() {
   const shippingFee = subtotal === 0 ? 0 : STANDARD_SHIPPING_FEE;
 
   const voucherDiscount = appliedVoucher ? appliedVoucher.discountAmount : 0;
-  const pointsDiscount = usePoints ? MOCK_USER_POINTS * LOYALTY_POINTS_CONVERSION_RATE : 0;
+  const pointsDiscount = 0;
 
-  const total = Math.max(0, subtotal + shippingFee - voucherDiscount - pointsDiscount);
+  const total = Math.max(0, subtotal + shippingFee - voucherDiscount);
 
   const summaryData: CartSummaryData = {
     subtotal,
@@ -63,13 +90,12 @@ export default function CartScreen() {
   const hasOutOfStockItem = cartItems.some((item) => !item.isAvailable || (item.stock !== undefined && item.stock <= 0));
 
   const handleCheckoutClick = () => {
-    if (!hasAuthTokens()) {
-      setIsAuthRequiredOpen(true);
-      return;
-    }
-
     router.push("/thanh-toan");
   };
+
+  if (!mounted || isSyncing) {
+    return <CartSkeleton />;
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -98,14 +124,12 @@ export default function CartScreen() {
               items={cartItems}
               onQtyChange={handleQtyChange}
               onRemoveItem={handleRemoveItem}
-              onClearAll={handleClearAll}
+              onClearAll={confirmClearModal.openModal}
             />
 
             <VoucherAndPoints
               appliedVoucher={appliedVoucher}
               onApplyVoucher={setAppliedVoucher}
-              usePoints={usePoints}
-              onTogglePoints={setUsePoints}
               subtotal={subtotal}
             />
           </div>
@@ -128,9 +152,15 @@ export default function CartScreen() {
         onCheckoutClick={handleCheckoutClick}
       />
 
-      <LoginRequiredModal
-        isOpen={isAuthRequiredOpen}
-        onClose={() => setIsAuthRequiredOpen(false)}
+      <Modal
+        isOpen={confirmClearModal.isOpen}
+        onClose={confirmClearModal.closeModal}
+        title="Xóa tất cả sản phẩm?"
+        description="Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không? Thao tác này không thể hoàn tác."
+        onConfirm={handleConfirmClearAll}
+        confirmLabel="Xóa tất cả"
+        cancelLabel="Hủy"
+        isDestructive={true}
       />
     </main>
   );

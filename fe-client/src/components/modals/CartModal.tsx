@@ -3,10 +3,16 @@
 import React, { useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
+import Modal from "@/components/ui/Modal";
+import CartModalSkeleton from "@/components/skeletons/cart/CartModalSkeleton";
 import { CartItem } from "@/types/cart.type";
+import { useGetCartProductsMutation } from "@/services/api/cartApi";
+import { useAppDispatch } from "@/store/hooks";
+import { syncCartWithApiData } from "@/store/slices/cartSlice";
+import { useModal } from "@/hooks/useModal";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -28,11 +34,54 @@ export default function CartModal({
   onClearAll
 }: CartModalProps) {
   const desktopModalRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const [getCartProducts, { isLoading: isSyncing }] = useGetCartProductsMutation();
+  const confirmClearModal = useModal();
+
+  const handleConfirmClear = () => {
+    onClearAll();
+    confirmClearModal.closeModal();
+  };
+
+  useEffect(() => {
+    if (!isOpen || cartItems.length === 0) return;
+
+    const productIds = Array.from(
+      new Set(
+        cartItems
+          .map((item) => item.productId || String(item.id).split("-")[0])
+          .filter((id) => Boolean(id) && id.length > 0)
+      )
+    );
+
+    if (productIds.length > 0) {
+      getCartProducts({ ids: productIds })
+        .unwrap()
+        .then((res) => {
+          if (res && Array.isArray(res.items)) {
+            dispatch(syncCartWithApiData(res.items));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to sync cart products with API:", err);
+        });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!isOpen) return;
-      const target = event.target as Node;
+      const target = event.target as HTMLElement;
+
+      if (!target || !document.body.contains(target)) return;
+
+      if (
+        window.innerWidth < 768 ||
+        target?.closest?.('[data-mobile-bottom-sheet]')
+      ) {
+        return;
+      }
+
       if (
         desktopModalRef.current &&
         !desktopModalRef.current.contains(target) &&
@@ -75,10 +124,18 @@ export default function CartModal({
           <div className="flex items-center gap-2">
             <ShoppingCart size={16} className="text-secondary" />
             <span className="text-[13.5px] font-bold text-text-primary">Giỏ hàng của bạn ({cartCount})</span>
+            {isSyncing && (
+              <span title="Đang đồng bộ...">
+                <Loader2 size={13} className="animate-spin text-secondary shrink-0" />
+              </span>
+            )}
           </div>
           {cartItems.length > 0 && (
             <button
-              onClick={onClearAll}
+              onClick={(e) => {
+                e.stopPropagation();
+                confirmClearModal.openModal();
+              }}
               className="text-[11.5px] font-medium text-text-secondary hover:text-error transition-colors"
             >
               Xóa tất cả
@@ -87,7 +144,9 @@ export default function CartModal({
         </div>
 
         <div className="max-h-80 overflow-y-auto divide-y divide-border/60 px-4">
-          {cartItems.length === 0 ? (
+          {isSyncing ? (
+            <CartModalSkeleton />
+          ) : cartItems.length === 0 ? (
             <div className="py-8 text-center flex flex-col items-center justify-center">
               <ShoppingCart size={32} className="text-text-secondary/40 mb-2" />
               <p className="text-[13px] text-text-secondary font-medium">Giỏ hàng của bạn đang trống</p>
@@ -124,14 +183,20 @@ export default function CartModal({
 
                 <div className="flex items-center border border-border rounded-md bg-surface overflow-hidden">
                   <button
-                    onClick={() => onQtyChange(item.id, -1)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQtyChange(item.id, -1);
+                    }}
                     className="w-6 h-6 flex items-center justify-center text-text-secondary hover:bg-background text-xs font-bold"
                   >
                     -
                   </button>
                   <span className="w-6 text-center text-[11px] font-bold text-text-primary">{item.quantity}</span>
                   <button
-                    onClick={() => onQtyChange(item.id, 1)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onQtyChange(item.id, 1);
+                    }}
                     className="w-6 h-6 flex items-center justify-center text-text-secondary hover:bg-background text-xs font-bold"
                   >
                     +
@@ -139,7 +204,10 @@ export default function CartModal({
                 </div>
 
                 <button
-                  onClick={() => onRemoveItem(item.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveItem(item.id);
+                  }}
                   className="text-text-secondary/60 hover:text-error transition-colors p-1"
                   title="Xóa sản phẩm"
                 >
@@ -180,7 +248,9 @@ export default function CartModal({
       >
         <div className="flex flex-col gap-3 text-left">
           <div className="max-h-[55vh] overflow-y-auto divide-y divide-border/60">
-            {cartItems.length === 0 ? (
+            {isSyncing ? (
+              <CartModalSkeleton />
+            ) : cartItems.length === 0 ? (
               <div className="py-8 text-center flex flex-col items-center justify-center">
                 <ShoppingCart size={36} className="text-text-secondary/40 mb-2" />
                 <p className="text-[13px] text-text-secondary font-medium">Giỏ hàng của bạn đang trống</p>
@@ -210,14 +280,20 @@ export default function CartModal({
 
                   <div className="flex items-center border border-border rounded-md bg-surface overflow-hidden">
                     <button
-                      onClick={() => onQtyChange(item.id, -1)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onQtyChange(item.id, -1);
+                      }}
                       className="w-6 h-6 flex items-center justify-center text-text-secondary text-xs font-bold"
                     >
                       -
                     </button>
                     <span className="w-6 text-center text-[11px] font-bold text-text-primary">{item.quantity}</span>
                     <button
-                      onClick={() => onQtyChange(item.id, 1)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onQtyChange(item.id, 1);
+                      }}
                       className="w-6 h-6 flex items-center justify-center text-text-secondary text-xs font-bold"
                     >
                       +
@@ -225,7 +301,10 @@ export default function CartModal({
                   </div>
 
                   <button
-                    onClick={() => onRemoveItem(item.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveItem(item.id);
+                    }}
                     className="text-text-secondary/60 hover:text-error p-1"
                   >
                     <Trash2 size={15} />
@@ -257,6 +336,17 @@ export default function CartModal({
           )}
         </div>
       </MobileBottomSheet>
+
+      <Modal
+        isOpen={confirmClearModal.isOpen}
+        onClose={confirmClearModal.closeModal}
+        title="Xóa tất cả sản phẩm?"
+        description="Bạn có chắc chắn muốn xóa toàn bộ sản phẩm khỏi giỏ hàng không? Thao tác này không thể hoàn tác."
+        onConfirm={handleConfirmClear}
+        confirmLabel="Xóa tất cả"
+        cancelLabel="Hủy"
+        isDestructive={true}
+      />
     </>
   );
 }

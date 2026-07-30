@@ -1448,3 +1448,61 @@ type ProductDetailResponse = {
   metaDescription?: string | null;
 };
 ```
+
+### Client cart products API
+
+`POST /api/v1/cart/products`
+
+Public endpoint, khong can auth. Dung cho trang gio hang khi cart dang luu localStorage; FE gui danh sach product id trong cart, API tra product hien tai de FE map lai gia, ton kho va option.
+
+Request:
+
+```ts
+type CartProductListRequest = {
+  ids: string[];
+};
+```
+
+Rules:
+
+- Chi nhan danh sach `ids`, khong nhan gia/ten/anh tu FE.
+- Response giu dung thu tu `ids` FE gui len.
+- Neu id khong ton tai, van tra 1 item voi `isAvailable = false` va `unavailableReason = "PRODUCT_NOT_FOUND"` de FE xu ly.
+- API nay chi refresh du lieu cart, khong giu hang va khong thay the validate khi checkout/order.
+
+Response `data`:
+
+```ts
+type CartProductListResponse = {
+  items: Array<{
+    id: string;
+    code: string | null;
+    name: string | null;
+    slug: string | null;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
+    image: string | null;
+    imageAlt: string | null;
+    originalPrice: number | null;
+    salePrice: number | null;
+    price: number;
+    stockQuantity: number;
+    isAvailable: boolean;
+    unavailableReason:
+      | "PRODUCT_NOT_FOUND"
+      | "PRODUCT_UNAVAILABLE"
+      | "OUT_OF_STOCK"
+      | null;
+    options: Array<{
+      id: string;
+      optionType: "COLOR" | "SIZE";
+      name: string;
+      displayOrder: number;
+      values: unknown;
+    }>;
+  }>;
+};
+```

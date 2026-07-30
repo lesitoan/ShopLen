@@ -5,14 +5,38 @@ interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "
   label?: string;
 }
 
-export default function Radio({ label, className = "", disabled, checked, onChange, id, ...props }: RadioProps) {
+export default function Radio({
+  label,
+  className = "",
+  disabled,
+  checked,
+  onChange,
+  id,
+  onClick,
+  ...props
+}: RadioProps) {
   const generatedId = useId();
   const radioId = id || generatedId;
+
+  const handleClick = (e: React.MouseEvent<HTMLLabelElement>) => {
+    if (disabled) return;
+    if (onClick) onClick(e);
+    if (onChange && !checked) {
+      const syntheticEvent = {
+        target: { checked: true, value: props.value },
+        currentTarget: { checked: true, value: props.value },
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      onChange(syntheticEvent);
+    }
+  };
 
   return (
     <label
       htmlFor={radioId}
-      className={`inline-flex items-center gap-2 cursor-pointer select-none ${disabled ? "cursor-not-allowed opacity-50" : ""} ${className}`}
+      onClick={handleClick}
+      className={`inline-flex items-center gap-2 cursor-pointer select-none touch-manipulation py-1 ${
+        disabled ? "cursor-not-allowed opacity-50" : ""
+      } ${className}`}
     >
       <div className="relative flex items-center justify-center">
         <input

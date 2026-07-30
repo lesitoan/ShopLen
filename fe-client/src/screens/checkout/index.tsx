@@ -48,13 +48,15 @@ export default function CheckoutScreen() {
     isError: isAuthError,
   } = useGetMeQuery(undefined, {
     skip: !mounted,
+    refetchOnMountOrArgChange: true,
   });
 
   const {
     data: addresses = [],
     isLoading: isAddressesLoading,
   } = useGetCustomerAddressesQuery(undefined, {
-    skip: !mounted,
+    skip: !mounted || isAuthError || !user,
+    refetchOnMountOrArgChange: true,
   });
 
   const [createCustomerAddress] = useCreateCustomerAddressMutation();

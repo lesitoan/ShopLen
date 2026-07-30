@@ -61,8 +61,8 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
         Hành trình đơn hàng
       </h4>
 
-      {/* MOBILE: STEPPER HÀNG DỌC */}
-      <div className="flex flex-col gap-4 md:hidden relative pl-1">
+      {/* MOBILE / TABLET (<1024px): STEPPER HÀNG DỌC */}
+      <div className="flex flex-col gap-4 lg:hidden relative pl-1">
         {steps.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -72,8 +72,8 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
             <div key={step.key} className="flex items-center gap-3.5 relative">
               {index < steps.length - 1 && (
                 <div
-                  className={`absolute left-[17px] top-8 w-0.5 h-6 transition-colors duration-300 ${
-                    index < currentIndex ? "bg-emerald-600" : "bg-border/60"
+                  className={`absolute left-[17px] top-8 w-0 h-6 border-l-2 border-dashed transition-colors duration-300 ${
+                    index < currentIndex ? "border-emerald-600" : "border-border/80"
                   }`}
                 />
               )}
@@ -108,8 +108,8 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
         })}
       </div>
 
-      {/* DESKTOP: STEPPER HÀNG NGANG */}
-      <div className="hidden md:flex items-center justify-between relative w-full">
+      {/* DESKTOP (>=1024px): STEPPER HÀNG NGANG */}
+      <div className="hidden lg:flex items-center justify-between relative w-full">
         {steps.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -145,8 +145,8 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
 
               {index < steps.length - 1 && (
                 <div
-                  className={`flex-1 h-0.5 mx-3 -mt-6 transition-colors duration-300 ${
-                    index < currentIndex ? "bg-emerald-600" : "bg-border/60"
+                  className={`flex-1 border-t-2 border-dashed mx-3 -mt-6 transition-colors duration-300 ${
+                    index < currentIndex ? "border-emerald-600" : "border-border/80"
                   }`}
                 />
               )}

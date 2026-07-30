@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
-import { Clock, QrCode, ShieldCheck, ArrowLeft, Check, Copy } from "lucide-react";
+import { Clock, QrCode, ShieldCheck, ArrowLeft, Check, Copy, Download } from "lucide-react";
 import Button from "@/components/ui/Button";
 import type { PaymentQrResponseData } from "@/types/payment.type";
 
@@ -27,13 +27,64 @@ export default function PaymentPendingView({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
+  const handleDownloadQr = () => {
+    if (!qrData.qrImageUrl) return;
+
+    const openFallbackLink = () => {
+      const link = document.createElement("a");
+      link.href = qrData.qrImageUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.download = `VietQR-${qrData.orderCode || "don-hang"}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    try {
+      const image = new Image();
+      image.crossOrigin = "anonymous";
+      image.src = qrData.qrImageUrl;
+
+      image.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = image.naturalWidth || image.width || 500;
+          canvas.height = image.naturalHeight || image.height || 500;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(image, 0, 0);
+            const dataUrl = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.href = dataUrl;
+            link.download = `VietQR-${qrData.orderCode || "don-hang"}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            return;
+          }
+        } catch (e) {
+          console.warn("Canvas export fallback:", e);
+        }
+        openFallbackLink();
+      };
+
+      image.onerror = () => {
+        openFallbackLink();
+      };
+    } catch (error) {
+      console.warn("QR download fallback:", error);
+      openFallbackLink();
+    }
+  };
+
   return (
     <main className="flex-1 py-8 md:py-10 text-left">
       <div className="max-w-3xl mx-auto px-0 md:px-6 w-full">
         <div className="bg-surface border-0 md:border border-border rounded-none md:rounded-xl px-4 py-8 md:p-8 my-6 md:my-0 flex flex-col items-center text-center shadow-none md:shadow-sm">
           {/* HEADER & ĐẾM NGƯỢC */}
-          <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 px-3.5 py-1.5 rounded-full text-[13px] font-bold mb-4">
-            <Clock size={16} className="animate-pulse text-amber-600 dark:text-amber-400" />
+          <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 px-3.5 py-1.5 rounded-full text-[13px] font-bold mb-4 select-none">
+            <Clock size={16} className="animate-pulse text-amber-600 dark:text-amber-400 shrink-0" />
             <span>Đang chờ thanh toán — Hết hạn sau: {formatTime(timeLeft)}</span>
           </div>
 
@@ -45,13 +96,25 @@ export default function PaymentPendingView({
             Mở ứng dụng ngân hàng hoặc ví điện tử bất kỳ của bạn để quét mã QR VietQR tự động bên dưới. Hệ thống sẽ tự động xác nhận ngay sau khi nhận được tiền.
           </p>
 
-          {/* MÃ QR VIETQR TỰ ĐỘNG TỪ API */}
-          <div className="relative w-64 h-64 bg-surface border-2 border-primary/40 rounded-2xl p-4 flex items-center justify-center mb-6 shadow-sm">
-            <img
-              src={qrData.qrImageUrl}
-              alt={`Mã QR VietQR cho đơn hàng ${qrData.orderCode}`}
-              className="w-full h-full object-contain rounded-lg"
-            />
+          {/* MÃ QR VIETQR & NÚT TẢI XUỐNG */}
+          <div className="flex flex-col items-center gap-3 mb-6">
+            <div className="relative w-64 h-64 bg-surface border-2 border-primary/40 rounded-2xl p-4 flex items-center justify-center shadow-sm">
+              <img
+                src={qrData.qrImageUrl}
+                alt={`Mã QR VietQR cho đơn hàng ${qrData.orderCode}`}
+                className="w-full h-full object-contain rounded-lg"
+              />
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleDownloadQr}
+              className="gap-2 rounded-lg text-[12.5px] font-semibold text-text-primary hover:text-secondary border-border px-4 py-2"
+              title="Tải ảnh QR về máy"
+            >
+              <Download size={15} />
+              <span>Tải xuống mã QR</span>
+            </Button>
           </div>
 
           {/* THÔNG TIN CHUYỂN KHOẢN THỦ CÔNG */}
@@ -130,10 +193,6 @@ export default function PaymentPendingView({
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[12px] text-text-secondary mb-6">
-            <ShieldCheck size={16} className="text-emerald-600 shrink-0 animate-pulse" />
-            <span>Hệ thống tự động xác nhận chuyển khoản qua SePay ngay sau khi nhận tiền</span>
-          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
             <Link href="/" className="flex-1">

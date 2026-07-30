@@ -6,6 +6,7 @@ import PaymentLoadingView from "./components/PaymentLoadingView";
 import PaymentErrorView from "./components/PaymentErrorView";
 import PaymentSuccessView from "./components/PaymentSuccessView";
 import PaymentPendingView from "./components/PaymentPendingView";
+import PaymentExpiredView from "./components/PaymentExpiredView";
 
 interface PaymentQrScreenProps {
   orderId: string;
@@ -25,6 +26,11 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
   });
 
   const isPaid = qrData?.paymentStatus === "PAID";
+  const isExpired =
+    timeLeft <= 0 ||
+    qrData?.paymentStatus === "EXPIRED" ||
+    qrData?.paymentStatus === "CANCELLED" ||
+    qrData?.orderStatus === "CANCELLED";
 
   useEffect(() => {
     if (!qrData) return;
@@ -47,12 +53,12 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
   }, [qrData?.createdAt, qrData?.expiresAt]);
 
   useEffect(() => {
-    if (isPaid || timeLeft <= 0) return;
+    if (isPaid || isExpired) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isPaid]);
+  }, [timeLeft, isPaid, isExpired]);
 
   if (isLoading) {
     return <PaymentLoadingView />;
@@ -69,6 +75,10 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
         amount={qrData.amount}
       />
     );
+  }
+
+  if (isExpired) {
+    return <PaymentExpiredView qrData={qrData} />;
   }
 
   return (

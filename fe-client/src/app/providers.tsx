@@ -46,7 +46,6 @@ export default function AppProviders({ children }: { children: ReactNode }) {
           pauseOnFocusLoss={false}
           draggable
           pauseOnHover
-          theme="light"
         />
       </GoogleOAuthProvider>
     </Provider>

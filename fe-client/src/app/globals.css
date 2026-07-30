@@ -11,6 +11,9 @@
     --text-secondary: #6B7280;
     --primary-light: #FFF1F4;
     --footer-bg: #FCF8F9;
+
+    --toastify-color-light: var(--surface);
+    --toastify-text-color-light: var(--text-primary);
   }
 
   .dark {
@@ -21,6 +24,9 @@
     --text-secondary: #9CA3AF;
     --primary-light: #251C1E;
     --footer-bg: #1A1819;
+
+    --toastify-color-light: var(--surface);
+    --toastify-text-color-light: var(--text-primary);
   }
 
   body {
@@ -105,6 +111,26 @@
     border-radius: 12px !important;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08) !important;
   }
+}
+
+/* Toastify Dark Mode custom theme styling */
+.dark .Toastify__toast,
+.dark .Toastify__toast-theme--dark {
+  background-color: var(--surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .Toastify__close-button,
+.dark .Toastify__close-button--dark {
+  color: var(--text-secondary) !important;
+  opacity: 0.8;
+}
+
+.dark .Toastify__close-button:hover,
+.dark .Toastify__close-button--dark:hover {
+  opacity: 1;
 }
 
 @keyframes pulseDot {

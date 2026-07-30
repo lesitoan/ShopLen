@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal";
 import { useModal } from "@/hooks/useModal";
 import { toast } from "react-toastify";
 import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { getProvinceName } from "@/constants/location";
 import {
   useUpdateCustomerAddressMutation,
   useDeleteCustomerAddressMutation,
@@ -92,8 +93,8 @@ export default function ListAddress({ addresses }: ListAddressProps) {
     : "Xác nhận đặt địa chỉ mặc định";
 
   const modalDescription = isDeleteType
-    ? `Bạn có chắc chắn muốn xóa địa chỉ của "${modalData?.address.fullName}" (${modalData?.address.addressLine}, ${modalData?.address.provinceName})? Thao tác này không thể hoàn tác.`
-    : `Bạn có muốn đặt địa chỉ của "${modalData?.address.fullName}" (${modalData?.address.addressLine}, ${modalData?.address.provinceName}) làm địa chỉ nhận hàng mặc định?`;
+    ? `Bạn có chắc chắn muốn xóa địa chỉ của "${modalData?.address.fullName}" (${modalData?.address.addressLine}, ${getProvinceName(modalData?.address.provinceName)})? Thao tác này không thể hoàn tác.`
+    : `Bạn có muốn đặt địa chỉ của "${modalData?.address.fullName}" (${modalData?.address.addressLine}, ${getProvinceName(modalData?.address.provinceName)}) làm địa chỉ nhận hàng mặc định?`;
 
   const confirmBtnLabel = isDeleteType
     ? isDeleting
@@ -137,7 +138,7 @@ export default function ListAddress({ addresses }: ListAddressProps) {
               <p className="text-[13px] text-text-secondary flex items-start gap-1.5 mt-0.5">
                 <MapPin size={15} className="shrink-0 text-secondary mt-0.5" />
                 <span>
-                  {item.addressLine}, {item.provinceName}
+                  {item.addressLine}, {getProvinceName(item.provinceName)}
                 </span>
               </p>
             </div>

@@ -54,7 +54,7 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
   return (
     <div className="flex flex-col gap-4 text-left pt-3">
       <OrderStatusStepper orderStatus={detail.orderStatus} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
         <div className="bg-background/60 dark:bg-background/30 border border-border/60 rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
           <h4 className="font-bold text-text-primary border-b border-border/40 pb-1.5 flex items-center gap-1.5">
             <User size={14} className="text-secondary" />

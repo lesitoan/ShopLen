@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuthState } from "@/store/slices/authSlice";
+import { baseApi } from "@/services/api/baseApi";
 import DesktopHeader from "./components/DesktopHeader";
 import MobileHeader from "./components/MobileHeader";
 import Modal from "@/components/ui/Modal";
@@ -52,6 +53,7 @@ export default function Header() {
   const handleConfirmLogout = () => {
     clearAuthTokens();
     dispatch(clearAuthState());
+    dispatch(baseApi.util.resetApiState());
     setIsMobileMenuOpen(false);
     closeLogoutModal();
     router.push("/");

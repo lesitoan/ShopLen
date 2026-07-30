@@ -7,7 +7,7 @@ let socketServer: Server | null = null;
 export function setupSocketServer(httpServer: HttpServer) {
   socketServer = new Server(httpServer, {
     cors: {
-      origin: [env.CLIENT_URL, env.ADMIN_URL],
+      origin: env.CORS_ORIGINS,
       credentials: true,
     },
   });

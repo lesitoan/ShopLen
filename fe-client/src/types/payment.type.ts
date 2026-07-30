@@ -9,4 +9,6 @@ export interface PaymentQrResponseData {
   qrImageUrl: string;
   paymentStatus: "PENDING" | "PAID" | "MISMATCHED" | "CANCELLED" | string;
   orderStatus: string;
+  createdAt?: string;
+  expiresAt?: string | null;
 }

@@ -1,6 +1,13 @@
 export type ProfileTab = "PROFILE" | "ORDERS" | "ADDRESSES" | "CHANGE_PASSWORD";
 
-export type OrderStatus = "ALL" | "PENDING" | "SHIPPING" | "DELIVERED" | "CANCELLED";
+export type OrderStatus =
+  | "ALL"
+  | "PENDING_PAYMENT"
+  | "PENDING"
+  | "PACKING"
+  | "SHIPPING"
+  | "DELIVERED"
+  | "CANCELLED";
 
 export interface UserProfile {
   id: string;

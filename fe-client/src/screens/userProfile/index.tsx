@@ -87,7 +87,7 @@ export default function UserProfileScreen() {
 
           <div className="col-span-8 lg:col-span-9">
             {activeTab === "PROFILE" && <PersonalInfoTab />}
-            {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
+            {activeTab === "ORDERS" && <OrderHistoryTab />}
             {activeTab === "ADDRESSES" && <AddressTab />}
             {activeTab === "CHANGE_PASSWORD" && <ChangePasswordTab />}
           </div>
@@ -101,7 +101,7 @@ export default function UserProfileScreen() {
             onLogout={openLogoutModal}
           >
             {activeTab === "PROFILE" && <PersonalInfoTab />}
-            {activeTab === "ORDERS" && <OrderHistoryTab orders={MOCK_ORDERS} />}
+            {activeTab === "ORDERS" && <OrderHistoryTab />}
             {activeTab === "ADDRESSES" && <AddressTab />}
             {activeTab === "CHANGE_PASSWORD" && <ChangePasswordTab />}
           </MobileProfileView>

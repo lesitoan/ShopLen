@@ -31,15 +31,72 @@ export function useProductFilters() {
   const maxPriceParam = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : 300000;
   const pageParam = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
 
+  const [prevSearchParam, setPrevSearchParam] = useState(searchParam);
+  const [prevCategoryParam, setPrevCategoryParam] = useState(categoryParam);
+  const [prevColorsParam, setPrevColorsParam] = useState(colorsParam);
+
   const [localSearch, setLocalSearch] = useState(searchParam);
   const [localCategory, setLocalCategory] = useState(categoryParam);
   const [localColors, setLocalColors] = useState(colorsParam);
 
-  useEffect(() => {
+  const updateFilters = useCallback(
+    (updates: Record<string, string | number | null | undefined>) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      Object.entries(updates).forEach(([key, value]) => {
+        if (
+          value === null ||
+          value === undefined ||
+          value === "" ||
+          (key === "page" && Number(value) === 1) ||
+          (key === "minPrice" && Number(value) === 0) ||
+          (key === "maxPrice" && Number(value) === 300000) ||
+          (key === "sort" && value === "BEST_SELLING")
+        ) {
+          params.delete(key);
+        } else {
+          params.set(key, String(value));
+        }
+      });
+
+      const queryString = params.toString();
+      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+      router.push(newUrl, { scroll: false });
+    },
+    [router, pathname, searchParams]
+  );
+
+  // Khởi tạo hàm debouncedUpdateFilters từ thư viện debounce với thời gian chờ 1.5s (1500ms)
+  const debouncedUpdateFilters = useMemo(
+    () =>
+      debounce(
+        (searchVal: string, categoryVal: string, colorsVal: string) => {
+          updateFilters({
+            search: searchVal || null,
+            category: categoryVal || null,
+            colors: colorsVal || null,
+            page: 1,
+          });
+        },
+        1500
+      ),
+    [updateFilters]
+  );
+
+  // Đồng bộ local state ngay lập tức trong quá trình render khi URL params thay đổi (từ SearchModal hoặc điều hướng)
+  if (
+    searchParam !== prevSearchParam ||
+    categoryParam !== prevCategoryParam ||
+    colorsParam !== prevColorsParam
+  ) {
+    setPrevSearchParam(searchParam);
+    setPrevCategoryParam(categoryParam);
+    setPrevColorsParam(colorsParam);
     setLocalSearch(searchParam);
     setLocalCategory(categoryParam);
     setLocalColors(colorsParam);
-  }, [searchParam, categoryParam, colorsParam]);
+    debouncedUpdateFilters.clear?.();
+  }
 
   const sort = useMemo(() => {
     if (rawSortParam === "best_seller") return "BEST_SELLING";
@@ -99,51 +156,6 @@ export function useProductFilters() {
     [pageParam, sort, categoryIds, categoryParam, colorCodes, searchParam, minPriceParam, maxPriceParam]
   );
 
-  // Cập nhật tham số lên URL
-  const updateFilters = useCallback(
-    (updates: Record<string, string | number | null | undefined>) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (
-          value === null ||
-          value === undefined ||
-          value === "" ||
-          (key === "page" && Number(value) === 1) ||
-          (key === "minPrice" && Number(value) === 0) ||
-          (key === "maxPrice" && Number(value) === 300000) ||
-          (key === "sort" && value === "BEST_SELLING")
-        ) {
-          params.delete(key);
-        } else {
-          params.set(key, String(value));
-        }
-      });
-
-      const queryString = params.toString();
-      const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-      router.push(newUrl, { scroll: false });
-    },
-    [router, pathname, searchParams]
-  );
-
-  // Khởi tạo hàm debouncedUpdateFilters từ thư viện debounce với thời gian chờ 1.5s (1500ms)
-  const debouncedUpdateFilters = useMemo(
-    () =>
-      debounce(
-        (searchVal: string, categoryVal: string, colorsVal: string) => {
-          updateFilters({
-            search: searchVal || null,
-            category: categoryVal || null,
-            colors: colorsVal || null,
-            page: 1,
-          });
-        },
-        1500
-      ),
-    [updateFilters]
-  );
-
   // Clean-up debounced timer khi component unmount
   useEffect(() => {
     return () => {
@@ -151,7 +163,7 @@ export function useProductFilters() {
     };
   }, [debouncedUpdateFilters]);
 
-  // Thực thi debounced update khi các local filter (search, category, colors) thay đổi
+  // Thực thi debounced update khi các local filter thay đổi từ input trực tiếp
   useEffect(() => {
     if (
       localSearch === searchParam &&

@@ -22,6 +22,8 @@ import type { CustomerSession } from "@/types/auth.type";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { updateQuantity, removeFromCart, clearCart } from "@/store/slices/cartSlice";
 
+import { useSearchHistory } from "@/hooks/useSearchHistory";
+
 interface DesktopHeaderProps {
   isLoggedIn: boolean;
   isMobileMenuOpen: boolean;
@@ -45,14 +47,29 @@ export default function DesktopHeader({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  const [recentSearches, setRecentSearches] = useState<string[]>(INITIAL_RECENT_SEARCHES);
-  const keywordSuggestions = KEYWORD_SUGGESTIONS;
+
+  const {
+    searchValue,
+    setSearchValue,
+    recentSearches,
+    keywordSuggestions,
+    handleSearchSubmit,
+    handleRecentSearchClick,
+    removeRecentSearch,
+    clearRecentSearches,
+    resetSearchInput,
+  } = useSearchHistory();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const cartRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      resetSearchInput();
+    }
+  }, [isSearchOpen, resetSearchInput]);
 
   useEffect(() => {
     setMounted(true);
@@ -94,31 +111,6 @@ export default function DesktopHeader({
       localStorage.setItem("theme", "dark");
     }
   };
-
-  const router = useRouter();
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchValue.trim()) {
-      if (!recentSearches.includes(searchValue.trim())) {
-        setRecentSearches((prev) => [searchValue.trim(), ...prev.slice(0, 4)]);
-      }
-      setIsSearchOpen(false);
-      router.push(`/san-pham?search=${encodeURIComponent(searchValue.trim())}`);
-    }
-  };
-
-  const handleRecentSearchClick = (searchVal: string) => {
-    setSearchValue(searchVal);
-    router.push(`/san-pham?search=${encodeURIComponent(searchVal)}`);
-    setIsSearchOpen(false);
-  };
-
-  const removeRecentSearch = (index: number) => {
-    setRecentSearches((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  const clearRecentSearches = () => setRecentSearches([]);
 
   const handleRemoveItem = (id: number | string) => {
     dispatch(removeFromCart(id));
@@ -220,8 +212,8 @@ export default function DesktopHeader({
             searchValue={searchValue}
             setSearchValue={setSearchValue}
             recentSearches={recentSearches}
-            onSearchSubmit={handleSearchSubmit}
-            onRecentSearchClick={handleRecentSearchClick}
+            onSearchSubmit={(e) => handleSearchSubmit(e, () => setIsSearchOpen(false))}
+            onRecentSearchClick={(val) => handleRecentSearchClick(val, () => setIsSearchOpen(false))}
             onRemoveRecentSearch={removeRecentSearch}
             onClearRecentSearches={clearRecentSearches}
             keywordSuggestions={keywordSuggestions}

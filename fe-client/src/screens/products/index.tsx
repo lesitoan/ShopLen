@@ -78,12 +78,14 @@ export default function ProductsScreen() {
                 <span>Bộ lọc</span>
               </button>
 
-              <div className="w-44 select-none">
+              <div className="select-none flex justify-end">
                 <Select
                   options={SORT_OPTIONS}
                   value={filters.sort}
                   onChange={actions.setSort}
                   placeholder="Sắp xếp theo"
+                  fullWidth={false}
+                  align="right"
                 />
               </div>
             </div>

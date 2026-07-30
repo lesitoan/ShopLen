@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Search, X } from "lucide-react";
 import Checkbox from "@/components/ui/Checkbox";
 import { CATEGORY_FILTERS, COLOR_FILTERS } from "../constants";
 import { useGetCategoriesQuery, Category } from "@/services/api/categoryApi";
@@ -54,8 +54,18 @@ export default function FilterContent({ filters, actions }: FilterContentProps) 
             placeholder="Tìm mẫu mèo, gấu, hoa..."
             value={filters.search}
             onChange={(e) => actions.setSearch(e.target.value)}
-            className="w-full text-text-primary text-[13px] bg-surface border border-border outline-none transition-all duration-200 rounded-md py-1.5 pl-8 pr-3 focus:border-primary focus:ring-1 focus:ring-primary/20"
+            className="w-full text-text-primary text-[13px] bg-surface border border-border outline-none transition-all duration-200 rounded-md py-1.5 pl-8 pr-8 focus:border-primary focus:ring-1 focus:ring-primary/20"
           />
+          {filters.search && (
+            <button
+              type="button"
+              onClick={() => actions.setSearch("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary/50 hover:text-text-primary transition-colors p-1 rounded-full hover:bg-background"
+              title="Xóa từ khóa"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </div>
 

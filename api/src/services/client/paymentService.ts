@@ -92,6 +92,8 @@ export const paymentService = {
         totalAmount: true,
         paymentStatus: true,
         orderStatus: true,
+        createdAt: true,
+        expiresAt: true,
         payments: {
           take: 1,
           orderBy: { createdAt: "desc" },
@@ -105,6 +107,7 @@ export const paymentService = {
             accountNo: true,
             accountName: true,
             status: true,
+            createdAt: true,
           },
         },
       },
@@ -161,6 +164,8 @@ export const paymentService = {
       qrImageUrl,
       paymentStatus: order.paymentStatus,
       orderStatus: order.orderStatus,
+      createdAt: payment.createdAt || order.createdAt,
+      expiresAt: order.expiresAt,
     };
   },
 

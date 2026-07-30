@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { orderController } from "@/controllers/client/orderController.js";
-import { createOrderDto } from "@/dto/client/orderDto.js";
+import {
+  createOrderDto,
+  getOrderDetailDto,
+  listOrdersDto,
+} from "@/dto/client/orderDto.js";
 import { customerAuthMiddleware } from "@/middlewares/authMiddleware.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
@@ -13,4 +17,13 @@ orderRoutes.post(
   validateMiddleware(createOrderDto),
   asyncHandler(orderController.createOrder),
 );
-orderRoutes.get("/:id", asyncHandler(orderController.getOrderDetail));
+orderRoutes.get(
+  "/",
+  validateMiddleware(listOrdersDto),
+  asyncHandler(orderController.listOrders),
+);
+orderRoutes.get(
+  "/:id",
+  validateMiddleware(getOrderDetailDto),
+  asyncHandler(orderController.getOrderDetail),
+);

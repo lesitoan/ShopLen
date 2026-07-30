@@ -1596,6 +1596,126 @@ Error codes:
 - `PRODUCT_OPTION_REQUIRED`
 - `PRODUCT_OPTION_INVALID`
 
+### Client list orders API
+
+`GET /api/v1/orders`
+
+Protected endpoint, lay tat ca don hang cua customer dang dang nhap. Khong phan trang trong v1.
+
+Query:
+
+```ts
+type ListOrdersQuery = {
+  status?:
+    | "PENDING_PAYMENT"
+    | "PAID"
+    | "PACKING"
+    | "SHIPPING"
+    | "COMPLETED"
+    | "CANCELLED";
+};
+```
+
+Response `data`:
+
+```ts
+type ListOrdersResponse = Array<{
+  id: string;
+  orderCode: string;
+  totalAmount: number;
+  paymentStatus: "PENDING" | "PAID" | "MISMATCHED" | "FAILED" | "REFUNDED";
+  orderStatus:
+    | "PENDING_PAYMENT"
+    | "PAID"
+    | "PACKING"
+    | "SHIPPING"
+    | "COMPLETED"
+    | "CANCELLED";
+  expiresAt: string;
+  createdAt: string;
+  items: Array<{
+    id: string;
+    productId?: string | null;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    productSnapshot: unknown;
+  }>;
+}>;
+```
+
+### Client order detail API
+
+`GET /api/v1/orders/:id`
+
+Protected endpoint, lay chi tiet don hang cua customer dang dang nhap. API chi tra don thuoc customer hien tai.
+
+Response `data`:
+
+```ts
+type OrderDetailResponse = {
+  id: string;
+  orderCode: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
+  shippingAddress: string;
+  shippingProvince?: string | null;
+  shippingDistrict?: string | null;
+  shippingWard?: string | null;
+  customerNote?: string | null;
+  subtotal: number;
+  shippingFee: number;
+  discountAmount: number;
+  pointsDiscount: number;
+  totalAmount: number;
+  paymentMethod: "BANK_TRANSFER";
+  paymentStatus: "PENDING" | "PAID" | "MISMATCHED" | "FAILED" | "REFUNDED";
+  orderStatus:
+    | "PENDING_PAYMENT"
+    | "PAID"
+    | "PACKING"
+    | "SHIPPING"
+    | "COMPLETED"
+    | "CANCELLED";
+  expiresAt: string;
+  paidAt?: string | null;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  shippingUnit?: string | null;
+  trackingCode?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  items: Array<{
+    id: string;
+    productId?: string | null;
+    unitPrice: number;
+    quantity: number;
+    totalPrice: number;
+    productSnapshot: unknown;
+    createdAt: string;
+  }>;
+  payments: Array<{
+    id: string;
+    provider: "VIETQR" | "SEPAY" | "CASSO" | "MANUAL";
+    method: "BANK_TRANSFER";
+    bankName: string;
+    bankBin: string;
+    accountNo: string;
+    accountName: string;
+    amount: number;
+    transferContent: string;
+    qrImageUrl?: string | null;
+    transactionRef?: string | null;
+    isMatched: boolean;
+    status: "PENDING" | "PAID" | "MISMATCHED" | "FAILED" | "REFUNDED";
+    paidAt?: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
+```
+
 ### Client payment QR API
 
 `GET /api/v1/payments/:orderId/qr`

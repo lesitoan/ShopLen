@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+const orderStatusDto = z.enum([
+  "PENDING_PAYMENT",
+  "PAID",
+  "PACKING",
+  "SHIPPING",
+  "COMPLETED",
+  "CANCELLED",
+]);
+
 const selectedOptionDto = z.object({
   optionType: z.enum(["COLOR", "SIZE"]),
   code: z
@@ -31,5 +40,18 @@ export const createOrderDto = z.object({
   }),
 });
 
+export const listOrdersDto = z.object({
+  query: z.object({
+    status: orderStatusDto.optional(),
+  }),
+});
+
+export const getOrderDetailDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+});
+
 export type CreateOrderRequestDto = z.infer<typeof createOrderDto>["body"];
 export type CreateOrderItemDto = CreateOrderRequestDto["items"][number];
+export type ListOrdersQueryDto = z.infer<typeof listOrdersDto>["query"];

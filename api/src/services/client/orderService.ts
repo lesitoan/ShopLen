@@ -12,6 +12,7 @@ import { prisma } from "@/config/prismaClient.js";
 import type {
   CreateOrderItemDto,
   CreateOrderRequestDto,
+  ListOrdersQueryDto,
 } from "@/dto/client/orderDto.js";
 import { AppError } from "@/utils/appError.js";
 import { generateOrderCode } from "@/utils/generateOrderCode.js";
@@ -214,6 +215,38 @@ function findProductsForOrder(
 }
 
 export const orderService = {
+  async listOrders(customerId: string, query: ListOrdersQueryDto) {
+    const where: Prisma.OrderWhereInput = {
+      customerId,
+      ...(query.status ? { orderStatus: query.status } : {}),
+    };
+
+    return prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        orderCode: true,
+        totalAmount: true,
+        paymentStatus: true,
+        orderStatus: true,
+        expiresAt: true,
+        createdAt: true,
+        items: {
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            productId: true,
+            quantity: true,
+            unitPrice: true,
+            totalPrice: true,
+            productSnapshot: true,
+          },
+        },
+      },
+    });
+  },
+
   async createOrder(customerId: string, payload: CreateOrderRequestDto) {
     const items = groupItems(payload.items);
     const productIds = [...new Set(items.map((item) => item.productId))];
@@ -410,7 +443,79 @@ export const orderService = {
     );
   },
 
-  async getOrderDetail(orderId: string) {
-    return { orderId };
+  async getOrderDetail(customerId: string, orderId: string) {
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        customerId,
+      },
+      select: {
+        id: true,
+        orderCode: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        shippingAddress: true,
+        shippingProvince: true,
+        shippingDistrict: true,
+        shippingWard: true,
+        customerNote: true,
+        subtotal: true,
+        shippingFee: true,
+        discountAmount: true,
+        pointsDiscount: true,
+        totalAmount: true,
+        paymentMethod: true,
+        paymentStatus: true,
+        orderStatus: true,
+        expiresAt: true,
+        paidAt: true,
+        cancelledAt: true,
+        cancelReason: true,
+        shippingUnit: true,
+        trackingCode: true,
+        createdAt: true,
+        updatedAt: true,
+        items: {
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            productId: true,
+            unitPrice: true,
+            quantity: true,
+            totalPrice: true,
+            productSnapshot: true,
+            createdAt: true,
+          },
+        },
+        payments: {
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            provider: true,
+            method: true,
+            bankName: true,
+            bankBin: true,
+            accountNo: true,
+            accountName: true,
+            amount: true,
+            transferContent: true,
+            qrImageUrl: true,
+            transactionRef: true,
+            isMatched: true,
+            status: true,
+            paidAt: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new AppError("Không tìm thấy đơn hàng.", 404, "ORDER_NOT_FOUND");
+    }
+
+    return order;
   },
 };

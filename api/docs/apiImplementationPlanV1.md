@@ -1506,3 +1506,92 @@ type CartProductListResponse = {
   }>;
 };
 ```
+
+### Client create order API
+
+`POST /api/v1/orders`
+
+Protected endpoint, bat buoc customer da dang nhap. FE gui danh sach san pham trong cart localStorage va thong tin giao hang; API tu validate lai product, option, ton kho va tu tinh gia theo DB.
+
+Request:
+
+```ts
+type CreateOrderRequest = {
+  items: Array<{
+    productId: string;
+    quantity: number;
+    selectedOptions?: Array<{
+      optionType: "COLOR" | "SIZE";
+      code: string;
+    }>;
+  }>;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  shippingAddress: string;
+  shippingProvince?: string;
+  shippingDistrict?: string;
+  shippingWard?: string;
+  customerNote?: string;
+  shippingFee?: number;
+};
+```
+
+Rules:
+
+- Khong nhan `customerId` tu body, lay tu access token.
+- Khong tin gia/ten/anh/ton kho tu FE.
+- Product phai ton tai, `ACTIVE`, `deletedAt = null`.
+- Tong so luong theo tung product phai nho hon hoac bang `stockQuantity`.
+- Neu product co option `COLOR` hoac `SIZE`, FE phai gui option code tuong ung.
+- Option code phai con ton tai trong `productOptions.values[].code`.
+- Khi tao order thanh cong, API tru ton kho trong transaction.
+- `orderItems.productSnapshot` luu json gom thong tin product, gia va selected options tai thoi diem dat hang.
+- Tao payment `PENDING` voi noi dung chuyen khoan bang `orderCode`.
+- API nay chua tao QR image; FE co the dung payment info tra ve de hien thi thong tin chuyen khoan hoac goi API QR rieng sau.
+
+Response `data`:
+
+```ts
+type CreateOrderResponse = {
+  id: string;
+  orderCode: string;
+  subtotal: number;
+  shippingFee: number;
+  discountAmount: number;
+  pointsDiscount: number;
+  totalAmount: number;
+  paymentMethod: "BANK_TRANSFER";
+  paymentStatus: "PENDING";
+  orderStatus: "PENDING_PAYMENT";
+  expiresAt: string;
+  items: Array<{
+    id: string;
+    productId?: string | null;
+    unitPrice: number;
+    quantity: number;
+    totalPrice: number;
+    productSnapshot: unknown;
+  }>;
+  payments: Array<{
+    id: string;
+    provider: "VIETQR" | "SEPAY" | "CASSO" | "MANUAL";
+    method: "BANK_TRANSFER";
+    bankName: string;
+    bankBin: string;
+    accountNo: string;
+    accountName: string;
+    amount: number;
+    transferContent: string;
+    status: "PENDING";
+  }>;
+};
+```
+
+Error codes:
+
+- `PRODUCT_NOT_FOUND`
+- `PRODUCT_UNAVAILABLE`
+- `PRODUCT_OUT_OF_STOCK`
+- `PRODUCT_OPTION_REQUIRED`
+- `PRODUCT_OPTION_INVALID`

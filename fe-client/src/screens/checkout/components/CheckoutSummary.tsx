@@ -25,7 +25,7 @@ export default function CheckoutSummary({
   };
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-4 md:p-6 flex flex-col gap-4 sticky top-24">
+    <div className="bg-surface border-y md:border border-border rounded-none md:rounded-xl p-4 md:p-6 flex flex-col gap-4 sticky top-24">
       <h2 className="text-[16px] font-bold text-text-primary border-b border-border pb-3">
         Tổng quan chi phí
       </h2>

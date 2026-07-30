@@ -14,7 +14,7 @@ export default function OrderReviewItems({ items }: OrderReviewItemsProps) {
   };
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-4 md:p-6 flex flex-col gap-4">
+    <div className="bg-surface border-y md:border border-border rounded-none md:rounded-xl p-4 md:p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between border-b border-border pb-3">
         <h2 className="text-[16px] font-bold text-text-primary flex items-center gap-2">
           <ShoppingBag size={18} className="text-secondary" />

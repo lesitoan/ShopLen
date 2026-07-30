@@ -1,10 +1,10 @@
 import React from "react";
-import { QrCode, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { QrCode, CheckCircle2 } from "lucide-react";
 import { SINGLE_PAYMENT_METHOD } from "../constants";
 
 export default function PaymentMethodSelector() {
   return (
-    <div className="bg-surface border border-border rounded-xl p-4 md:p-6 flex flex-col gap-4">
+    <div className="bg-surface border-y md:border border-border rounded-none md:rounded-xl p-4 md:p-6 flex flex-col gap-4">
       <h2 className="text-[16px] font-bold text-text-primary border-b border-border pb-3 flex items-center gap-2">
         <QrCode size={18} className="text-secondary" />
         <span>Phương thức thanh toán</span>
@@ -31,13 +31,6 @@ export default function PaymentMethodSelector() {
           </div>
 
           <CheckCircle2 size={20} className="text-primary shrink-0" />
-        </div>
-
-        <div className="bg-surface border border-border/80 rounded-lg p-3 text-[12px] text-text-secondary flex items-start gap-2.5">
-          <ShieldCheck size={16} className="text-secondary shrink-0 mt-0.5" />
-          <span>
-            Hệ thống sẽ tự động tạo mã QR chính xác số tiền và nội dung chuyển khoản ngay sau khi bấm Đặt hàng. Đơn hàng được xác nhận tự động chỉ sau vài giây.
-          </span>
         </div>
       </div>
     </div>

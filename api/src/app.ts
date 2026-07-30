@@ -15,7 +15,13 @@ export function createApp() {
       credentials: true,
     }),
   );
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (request, _response, buffer) => {
+        (request as express.Request).rawBody = buffer.toString("utf8"); // để validate sepay
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: true }));
 
   app.get("/health", (_request, response) => {

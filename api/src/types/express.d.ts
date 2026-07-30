@@ -5,6 +5,7 @@ declare global {
     interface Request {
       customer?: CustomerSession;
       customerId?: string;
+      rawBody?: string;
     }
   }
 }

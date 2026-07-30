@@ -25,6 +25,9 @@ const envSchema = z.object({
   BANK_ACCOUNT_NUMBER: z.string().optional(),
   BANK_ACCOUNT_NAME: z.string().optional(),
   BANK_CODE: z.string().optional(),
+  VIETQR_TEMPLATE: z.string().default("compact"),
+  SEPAY_WEBHOOK_SECRET: z.string().optional(),
+  SEPAY_WEBHOOK_AUTH_TYPE: z.enum(["HMAC", "NONE"]).default("HMAC"),
 });
 
 export const env = envSchema.parse(process.env);

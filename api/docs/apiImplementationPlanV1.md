@@ -1548,7 +1548,7 @@ Rules:
 - Khi tao order thanh cong, API tru ton kho trong transaction.
 - `orderItems.productSnapshot` luu json gom thong tin product, gia va selected options tai thoi diem dat hang.
 - Tao payment `PENDING` voi noi dung chuyen khoan bang `orderCode`.
-- API nay chua tao QR image; FE co the dung payment info tra ve de hien thi thong tin chuyen khoan hoac goi API QR rieng sau.
+- FE co the dung payment info tra ve de hien thi thong tin chuyen khoan hoac goi API QR rieng sau.
 
 Response `data`:
 
@@ -1595,3 +1595,65 @@ Error codes:
 - `PRODUCT_OUT_OF_STOCK`
 - `PRODUCT_OPTION_REQUIRED`
 - `PRODUCT_OPTION_INVALID`
+
+### Client payment QR API
+
+`GET /api/v1/payments/:orderId/qr`
+
+Lay thong tin QR chuyen khoan cho don hang. API dung env ngan hang va tao QR theo `vietqr.app`.
+
+Response `data`:
+
+```ts
+type PaymentQrResponse = {
+  orderId: string;
+  orderCode: string;
+  amount: number;
+  transferContent: string;
+  bankCode: string;
+  accountNo: string;
+  accountName: string;
+  qrImageUrl: string;
+  paymentStatus: "PENDING" | "PAID" | "MISMATCHED" | "FAILED" | "REFUNDED";
+  orderStatus:
+    | "PENDING_PAYMENT"
+    | "PAID"
+    | "PACKING"
+    | "SHIPPING"
+    | "COMPLETED"
+    | "CANCELLED";
+};
+```
+
+### SePay payment webhook
+
+`POST /api/v1/payments/sepay/webhook`
+
+Public endpoint cho SePay goi khi co giao dich tien vao. Endpoint nay tra response rieng theo yeu cau SePay, khong dung wrapper `sendSuccess`.
+
+Required headers khi `SEPAY_WEBHOOK_AUTH_TYPE=HMAC`:
+
+```txt
+x-sepay-signature: sha256=<hex>
+x-sepay-timestamp: <unix_seconds>
+```
+
+Signature rule:
+
+```txt
+sha256=<HMAC_SHA256(SEPAY_WEBHOOK_SECRET, timestamp + "." + raw_body)>
+```
+
+Webhook rules:
+
+- API bat buoc verify HMAC bang raw body truoc khi xu ly payload.
+- API lay ma don tu `payload.code`, neu khong co thi tim trong `payload.content`/`payload.description` theo prefix `SITE_INFO.bankTransferNotePrefix`.
+- Neu khong tim thay ma don hoac khong tim thay payment pending, van tra `{ success: true }` de SePay khong retry vo ich.
+- Neu so tien nhan duoc nho hon payment amount, update payment `MISMATCHED`, khong update order paid.
+- Neu so tien hop le, update payment `PAID`, `isMatched=true`, luu `transactionRef`, `rawWebhookPayload`, va update order sang `paymentStatus=PAID`, `orderStatus=PAID`.
+
+Success response:
+
+```json
+{ "success": true }
+```

@@ -5,5 +5,4 @@ import { asyncHandler } from "@/utils/asyncHandler.js";
 export const paymentRoutes = Router();
 
 paymentRoutes.get("/:orderId/qr", asyncHandler(paymentController.createPaymentQr));
-paymentRoutes.post("/webhook/sepay", asyncHandler(paymentController.handleWebhook));
-paymentRoutes.post("/webhook/casso", asyncHandler(paymentController.handleWebhook));
+paymentRoutes.post("/sepay/webhook", asyncHandler(paymentController.handleSepayWebhook));

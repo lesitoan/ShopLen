@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -62,22 +62,24 @@ export default function Header() {
   return (
     <div className="w-full flex flex-col sticky top-0 z-50 bg-surface">
       <header className="w-full relative">
-        <DesktopHeader
-          isLoggedIn={isLoggedIn}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          handleLogout={openLogoutModal}
-          customer={customer}
-        />
+        <Suspense fallback={null}>
+          <DesktopHeader
+            isLoggedIn={isLoggedIn}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            handleLogout={openLogoutModal}
+            customer={customer}
+          />
 
-        <MobileHeader
-          isLoggedIn={isLoggedIn}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          mobileMenuRef={mobileMenuRef}
-          handleLogout={openLogoutModal}
-          customer={customer}
-        />
+          <MobileHeader
+            isLoggedIn={isLoggedIn}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            mobileMenuRef={mobileMenuRef}
+            handleLogout={openLogoutModal}
+            customer={customer}
+          />
+        </Suspense>
       </header>
 
       <Modal

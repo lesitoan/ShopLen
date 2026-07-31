@@ -20,7 +20,7 @@ export default function Radio({
 
   const handleClick = (e: React.MouseEvent<HTMLLabelElement>) => {
     if (disabled) return;
-    if (onClick) onClick(e);
+    if (onClick) onClick(e as unknown as React.MouseEvent<HTMLInputElement>);
     if (onChange && !checked) {
       const syntheticEvent = {
         target: { checked: true, value: props.value },

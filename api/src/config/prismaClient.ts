@@ -1,6 +1,6 @@
 import { env } from "@/config/envValidation.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -10,14 +10,15 @@ const adapter = new PrismaPg({
   connectionString: env.DATABASE_URL,
 });
 
+const prismaLogLevels: Prisma.LogLevel[] = env.PRISMA_LOG_QUERIES
+  ? ["query", "error", "warn"]
+  : ["error", "warn"];
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     adapter,
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"],
+    log: prismaLogLevels,
   });
 
 if (process.env.NODE_ENV !== "production") {

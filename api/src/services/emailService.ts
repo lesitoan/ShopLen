@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { env } from "@/config/envValidation.js";
+import { logger } from "@/config/logger.js";
 import { AppError } from "@/utils/appError.js";
 
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
@@ -31,8 +32,9 @@ export const emailService = {
   }) {
     if (!resend) {
       if (isDevMode()) {
-        console.info(
-          `[password-reset-otp] ${params.to}: ${params.otpCode}`,
+        logger.info(
+          { to: params.to, otpCode: params.otpCode },
+          "Password reset OTP generated in dev mode",
         );
         return;
       }

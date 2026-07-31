@@ -3,12 +3,14 @@ import express from "express";
 import helmet from "helmet";
 import { env } from "@/config/envValidation.js";
 import { errorHandlerMiddleware } from "@/middlewares/errorHandlerMiddleware.js";
+import { requestLoggerMiddleware } from "@/middlewares/requestLoggerMiddleware.js";
 import { routes } from "@/routes/index.js";
 
 export function createApp() {
   const app = express();
 
   app.use(helmet());
+  app.use(requestLoggerMiddleware);
   app.use(
     cors({
       origin: env.CORS_ORIGINS,

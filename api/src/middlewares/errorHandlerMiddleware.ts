@@ -1,15 +1,29 @@
 import type { ErrorRequestHandler } from "express";
 import multer from "multer";
+import { env } from "@/config/envValidation.js";
+import { logger } from "@/config/logger.js";
 import { MESSAGES } from "@/constants/messages.js";
 import { AppError } from "@/utils/appError.js";
 
 export const errorHandlerMiddleware: ErrorRequestHandler = (
   error,
-  _request,
+  request,
   response,
   _next,
 ) => {
+  const requestId = response.getHeader("x-request-id");
+
   if (error instanceof multer.MulterError) {
+    logger.warn(
+      {
+        err: error,
+        requestId,
+        method: request.method,
+        path: request.originalUrl,
+      },
+      "File upload request failed",
+    );
+
     const message =
       error.code === "LIMIT_FILE_SIZE"
         ? "File avatar không được vượt quá 2MB."
@@ -20,7 +34,7 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
       message,
       errorCode: error.code,
       internalMessage:
-        process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+        env.NODE_ENV === "development" || env.NODE_ENV === "test"
           ? error.message
           : undefined,
     });
@@ -28,6 +42,19 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
   }
 
   if (error instanceof AppError) {
+    if (error.statusCode >= 500) {
+      logger.error(
+        {
+          err: error,
+          requestId,
+          method: request.method,
+          path: request.originalUrl,
+          errorCode: error.errorCode,
+        },
+        "Application error",
+      );
+    }
+
     const payload: {
       success: false;
       message: string;
@@ -41,7 +68,7 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
 
     if (
       error.internalMessage &&
-      (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test")
+      (env.NODE_ENV === "development" || env.NODE_ENV === "test")
     ) {
       payload.internalMessage = error.internalMessage;
     }
@@ -49,6 +76,16 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
     response.status(error.statusCode).json(payload);
     return;
   }
+
+  logger.error(
+    {
+      err: error,
+      requestId,
+      method: request.method,
+      path: request.originalUrl,
+    },
+    "Unhandled API error",
+  );
 
   const payload: {
     success: false;
@@ -61,7 +98,7 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
     errorCode: "INTERNAL_SERVER_ERROR",
   };
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (env.NODE_ENV === "development" || env.NODE_ENV === "test") {
     payload.internalMessage =
       error instanceof Error ? error.message : "Unknown error";
   }

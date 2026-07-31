@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import { env } from "@/config/envValidation.js";
+import { logger } from "@/config/logger.js";
 import { AppError } from "@/utils/appError.js";
 
 const globalForRedis = globalThis as unknown as {
@@ -13,7 +14,7 @@ export const redisClient =
   });
 
 redisClient.on("error", (error) => {
-  console.error("Redis client error", error);
+  logger.error({ err: error }, "Redis client error");
 });
 
 if (process.env.NODE_ENV !== "production") {

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Truck, CheckCircle, XCircle, Clock, Package, ChevronDown } from "lucide-react";
+import { Truck, CheckCircle, XCircle, Clock, Package, ChevronDown, ChevronUp } from "lucide-react";
 import Button from "@/components/ui/Button";
 import OrderDetailModal from "@/components/modals/OrderDetailModal";
 import OrderDetailContent from "./OrderDetailContent";
@@ -55,10 +55,13 @@ export interface OrderCardProps {
 
 export default function OrderCard({
   order,
-  isExpanded = false,
+  isExpanded: propIsExpanded,
   onToggleExpand,
 }: OrderCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+
+  const isExpanded = propIsExpanded !== undefined ? propIsExpanded : internalExpanded;
 
   const formatPrice = (price: number) => {
     return price.toLocaleString("vi-VN") + "đ";
@@ -70,6 +73,8 @@ export default function OrderCard({
     } else {
       if (onToggleExpand) {
         onToggleExpand();
+      } else {
+        setInternalExpanded((prev) => !prev);
       }
     }
   };
@@ -98,7 +103,11 @@ export default function OrderCard({
   return (
     <>
       <div
-        className={`border rounded-xl p-4 md:p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col gap-3.5 ${config.cardBgStyle}`}
+        className={`border-[1.5px] border-dashed rounded-xl p-4 md:p-5 transition-all duration-300 flex flex-col gap-3.5 ${
+          isExpanded
+            ? "bg-primary-light border-secondary"
+            : "bg-surface border-primary hover:bg-primary-light hover:border-secondary"
+        }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-border/40 text-[12.5px]">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -142,9 +151,13 @@ export default function OrderCard({
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
-              variant="outline"
+              variant={isExpanded ? "outline" : "primary"}
               size="sm"
-              className="w-full sm:w-auto rounded-lg text-[13px] font-semibold px-4 py-2.5 justify-center border-border hover:border-secondary transition-all flex items-center gap-1.5"
+              className={`w-full sm:w-auto rounded-xl text-[13px] font-semibold px-4 py-2.5 justify-center flex items-center gap-1.5 ${
+                isExpanded
+                  ? "bg-surface border-border text-secondary hover:border-secondary hover:bg-primary-light"
+                  : "bg-primary text-white hover:bg-primary-hover shadow-2xs"
+              }`}
               onClick={handleDetailClick}
             >
               <span>{isExpanded ? "Thu gọn" : "Chi tiết"}</span>
@@ -158,7 +171,7 @@ export default function OrderCard({
 
         {isExpanded && (
           <div className="hidden md:block pt-3 border-t border-border/40 animate-in fade-in slide-in-from-top-2 duration-300">
-            <OrderDetailContent orderId={order.id} />
+            <OrderDetailContent orderId={order.id} onCollapse={handleDetailClick} />
           </div>
         )}
       </div>

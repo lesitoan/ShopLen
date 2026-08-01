@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, User, Phone, CreditCard, ShieldCheck, QrCode, Clock } from "lucide-react";
+import { MapPin, User, Phone, CreditCard, ShieldCheck, QrCode, Clock, ChevronUp } from "lucide-react";
 import LoadingDots from "@/components/ui/LoadingDots";
 import Button from "@/components/ui/Button";
 import OrderStatusStepper from "@/components/orders/OrderStatusStepper";
@@ -11,9 +11,10 @@ import { useGetOrderDetailQuery } from "@/services/api/orderApi";
 
 interface OrderDetailContentProps {
   orderId: string;
+  onCollapse?: () => void;
 }
 
-export default function OrderDetailContent({ orderId }: OrderDetailContentProps) {
+export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailContentProps) {
   const { data: detail, isLoading, isError } = useGetOrderDetailQuery(orderId, {
     skip: !orderId,
   });
@@ -55,7 +56,7 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
     <div className="flex flex-col gap-4 text-left pt-3">
       <OrderStatusStepper orderStatus={detail.orderStatus} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-        <div className="bg-background/60 dark:bg-background/30 border border-border/60 rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
+        <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
           <h4 className="font-bold text-text-primary border-b border-border/40 pb-1.5 flex items-center gap-1.5">
             <User size={14} className="text-secondary" />
             <span>Thông tin người nhận</span>
@@ -74,7 +75,7 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
           </div>
         </div>
 
-        <div className="bg-background/60 dark:bg-background/30 border border-border/60 rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
+        <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
           <h4 className="font-bold text-text-primary border-b border-border/40 pb-1.5 flex items-center gap-1.5">
             <CreditCard size={14} className="text-secondary" />
             <span>Thanh toán & Vận chuyển</span>
@@ -130,7 +131,7 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
         </div>
       </div>
 
-      <div className="bg-background/60 dark:bg-background/30 border border-border/60 rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
+      <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
         <h4 className="font-bold text-text-primary border-b border-border/40 pb-2">
           Danh sách sản phẩm ({detail.items.length})
         </h4>
@@ -171,7 +172,7 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
         </div>
       </div>
 
-      <div className="bg-surface border border-border/80 rounded-xl p-3.5 flex flex-col gap-1.5 text-[12.5px]">
+      <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-1.5 text-[12.5px]">
         <div className="flex justify-between text-text-secondary">
           <span>Tạm tính</span>
           <span className="font-semibold text-text-primary">{formatPrice(detail.subtotal)}</span>
@@ -191,6 +192,19 @@ export default function OrderDetailContent({ orderId }: OrderDetailContentProps)
           <span className="font-bold text-secondary text-[16px]">{formatPrice(detail.totalAmount)}</span>
         </div>
       </div>
+
+      {onCollapse && (
+        <div className="hidden md:flex justify-center pt-1">
+          <button
+            type="button"
+            onClick={onCollapse}
+            className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-secondary hover:text-secondary-hover transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer py-1"
+          >
+            <span>Thu gọn</span>
+            <ChevronUp size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

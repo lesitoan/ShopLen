@@ -35,8 +35,8 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
         Hành trình đơn hàng
       </h4>
 
-      {/* MOBILE / TABLET (<1024px): STEPPER HÀNG DỌC */}
-      <div className="flex flex-col gap-4.5 lg:hidden relative pl-1">
+      {/* STEPPER HÀNG DỌC (HIỂN THỊ CẢ TRÊN MOBILE VÀ DESKTOP) */}
+      <div className="flex flex-col gap-4.5 relative pl-1">
         {ORDER_STATUS_STEPS.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -81,58 +81,6 @@ export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperPr
                 </span>
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* DESKTOP (>=1024px): STEPPER HÀNG NGANG */}
-      <div className="hidden lg:flex items-center justify-between relative w-full pt-1 pb-2">
-        {ORDER_STATUS_STEPS.map((step, index) => {
-          const isCompleted = index < currentIndex;
-          const isCurrent = index === currentIndex;
-          const StepIcon = step.icon;
-
-          return (
-            <React.Fragment key={step.key}>
-              <div className="flex flex-col items-center gap-2 z-10 shrink-0">
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    isCompleted
-                      ? "bg-primary text-white shadow-xs"
-                      : isCurrent
-                      ? "bg-primary text-white ring-4 ring-primary-light shadow-md scale-105"
-                      : "bg-background border-2 border-border text-text-secondary/50"
-                  }`}
-                >
-                  {isCompleted ? <Check size={16} /> : <StepIcon size={16} />}
-                </div>
-
-                <div className="flex flex-col items-center text-center gap-0.5 max-w-[130px]">
-                  <span
-                    className={`text-[12px] font-bold whitespace-nowrap ${
-                      isCurrent
-                        ? "text-secondary"
-                        : isCompleted
-                        ? "text-text-primary"
-                        : "text-text-secondary/70"
-                    }`}
-                  >
-                    {step.label}
-                  </span>
-                  <span className="text-[11px] text-text-secondary leading-tight">
-                    {step.desc}
-                  </span>
-                </div>
-              </div>
-
-              {index < ORDER_STATUS_STEPS.length - 1 && (
-                <div
-                  className={`flex-1 h-[1px] dashed-line-h mx-2 -mt-10 transition-colors duration-300 ${
-                    index < currentIndex ? "text-primary" : "text-border"
-                  }`}
-                />
-              )}
-            </React.Fragment>
           );
         })}
       </div>

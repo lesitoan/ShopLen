@@ -54,7 +54,7 @@ export default function CategoryGrid() {
   return (
     <section className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-16">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-8 flex flex-col justify-start items-start overflow-hidden w-full">
+        <div className="lg:col-span-8 flex flex-col justify-start items-start w-full">
           <div className="w-full">
             <div className="flex items-center justify-between gap-4 mb-2">
               <h2 className="text-[20px] md:text-[22px] font-bold text-text-primary leading-tight">
@@ -91,8 +91,8 @@ export default function CategoryGrid() {
           </div>
 
           <div
-            className="w-full overflow-hidden transition-[height] duration-500 ease-in-out"
-            style={{ height: containerHeight ? `${containerHeight}px` : "auto" }}
+            className="w-full overflow-hidden p-1 -m-1 transition-[height] duration-500 ease-in-out"
+            style={{ height: containerHeight ? `${containerHeight + 8}px` : "auto" }}
           >
             {isLoading ? (
               <CategoryGridSkeleton />
@@ -113,7 +113,7 @@ export default function CategoryGrid() {
                   <div
                     key={pageIdx}
                     ref={pageIdx === currentPage ? activeSlideRef : null}
-                    className="w-full shrink-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-start content-start"
+                    className="w-full shrink-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-start content-start p-1"
                   >
                     {pageItems.map((category: Category) => (
                       <Link

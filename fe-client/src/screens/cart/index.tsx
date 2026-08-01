@@ -110,7 +110,7 @@ export default function CartScreen() {
   }
 
   return (
-    <main className="flex-1 py-8 pb-28 md:pb-0 text-left">
+    <main className="flex-1 py-8 pb-28 md:pb-16 text-left">
       <div className="max-w-6xl mx-auto px-4 md:px-6 w-full">
         <CartBreadcrumbs />
 

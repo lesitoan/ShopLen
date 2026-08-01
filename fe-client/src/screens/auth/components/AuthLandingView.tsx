@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
-import SocialLoginOptions from "./SocialLoginOptions";
 import { AuthViewMode } from "@/types/auth.type";
 
 interface AuthLandingViewProps {
@@ -48,8 +47,6 @@ export default function AuthLandingView({ onSwitchView }: AuthLandingViewProps) 
           Đăng nhập
         </Button>
       </div>
-
-      <SocialLoginOptions />
     </div>
   );
 }

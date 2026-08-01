@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import AuthScreen from "@/screens/auth";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Khôi phục mật khẩu | Tiệm Len Nhà Kiều",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function ForgotPasswordPage() {
-  return <AuthScreen initialMode="FORGOT_PASSWORD" />;
+  return (
+    <Suspense fallback={null}>
+      <AuthScreen initialMode="FORGOT_PASSWORD" />
+    </Suspense>
+  );
 }

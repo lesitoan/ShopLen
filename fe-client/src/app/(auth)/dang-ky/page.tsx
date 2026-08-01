@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import AuthScreen from "@/screens/auth";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Đăng ký tài khoản | Tiệm Len Nhà Kiều",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
-  return <AuthScreen initialMode="REGISTER" />;
+  return (
+    <Suspense fallback={null}>
+      <AuthScreen initialMode="REGISTER" />
+    </Suspense>
+  );
 }

@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { ChevronLeft, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import SocialLoginOptions from "./SocialLoginOptions";
 import { RegisterFormData, AuthViewMode } from "@/types/auth.type";
 import { useLazyGetMeQuery, useRegisterMutation } from "@/services/api/authApi";
 import { saveAuthTokens } from "@/services/authStorage";
@@ -195,8 +194,6 @@ export default function RegisterFormView({
           Đăng ký
         </Button>
       </form>
-
-      <SocialLoginOptions />
     </div>
   );
 }

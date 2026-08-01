@@ -5,7 +5,6 @@ import { ChevronLeft, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Checkbox from "@/components/ui/Checkbox";
-import SocialLoginOptions from "./SocialLoginOptions";
 import { LoginFormData, AuthViewMode } from "@/types/auth.type";
 import { useLazyGetMeQuery, useLoginMutation } from "@/services/api/authApi";
 import { saveAuthTokens } from "@/services/authStorage";
@@ -191,8 +190,6 @@ export default function LoginFormView({
           Đăng nhập
         </Button>
       </form>
-
-      <SocialLoginOptions />
     </div>
   );
 }

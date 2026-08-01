@@ -3,24 +3,35 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthLandingView from "./components/AuthLandingView";
 import LoginFormView from "./components/LoginFormView";
 import RegisterFormView from "./components/RegisterFormView";
 import ForgotPasswordFormView from "./components/ForgotPasswordFormView";
+import SocialLoginOptions from "./components/SocialLoginOptions";
 import MobileBottomSheet from "@/components/ui/MobileBottomSheet";
 
 import { AuthViewMode } from "@/types/auth.type";
 import { AUTH_SHARED_BG_IMAGE, AUTH_BRAND_NAME } from "./constants";
+import { hasAuthTokens } from "@/services/authStorage";
+import { useAppSelector } from "@/store/hooks";
 
 interface AuthScreenProps {
   initialMode?: AuthViewMode;
 }
 
 export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const customer = useAppSelector((state) => state.auth.customer);
   const [viewMode, setViewMode] = useState<AuthViewMode>(initialMode);
   const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const isLoggedIn = Boolean(customer || hasAuthTokens());
 
   useEffect(() => {
+    setIsMounted(true);
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const syncViewport = () => {
       setIsMobileViewport(mediaQuery.matches);
@@ -33,6 +44,18 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
       mediaQuery.removeEventListener("change", syncViewport);
     };
   }, []);
+
+  useEffect(() => {
+    if (isMounted && isLoggedIn) {
+      const redirectTarget =
+        searchParams.get("redirect") || searchParams.get("returnUrl") || "/";
+      router.replace(redirectTarget);
+    }
+  }, [isMounted, isLoggedIn, router, searchParams]);
+
+  if (!isMounted || isLoggedIn) {
+    return null;
+  }
 
   const renderAuthView = () => (
     <>
@@ -52,6 +75,13 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
         <ForgotPasswordFormView onSwitchView={setViewMode} />
       )}
     </>
+  );
+
+  const renderAuthContent = () => (
+    <div className="flex w-full flex-col gap-5">
+      {renderAuthView()}
+      {viewMode !== "FORGOT_PASSWORD" && <SocialLoginOptions />}
+    </div>
   );
 
   return (
@@ -103,7 +133,7 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
           maxHeightClass="max-h-[85vh]"
           paddingClass="px-6 pt-2 pb-24"
         >
-          {renderAuthView()}
+          {renderAuthContent()}
         </MobileBottomSheet>
       </div>
       )}
@@ -143,7 +173,7 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
         </div>
 
         <div className="w-1/2 p-10 flex flex-col justify-center bg-surface">
-          {renderAuthView()}
+          {renderAuthContent()}
         </div>
       </div>
       )}

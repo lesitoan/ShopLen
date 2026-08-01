@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import AuthLandingView from "./components/AuthLandingView";
@@ -18,11 +18,47 @@ interface AuthScreenProps {
 
 export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps) {
   const [viewMode, setViewMode] = useState<AuthViewMode>(initialMode);
+  const [isMobileViewport, setIsMobileViewport] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const syncViewport = () => {
+      setIsMobileViewport(mediaQuery.matches);
+    };
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncViewport);
+    };
+  }, []);
+
+  const renderAuthView = () => (
+    <>
+      {viewMode === "LANDING" && (
+        <AuthLandingView onSwitchView={setViewMode} />
+      )}
+
+      {viewMode === "LOGIN" && (
+        <LoginFormView onSwitchView={setViewMode} />
+      )}
+
+      {viewMode === "REGISTER" && (
+        <RegisterFormView onSwitchView={setViewMode} />
+      )}
+
+      {viewMode === "FORGOT_PASSWORD" && (
+        <ForgotPasswordFormView onSwitchView={setViewMode} />
+      )}
+    </>
+  );
 
   return (
     <main className="h-screen w-full flex flex-col items-center py-8 px-4 bg-background select-none relative overflow-y-auto">
       {/* MOBILE FULLSCREEN WRAPPER WITH DARK BLURRED COVER BACKGROUND & BOTTOM SHEET */}
-      <div className="md:hidden fixed inset-0 z-40 bg-black overflow-hidden flex flex-col justify-between">
+      {isMobileViewport && (
+      <div className="fixed inset-0 z-40 bg-black overflow-hidden flex flex-col justify-between">
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <Image
             src={AUTH_SHARED_BG_IMAGE}
@@ -67,26 +103,14 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
           maxHeightClass="max-h-[85vh]"
           paddingClass="px-6 pt-2 pb-24"
         >
-          {viewMode === "LANDING" && (
-            <AuthLandingView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "LOGIN" && (
-            <LoginFormView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "REGISTER" && (
-            <RegisterFormView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "FORGOT_PASSWORD" && (
-            <ForgotPasswordFormView onSwitchView={setViewMode} />
-          )}
+          {renderAuthView()}
         </MobileBottomSheet>
       </div>
+      )}
 
       {/* DESKTOP SPLIT CONTAINER WITH FULL COVER LEFT BANNER */}
-      <div className="hidden md:flex max-w-4xl lg:max-w-5xl w-full bg-surface border border-border rounded-3xl overflow-hidden flex-row items-stretch min-h-[500px] md:min-h-[560px] relative z-10 my-auto shrink-0">
+      {isMobileViewport === false && (
+      <div className="flex max-w-4xl lg:max-w-5xl w-full bg-surface border border-border rounded-3xl overflow-hidden flex-row items-stretch min-h-[500px] md:min-h-[560px] relative z-10 my-auto shrink-0">
         <div className="w-1/2 p-8 flex flex-col justify-between relative overflow-hidden border-r border-border/60">
           <Image
             src={AUTH_SHARED_BG_IMAGE}
@@ -119,23 +143,10 @@ export default function AuthScreen({ initialMode = "LANDING" }: AuthScreenProps)
         </div>
 
         <div className="w-1/2 p-10 flex flex-col justify-center bg-surface">
-          {viewMode === "LANDING" && (
-            <AuthLandingView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "LOGIN" && (
-            <LoginFormView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "REGISTER" && (
-            <RegisterFormView onSwitchView={setViewMode} />
-          )}
-
-          {viewMode === "FORGOT_PASSWORD" && (
-            <ForgotPasswordFormView onSwitchView={setViewMode} />
-          )}
+          {renderAuthView()}
         </div>
       </div>
+      )}
     </main>
   );
 }

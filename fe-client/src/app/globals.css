@@ -91,6 +91,19 @@
   .animate-pulse-dot {
     animation: pulseDot 1.4s infinite ease-in-out both;
   }
+
+  /* Thin, delicate & spaced-out dashed lines */
+  .dashed-line-v {
+    background-image: linear-gradient(to bottom, currentColor 40%, transparent 40%);
+    background-size: 1px 14px;
+    background-repeat: repeat-y;
+  }
+
+  .dashed-line-h {
+    background-image: linear-gradient(to right, currentColor 40%, transparent 40%);
+    background-size: 14px 1px;
+    background-repeat: repeat-x;
+  }
 }
 
 /* Custom Toast notification margins on mobile */

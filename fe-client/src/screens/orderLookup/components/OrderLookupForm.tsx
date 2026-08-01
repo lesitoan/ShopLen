@@ -1,22 +1,37 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Search, AlertCircle } from "lucide-react";
+import { toast } from "react-toastify";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import { useLookupOrderMutation } from "@/services/api/orderApi";
+import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import type { OrderDetailResponse } from "@/types/order.type";
 
-interface OrderLookupFormInputs {
+export interface OrderLookupFormInputs {
   orderCode: string;
   phone: string;
 }
 
 interface OrderLookupFormProps {
-  onSearch: (data: OrderLookupFormInputs) => void;
-  isLoading?: boolean;
+  onSuccess: (order: OrderDetailResponse) => void;
+  onError: (errorMessage: string) => void;
 }
 
-export default function OrderLookupForm({ onSearch, isLoading = false }: OrderLookupFormProps) {
+export default function OrderLookupForm({ onSuccess, onError }: OrderLookupFormProps) {
+  const [lookupOrder, { isLoading }] = useLookupOrderMutation();
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+
+  useEffect(() => {
+    if (cooldownSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setCooldownSeconds((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
+
   const {
     register,
     handleSubmit,
@@ -29,8 +44,45 @@ export default function OrderLookupForm({ onSearch, isLoading = false }: OrderLo
     mode: "onTouched",
   });
 
-  const onSubmit = (data: OrderLookupFormInputs) => {
-    onSearch(data);
+  const onSubmit = async (data: OrderLookupFormInputs) => {
+    if (isLoading || cooldownSeconds > 0) {
+      return;
+    }
+
+    try {
+      const result = await lookupOrder({
+        orderCode: data.orderCode.trim().toUpperCase(),
+        customerPhone: data.phone.trim(),
+      }).unwrap();
+      onSuccess(result);
+    } catch (err: any) {
+      const isRateLimit =
+        err?.status === 429 ||
+        err?.data?.errorCode === "RATE_LIMIT_EXCEEDED" ||
+        (typeof err?.data?.message === "string" &&
+          err.data.message.includes("quá nhiều lần"));
+
+      const msg = getApiErrorMessage(
+        err,
+        "Không tìm thấy thông tin đơn hàng với mã đơn và số điện thoại đã nhập."
+      );
+
+      if (isRateLimit) {
+        toast.error(msg);
+        setCooldownSeconds(120);
+      } else {
+        onError(msg);
+      }
+    }
+  };
+
+  const formatCooldownText = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0) {
+      return `Thử lại sau (${mins}m ${secs.toString().padStart(2, "0")}s)`;
+    }
+    return `Thử lại sau (${secs}s)`;
   };
 
   return (
@@ -96,11 +148,16 @@ export default function OrderLookupForm({ onSearch, isLoading = false }: OrderLo
         <Button
           type="submit"
           isLoading={isLoading}
+          disabled={isLoading || cooldownSeconds > 0}
           loadingText="Đang tìm kiếm..."
           className="w-full sm:w-fit self-start mt-1"
         >
           <Search size={15} />
-          <span>Tra cứu ngay</span>
+          <span>
+            {cooldownSeconds > 0
+              ? formatCooldownText(cooldownSeconds)
+              : "Tra cứu ngay"}
+          </span>
         </Button>
       </form>
     </div>

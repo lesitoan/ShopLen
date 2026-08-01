@@ -6,7 +6,7 @@ import Link from "next/link";
 import { MapPin, User, Phone, CreditCard, ShieldCheck, QrCode, Clock } from "lucide-react";
 import LoadingDots from "@/components/ui/LoadingDots";
 import Button from "@/components/ui/Button";
-import OrderStatusStepper from "./OrderStatusStepper";
+import OrderStatusStepper from "@/components/orders/OrderStatusStepper";
 import { useGetOrderDetailQuery } from "@/services/api/orderApi";
 
 interface OrderDetailContentProps {

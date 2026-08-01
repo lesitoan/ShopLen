@@ -5,6 +5,7 @@ import type {
   OrderResponseData,
   CustomerOrderResponse,
   OrderDetailResponse,
+  LookupOrderPayload,
 } from "@/types/order.type";
 
 export const orderApi = baseApi.injectEndpoints({
@@ -18,6 +19,16 @@ export const orderApi = baseApi.injectEndpoints({
       transformResponse: (response: ApiResponse<OrderResponseData>) =>
         unwrapApiResponse(response),
       invalidatesTags: ["Order"],
+    }),
+
+    lookupOrder: builder.mutation<OrderDetailResponse, LookupOrderPayload>({
+      query: (body) => ({
+        url: "/orders/lookup",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ApiResponse<OrderDetailResponse>) =>
+        unwrapApiResponse(response),
     }),
 
     getCustomerOrders: builder.query<CustomerOrderResponse[], { status?: string } | void>({
@@ -41,6 +52,7 @@ export const orderApi = baseApi.injectEndpoints({
 
 export const {
   useCreateOrderMutation,
+  useLookupOrderMutation,
   useGetCustomerOrdersQuery,
   useGetOrderDetailQuery,
 } = orderApi;

@@ -20,6 +20,11 @@ export interface CreateOrderPayload {
   shippingFee: number;
 }
 
+export interface LookupOrderPayload {
+  orderCode: string;
+  customerPhone: string;
+}
+
 export interface OrderResponseData {
   id: string;
   orderCode: string;

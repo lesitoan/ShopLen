@@ -46,6 +46,18 @@ export const listOrdersDto = z.object({
   }),
 });
 
+export const lookupOrderDto = z.object({
+  body: z.object({
+    orderCode: z
+      .string()
+      .trim()
+      .min(1)
+      .max(40)
+      .transform((value) => value.toUpperCase()),
+    customerPhone: z.string().trim().min(1).max(30),
+  }),
+});
+
 export const getOrderDetailDto = z.object({
   params: z.object({
     id: z.string().uuid(),
@@ -55,3 +67,4 @@ export const getOrderDetailDto = z.object({
 export type CreateOrderRequestDto = z.infer<typeof createOrderDto>["body"];
 export type CreateOrderItemDto = CreateOrderRequestDto["items"][number];
 export type ListOrdersQueryDto = z.infer<typeof listOrdersDto>["query"];
+export type LookupOrderRequestDto = z.infer<typeof lookupOrderDto>["body"];

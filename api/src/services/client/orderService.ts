@@ -9,10 +9,12 @@ import {
 } from "@prisma/client";
 import { env } from "@/config/envValidation.js";
 import { prisma } from "@/config/prismaClient.js";
+import { MESSAGES } from "@/constants/messages.js";
 import type {
   CreateOrderItemDto,
   CreateOrderRequestDto,
   ListOrdersQueryDto,
+  LookupOrderRequestDto,
 } from "@/dto/client/orderDto.js";
 import { AppError } from "@/utils/appError.js";
 import { generateOrderCode } from "@/utils/generateOrderCode.js";
@@ -87,6 +89,10 @@ function buildExpiresAt() {
 
 function normalizeOptionalText(value?: string) {
   return value && value.length > 0 ? value : null;
+}
+
+function normalizePhoneForLookup(value: string) {
+  return value.replace(/\D/g, "");
 }
 
 function resolveSelectedOptions(
@@ -441,6 +447,65 @@ export const orderService = {
         timeout: 15000,
       },
     );
+  },
+
+  async lookupOrder(payload: LookupOrderRequestDto) {
+    const order = await prisma.order.findUnique({
+      where: {
+        orderCode: payload.orderCode,
+      },
+      select: {
+        id: true,
+        orderCode: true,
+        customerName: true,
+        customerPhone: true,
+        customerEmail: true,
+        shippingAddress: true,
+        shippingProvince: true,
+        shippingDistrict: true,
+        shippingWard: true,
+        customerNote: true,
+        subtotal: true,
+        shippingFee: true,
+        discountAmount: true,
+        pointsDiscount: true,
+        totalAmount: true,
+        paymentMethod: true,
+        paymentStatus: true,
+        orderStatus: true,
+        expiresAt: true,
+        paidAt: true,
+        cancelledAt: true,
+        cancelReason: true,
+        shippingUnit: true,
+        trackingCode: true,
+        createdAt: true,
+        updatedAt: true,
+        items: {
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            productId: true,
+            unitPrice: true,
+            quantity: true,
+            totalPrice: true,
+            productSnapshot: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    const requestPhone = normalizePhoneForLookup(payload.customerPhone);
+    const orderPhone = order
+      ? normalizePhoneForLookup(order.customerPhone)
+      : "";
+
+    if (!order || requestPhone !== orderPhone) {
+      throw new AppError(MESSAGES.ORDER_NOT_FOUND, 404, "ORDER_NOT_FOUND");
+    }
+
+    return order;
   },
 
   async getOrderDetail(customerId: string, orderId: string) {

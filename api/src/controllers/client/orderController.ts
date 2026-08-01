@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type {
   CreateOrderRequestDto,
   ListOrdersQueryDto,
+  LookupOrderRequestDto,
 } from "@/dto/client/orderDto.js";
 import { orderService } from "@/services/client/orderService.js";
 import { sendCreated, sendSuccess } from "@/utils/httpResponse.js";
@@ -22,6 +23,13 @@ export const orderController = {
     );
 
     return sendSuccess(response, orders);
+  },
+  async lookupOrder(request: Request, response: Response) {
+    const order = await orderService.lookupOrder(
+      request.body as LookupOrderRequestDto,
+    );
+
+    return sendSuccess(response, order);
   },
   async getOrderDetail(request: Request, response: Response) {
     const order = await orderService.getOrderDetail(

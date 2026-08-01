@@ -4,12 +4,21 @@ import {
   createOrderDto,
   getOrderDetailDto,
   listOrdersDto,
+  lookupOrderDto,
 } from "@/dto/client/orderDto.js";
 import { customerAuthMiddleware } from "@/middlewares/authMiddleware.js";
+import { orderLookupRateLimitMiddleware } from "@/middlewares/orderLookupRateLimitMiddleware.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 
 export const orderRoutes = Router();
+
+orderRoutes.post(
+  "/lookup",
+  orderLookupRateLimitMiddleware,
+  validateMiddleware(lookupOrderDto),
+  asyncHandler(orderController.lookupOrder),
+);
 
 orderRoutes.use(asyncHandler(customerAuthMiddleware));
 orderRoutes.post(

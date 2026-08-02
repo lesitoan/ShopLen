@@ -4,6 +4,7 @@ import type {
   CreateOrderRequestDto,
   ListOrdersQueryDto,
   LookupOrderRequestDto,
+  UpdateOrderShippingAddressRequestDto,
 } from "@/dto/client/orderDto.js";
 import { orderService } from "@/services/client/orderService.js";
 import { sendCreated, sendSuccess } from "@/utils/httpResponse.js";
@@ -47,5 +48,14 @@ export const orderController = {
     );
 
     return sendSuccess(response, { orderStatus: result.orderStatus }, result.message);
+  },
+  async updateShippingAddress(request: Request, response: Response) {
+    const shippingAddress = await orderService.updateShippingAddress(
+      request.customerId ?? "",
+      request.params.id,
+      request.body as UpdateOrderShippingAddressRequestDto,
+    );
+
+    return sendSuccess(response, shippingAddress, "Da cap nhat dia chi giao hang.");
   },
 };

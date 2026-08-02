@@ -74,8 +74,25 @@ export const cancelOrderDto = z.object({
   }),
 });
 
+export const updateOrderShippingAddressDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+  body: z.object({
+    shippingAddress: z.string().trim().min(1).max(500),
+    shippingProvince: z.string().trim().max(120),
+    shippingDistrict: z.string().trim().max(120).optional(),
+    shippingWard: z.string().trim().max(120).optional(),
+    customerName: z.string().trim().min(1).max(120),
+    customerPhone: z.string().trim().min(8).max(20),
+  }),
+});
+
 export type CreateOrderRequestDto = z.infer<typeof createOrderDto>["body"];
 export type CreateOrderItemDto = CreateOrderRequestDto["items"][number];
 export type ListOrdersQueryDto = z.infer<typeof listOrdersDto>["query"];
 export type LookupOrderRequestDto = z.infer<typeof lookupOrderDto>["body"];
 export type CancelOrderRequestDto = z.infer<typeof cancelOrderDto>["body"];
+export type UpdateOrderShippingAddressRequestDto = z.infer<
+  typeof updateOrderShippingAddressDto
+>["body"];

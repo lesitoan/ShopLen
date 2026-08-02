@@ -6,6 +6,7 @@ import {
   getOrderDetailDto,
   listOrdersDto,
   lookupOrderDto,
+  updateOrderShippingAddressDto,
 } from "@/dto/client/orderDto.js";
 import { customerAuthMiddleware } from "@/middlewares/authMiddleware.js";
 import { orderLookupRateLimitMiddleware } from "@/middlewares/orderLookupRateLimitMiddleware.js";
@@ -41,4 +42,9 @@ orderRoutes.post(
   "/:id/cancel",
   validateMiddleware(cancelOrderDto),
   asyncHandler(orderController.cancelOrder),
+);
+orderRoutes.patch(
+  "/:id/shipping-address",
+  validateMiddleware(updateOrderShippingAddressDto),
+  asyncHandler(orderController.updateShippingAddress),
 );

@@ -16,6 +16,7 @@ import type {
   CreateOrderRequestDto,
   ListOrdersQueryDto,
   LookupOrderRequestDto,
+  UpdateOrderShippingAddressRequestDto,
 } from "@/dto/client/orderDto.js";
 import { emitOrderStatusChanged } from "@/sockets/orderSocket.js";
 import { AppError } from "@/utils/appError.js";
@@ -734,5 +735,71 @@ export const orderService = {
 
     emitOrderStatusChanged(orderId, result.orderStatus);
     return result;
+  },
+
+  async updateShippingAddress(
+    customerId: string,
+    orderId: string,
+    payload: UpdateOrderShippingAddressRequestDto,
+  ) {
+    const order = await prisma.order.findFirst({
+      where: {
+        id: orderId,
+        customerId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!order) {
+      throw new AppError(MESSAGES.ORDER_NOT_FOUND, 404, "ORDER_NOT_FOUND");
+    }
+
+    const updatedOrder = await prisma.order.updateMany({
+      where: {
+        id: order.id,
+        customerId,
+        orderStatus: {
+          in: [
+            OrderStatus.PENDING_PAYMENT,
+            OrderStatus.PAID,
+            OrderStatus.PACKING,
+          ],
+        },
+      },
+      data: {
+        shippingAddress: payload.shippingAddress,
+        shippingProvince: normalizeOptionalText(payload.shippingProvince),
+        shippingDistrict: normalizeOptionalText(payload.shippingDistrict),
+        shippingWard: normalizeOptionalText(payload.shippingWard),
+        ...(payload.customerName
+          ? { customerName: payload.customerName }
+          : {}),
+        ...(payload.customerPhone
+          ? { customerPhone: payload.customerPhone }
+          : {}),
+      },
+    });
+
+    if (updatedOrder.count !== 1) {
+      throw new AppError(
+        "Không thể đổi địa chỉ khi đơn hàng đã được giao hoặc đang chờ hủy.",
+        409,
+        "ORDER_SHIPPING_ADDRESS_UPDATE_NOT_ALLOWED",
+      );
+    }
+
+    return prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+      select: {
+        customerName: true,
+        customerPhone: true,
+        shippingAddress: true,
+        shippingProvince: true,
+        shippingDistrict: true,
+        shippingWard: true,
+      },
+    });
   },
 };

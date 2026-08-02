@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { orderController } from "@/controllers/client/orderController.js";
 import {
+  cancelOrderDto,
   createOrderDto,
   getOrderDetailDto,
   listOrdersDto,
@@ -35,4 +36,9 @@ orderRoutes.get(
   "/:id",
   validateMiddleware(getOrderDetailDto),
   asyncHandler(orderController.getOrderDetail),
+);
+orderRoutes.post(
+  "/:id/cancel",
+  validateMiddleware(cancelOrderDto),
+  asyncHandler(orderController.cancelOrder),
 );

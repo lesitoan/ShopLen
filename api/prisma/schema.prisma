@@ -66,6 +66,7 @@ enum OrderStatus {
   PACKING
   SHIPPING
   COMPLETED
+  CANCELLATION_REQUESTED
   CANCELLED
 
   @@map("order_status")
@@ -285,6 +286,9 @@ model Order {
   paidAt           DateTime?     @map("paid_at") @db.Timestamptz(6)
   cancelledAt      DateTime?     @map("cancelled_at") @db.Timestamptz(6)
   cancelReason     String?       @map("cancel_reason")
+  cancellationRequestedAt     DateTime?   @map("cancellation_requested_at") @db.Timestamptz(6)
+  cancellationRequestedFrom   OrderStatus? @map("cancellation_requested_from")
+  cancellationRequestReason   String?      @map("cancellation_request_reason")
   shippingUnit     String?       @map("shipping_unit") @db.VarChar(120)
   trackingCode     String?       @map("tracking_code") @db.VarChar(120)
   createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)

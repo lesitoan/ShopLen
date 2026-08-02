@@ -11,11 +11,13 @@ import { env } from "@/config/envValidation.js";
 import { prisma } from "@/config/prismaClient.js";
 import { MESSAGES } from "@/constants/messages.js";
 import type {
+  CancelOrderRequestDto,
   CreateOrderItemDto,
   CreateOrderRequestDto,
   ListOrdersQueryDto,
   LookupOrderRequestDto,
 } from "@/dto/client/orderDto.js";
+import { emitOrderStatusChanged } from "@/sockets/orderSocket.js";
 import { AppError } from "@/utils/appError.js";
 import { generateOrderCode } from "@/utils/generateOrderCode.js";
 
@@ -477,6 +479,9 @@ export const orderService = {
         paidAt: true,
         cancelledAt: true,
         cancelReason: true,
+        cancellationRequestedAt: true,
+        cancellationRequestedFrom: true,
+        cancellationRequestReason: true,
         shippingUnit: true,
         trackingCode: true,
         createdAt: true,
@@ -537,6 +542,9 @@ export const orderService = {
         paidAt: true,
         cancelledAt: true,
         cancelReason: true,
+        cancellationRequestedAt: true,
+        cancellationRequestedFrom: true,
+        cancellationRequestReason: true,
         shippingUnit: true,
         trackingCode: true,
         createdAt: true,
@@ -582,5 +590,149 @@ export const orderService = {
     }
 
     return order;
+  },
+
+  async cancelOrder(
+    customerId: string,
+    orderId: string,
+    payload: CancelOrderRequestDto,
+  ) {
+    const result = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findFirst({
+        where: {
+          id: orderId,
+          customerId,
+        },
+        select: {
+          id: true,
+          orderStatus: true,
+          items: {
+            select: {
+              productId: true,
+              quantity: true,
+            },
+          },
+        },
+      });
+
+      if (!order) {
+        throw new AppError(MESSAGES.ORDER_NOT_FOUND, 404, "ORDER_NOT_FOUND");
+      }
+
+      const cancelReason = normalizeOptionalText(payload.reason);
+
+      if (!cancelReason) {
+        throw new AppError(
+          "Vui long nhap ly do huy don.",
+          422,
+          "ORDER_CANCELLATION_REASON_REQUIRED",
+        );
+      }
+
+      if (order.orderStatus === OrderStatus.PENDING_PAYMENT) {
+        const updatedOrder = await tx.order.updateMany({
+          where: {
+            id: order.id,
+            customerId,
+            orderStatus: OrderStatus.PENDING_PAYMENT,
+          },
+          data: {
+            orderStatus: OrderStatus.CANCELLED,
+            paymentStatus: PaymentStatus.FAILED,
+            cancelledAt: new Date(),
+            cancelReason,
+          },
+        });
+
+        if (updatedOrder.count !== 1) {
+          throw new AppError(
+            "Không thể hủy đơn, liên hệ shop để được hỗ trợ.",
+            409,
+            "ORDER_CANCELLATION_NOT_ALLOWED",
+          );
+        }
+
+        await tx.payment.updateMany({
+          where: {
+            orderId: order.id,
+            status: PaymentStatus.PENDING,
+          },
+          data: {
+            status: PaymentStatus.FAILED,
+          },
+        });
+
+        for (const item of order.items) {
+          if (!item.productId) {
+            continue;
+          }
+
+          await tx.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { increment: item.quantity },
+            },
+          });
+        }
+
+        return {
+          orderStatus: OrderStatus.CANCELLED,
+          message: "Đơn hàng đã được hủy thành công.",
+        };
+      }
+
+      if (
+        order.orderStatus === OrderStatus.PAID ||
+        order.orderStatus === OrderStatus.PACKING
+      ) {
+        const reason = cancelReason;
+
+        if (!reason) {
+          throw new AppError(
+            "Vui lòng nhập lý do hủy đơn.",
+            422,
+            "ORDER_CANCELLATION_REASON_REQUIRED",
+          );
+        }
+
+        const updatedOrder = await tx.order.updateMany({
+          where: {
+            id: order.id,
+            customerId,
+            orderStatus: {
+              in: [OrderStatus.PAID, OrderStatus.PACKING],
+            },
+          },
+          data: {
+            orderStatus: OrderStatus.CANCELLATION_REQUESTED,
+            cancellationRequestedAt: new Date(),
+            cancellationRequestedFrom: order.orderStatus,
+            cancellationRequestReason: reason,
+          },
+        });
+
+        if (updatedOrder.count !== 1) {
+          throw new AppError(
+            "Không thể hủy đơn, liên hệ shop để được hỗ trợ.",
+            409,
+            "ORDER_CANCELLATION_NOT_ALLOWED",
+          );
+        }
+
+        return {
+          orderStatus: OrderStatus.CANCELLATION_REQUESTED,
+          message: "Yêu cầu hủy đơn đã được gửi để xem xét.",
+        };
+      }
+
+      throw new AppError(
+        "Không thể hủy đơn, liên hệ shop để được hỗ trợ.",
+        409,
+        "ORDER_CANCELLATION_NOT_ALLOWED",
+      );
+    });
+
+    emitOrderStatusChanged(orderId, result.orderStatus);
+    return result;
   },
 };

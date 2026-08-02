@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type {
+  CancelOrderRequestDto,
   CreateOrderRequestDto,
   ListOrdersQueryDto,
   LookupOrderRequestDto,
@@ -37,5 +38,14 @@ export const orderController = {
       request.params.id,
     );
     return sendSuccess(response, order);
+  },
+  async cancelOrder(request: Request, response: Response) {
+    const result = await orderService.cancelOrder(
+      request.customerId ?? "",
+      request.params.id,
+      request.body as CancelOrderRequestDto,
+    );
+
+    return sendSuccess(response, { orderStatus: result.orderStatus }, result.message);
   },
 };

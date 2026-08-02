@@ -6,6 +6,7 @@ const orderStatusDto = z.enum([
   "PACKING",
   "SHIPPING",
   "COMPLETED",
+  "CANCELLATION_REQUESTED",
   "CANCELLED",
 ]);
 
@@ -64,7 +65,17 @@ export const getOrderDetailDto = z.object({
   }),
 });
 
+export const cancelOrderDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+  body: z.object({
+    reason: z.string().trim().min(1).max(1000),
+  }),
+});
+
 export type CreateOrderRequestDto = z.infer<typeof createOrderDto>["body"];
 export type CreateOrderItemDto = CreateOrderRequestDto["items"][number];
 export type ListOrdersQueryDto = z.infer<typeof listOrdersDto>["query"];
 export type LookupOrderRequestDto = z.infer<typeof lookupOrderDto>["body"];
+export type CancelOrderRequestDto = z.infer<typeof cancelOrderDto>["body"];

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Button from "./Button";
 
@@ -27,30 +27,47 @@ export default function Modal({
   cancelLabel = "Hủy",
   isDestructive = false,
 }: ModalProps) {
-  // Prevent scrolling when modal is open
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      setShouldRender(true);
+      timer = setTimeout(() => {
+        setIsVisible(true);
+      }, 15);
     } else {
-      document.body.style.overflow = "";
+      setIsVisible(false);
+      timer = setTimeout(() => {
+        setShouldRender(false);
+      }, 200);
     }
     return () => {
-      document.body.style.overflow = "";
+      clearTimeout(timer);
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/55 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
+        className={`fixed inset-0 bg-black/60 transition-opacity duration-200 ease-out ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
         onClick={onClose}
       />
 
       {/* Modal Card */}
-      <div className="relative bg-surface w-full max-w-md rounded-3xl border border-border shadow-2xl z-10 overflow-hidden flex flex-col transition-all duration-300 animate-in fade-in zoom-in-95 duration-200">
+      <div
+        className={`relative bg-surface w-full max-w-md rounded-3xl border border-border shadow-2xl z-10 overflow-hidden flex flex-col transition-all duration-200 ease-out ${
+          isVisible
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-75 translate-y-2"
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h3 className="text-[18px] font-bold text-text-primary">{title}</h3>

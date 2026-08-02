@@ -47,6 +47,20 @@ export const orderApi = baseApi.injectEndpoints({
         unwrapApiResponse(response),
       providesTags: (_result, _error, id) => [{ type: "Order", id }],
     }),
+
+    cancelOrder: builder.mutation<
+      { orderStatus: string; message?: string },
+      { id: string; reason?: string }
+    >({
+      query: ({ id, reason }) => ({
+        url: `/orders/${id}/cancel`,
+        method: "POST",
+        body: { reason },
+      }),
+      transformResponse: (response: ApiResponse<{ orderStatus: string; message?: string }>) =>
+        unwrapApiResponse(response),
+      invalidatesTags: ["Order"],
+    }),
   }),
 });
 
@@ -55,4 +69,5 @@ export const {
   useLookupOrderMutation,
   useGetCustomerOrdersQuery,
   useGetOrderDetailQuery,
+  useCancelOrderMutation,
 } = orderApi;

@@ -3,10 +3,12 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, User, Phone, CreditCard, ShieldCheck, QrCode, Clock, ChevronUp } from "lucide-react";
+import { MapPin, User, Phone, CreditCard, ShieldCheck, QrCode, Clock, ChevronUp, Ban } from "lucide-react";
 import LoadingDots from "@/components/ui/LoadingDots";
 import Button from "@/components/ui/Button";
 import OrderStatusStepper from "@/components/orders/OrderStatusStepper";
+import CancelOrderModal from "@/components/modals/CancelOrderModal";
+import useModal from "@/hooks/useModal";
 import { useGetOrderDetailQuery } from "@/services/api/orderApi";
 
 interface OrderDetailContentProps {
@@ -15,6 +17,7 @@ interface OrderDetailContentProps {
 }
 
 export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailContentProps) {
+  const cancelModal = useModal();
   const { data: detail, isLoading, isError } = useGetOrderDetailQuery(orderId, {
     skip: !orderId,
   });
@@ -54,7 +57,11 @@ export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailC
 
   return (
     <div className="flex flex-col gap-4 text-left pt-3">
-      <OrderStatusStepper orderStatus={detail.orderStatus} />
+      <OrderStatusStepper
+        orderStatus={detail.orderStatus}
+        cancelReason={detail.cancelReason}
+        cancellationRequestReason={detail.cancellationRequestReason}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
         <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
           <h4 className="font-bold text-text-primary border-b border-border/40 pb-1.5 flex items-center gap-1.5">
@@ -126,6 +133,29 @@ export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailC
                   </Button>
                 </Link>
               )}
+            </div>
+          )}
+
+          {detail.orderStatus === "CANCELLATION_REQUESTED" && (
+            <div className="pt-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold bg-orange-50 text-orange-700 border border-orange-200 w-full justify-center">
+                <Clock size={14} className="animate-pulse" />
+                <span>Đã gửi yêu cầu hủy</span>
+              </span>
+            </div>
+          )}
+
+          {["PENDING_PAYMENT", "PAID", "PENDING", "PACKING"].includes(detail.orderStatus) && (
+            <div className="pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full py-1.5 text-[12px] font-bold rounded-lg justify-center text-rose-600 border-rose-200 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                onClick={() => cancelModal.openModal()}
+              >
+                <Ban size={14} />
+                <span>Hủy đơn hàng</span>
+              </Button>
             </div>
           )}
         </div>
@@ -205,6 +235,14 @@ export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailC
           </button>
         </div>
       )}
+
+      <CancelOrderModal
+        isOpen={cancelModal.isOpen}
+        onClose={cancelModal.closeModal}
+        orderId={detail.id}
+        orderCode={detail.orderCode}
+        orderStatus={detail.orderStatus}
+      />
     </div>
   );
 }

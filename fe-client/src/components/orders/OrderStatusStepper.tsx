@@ -1,28 +1,54 @@
 "use client";
 
 import React from "react";
-import { Check, XCircle } from "lucide-react";
+import { Check, XCircle, Clock } from "lucide-react";
 import { ORDER_STATUS_STEPS, getActiveStepIndex } from "@/constants/orders";
 
 interface OrderStatusStepperProps {
   orderStatus: string;
+  cancelReason?: string | null;
+  cancellationRequestReason?: string | null;
 }
 
-export default function OrderStatusStepper({ orderStatus }: OrderStatusStepperProps) {
+export default function OrderStatusStepper({
+  orderStatus,
+  cancelReason,
+  cancellationRequestReason,
+}: OrderStatusStepperProps) {
   if (orderStatus === "CANCELLED") {
     return (
-      <div className="w-full bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl p-4 flex items-center gap-3 text-left animate-in fade-in duration-200">
-        <div className="w-9 h-9 rounded-full bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-          <XCircle size={20} />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[13.5px] font-bold text-rose-700 dark:text-rose-300">
-            Đơn hàng đã hủy
-          </span>
-          <span className="text-[12px] text-rose-600/80 dark:text-rose-400/80">
-            Đơn hàng này đã bị hủy và không còn hiệu lực.
-          </span>
-        </div>
+      <div className="w-full bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl p-4 flex flex-col gap-0.5 text-left animate-in fade-in duration-200">
+        <span className="text-[13.5px] font-bold text-rose-700 dark:text-rose-300">
+          Đơn hàng đã hủy
+        </span>
+        <span className="text-[12px] text-rose-600/90 dark:text-rose-400/90">
+          {cancelReason ? (
+            <>
+              Lý do hủy: <span className="font-semibold">{cancelReason}</span>
+            </>
+          ) : (
+            "Đơn hàng này đã bị hủy và không còn hiệu lực."
+          )}
+        </span>
+      </div>
+    );
+  }
+
+  if (orderStatus === "CANCELLATION_REQUESTED") {
+    return (
+      <div className="w-full bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 flex flex-col gap-0.5 text-left animate-in fade-in duration-200">
+        <span className="text-[13.5px] font-bold text-amber-800 dark:text-amber-300">
+          Yêu cầu hủy đơn hàng
+        </span>
+        <span className="text-[12px] text-amber-700/90 dark:text-amber-400/90">
+          {cancellationRequestReason ? (
+            <>
+              Lý do hủy: <span className="font-semibold">{cancellationRequestReason}</span>
+            </>
+          ) : (
+            "Yêu cầu hủy đơn hàng đã được gửi tới cửa hàng."
+          )}
+        </span>
       </div>
     );
   }

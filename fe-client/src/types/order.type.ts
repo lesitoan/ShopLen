@@ -119,6 +119,9 @@ export interface OrderDetailResponse {
   paidAt?: string | null;
   cancelledAt?: string | null;
   cancelReason?: string | null;
+  cancellationRequestedAt?: string | null;
+  cancellationRequestedFrom?: string | null;
+  cancellationRequestReason?: string | null;
   shippingUnit?: string | null;
   trackingCode?: string | null;
   createdAt: string;

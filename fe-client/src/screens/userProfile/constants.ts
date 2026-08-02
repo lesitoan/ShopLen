@@ -36,6 +36,11 @@ export const ORDER_STATUS_CONFIG_MAP: Record<OrderStatus, OrderStatusConfig> = {
     badgeStyle: "bg-gradient-to-r from-purple-50 to-indigo-50/80 dark:from-purple-950/60 dark:to-indigo-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/50",
     cardBgStyle: "bg-gradient-to-b from-purple-50/60 via-indigo-50/20 to-surface dark:from-purple-950/35 dark:via-indigo-950/10 dark:to-surface border-purple-200/80 dark:border-purple-800/50 hover:border-purple-300 dark:hover:border-purple-700",
   },
+  PAID: {
+    label: "Chờ xác nhận",
+    badgeStyle: "bg-gradient-to-r from-purple-50 to-indigo-50/80 dark:from-purple-950/60 dark:to-indigo-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/50",
+    cardBgStyle: "bg-gradient-to-b from-purple-50/60 via-indigo-50/20 to-surface dark:from-purple-950/35 dark:via-indigo-950/10 dark:to-surface border-purple-200/80 dark:border-purple-800/50 hover:border-purple-300 dark:hover:border-purple-700",
+  },
   PACKING: {
     label: "Đang chuẩn bị hàng",
     badgeStyle: "bg-gradient-to-r from-violet-50 to-purple-50/80 dark:from-violet-950/60 dark:to-purple-950/40 text-violet-700 dark:text-violet-300 border border-violet-200/80 dark:border-violet-800/50",
@@ -46,10 +51,20 @@ export const ORDER_STATUS_CONFIG_MAP: Record<OrderStatus, OrderStatusConfig> = {
     badgeStyle: "bg-gradient-to-r from-blue-50 to-indigo-50/80 dark:from-blue-950/60 dark:to-indigo-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/50",
     cardBgStyle: "bg-gradient-to-b from-blue-50/70 via-indigo-50/20 to-surface dark:from-blue-950/35 dark:via-indigo-950/10 dark:to-surface border-blue-200/80 dark:border-blue-800/50 hover:border-blue-300 dark:hover:border-blue-700",
   },
+  COMPLETED: {
+    label: "Hoàn thành",
+    badgeStyle: "bg-gradient-to-r from-emerald-50 to-teal-50/80 dark:from-emerald-950/60 dark:to-teal-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50",
+    cardBgStyle: "bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-surface dark:from-emerald-950/35 dark:via-emerald-950/10 dark:to-surface border-emerald-200/80 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700",
+  },
   DELIVERED: {
     label: "Đã giao hàng",
     badgeStyle: "bg-gradient-to-r from-emerald-50 to-teal-50/80 dark:from-emerald-950/60 dark:to-teal-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50",
     cardBgStyle: "bg-gradient-to-b from-emerald-50/70 via-emerald-50/20 to-surface dark:from-emerald-950/35 dark:via-emerald-950/10 dark:to-surface border-emerald-200/80 dark:border-emerald-800/50 hover:border-emerald-300 dark:hover:border-emerald-700",
+  },
+  CANCELLATION_REQUESTED: {
+    label: "Yêu cầu hủy đơn",
+    badgeStyle: "bg-gradient-to-r from-orange-50 to-amber-50/80 dark:from-orange-950/60 dark:to-amber-950/40 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/50",
+    cardBgStyle: "bg-gradient-to-b from-orange-50/40 via-orange-50/10 to-surface dark:from-orange-950/25 dark:via-orange-950/10 dark:to-surface border-orange-200/60 dark:border-orange-900/30 hover:border-orange-300 dark:hover:border-orange-800",
   },
   CANCELLED: {
     label: "Đã hủy",
@@ -65,6 +80,7 @@ export const ORDER_FILTER_TABS: { id: OrderStatus; label: string }[] = [
   { id: "PACKING", label: "Chuẩn bị hàng" },
   { id: "SHIPPING", label: "Đang giao" },
   { id: "DELIVERED", label: "Đã giao" },
+  { id: "CANCELLATION_REQUESTED", label: "Chờ hủy" },
   { id: "CANCELLED", label: "Đã hủy" },
 ];
 

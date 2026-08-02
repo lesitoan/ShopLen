@@ -94,23 +94,12 @@ export default function OrderLookupResult({ order }: OrderLookupResultProps) {
           </div>
         </div>
 
-        {/* CANCELLED NOTIFICATION */}
-        {isCancelled && (
-          <div className="border border-red-200 bg-red-50/70 dark:bg-red-950/30 rounded-xl p-4 flex flex-col gap-1 text-[13px] text-red-600 dark:text-red-400">
-            <span className="font-bold flex items-center gap-1.5 text-[14px]">
-              <AlertCircle size={16} />
-              Đơn hàng này đã bị hủy
-            </span>
-            {order.cancelReason && (
-              <p className="text-[12.5px] text-red-600/90 mt-0.5">
-                Lý do hủy: {order.cancelReason}
-              </p>
-            )}
-          </div>
-        )}
 
-        {/* STEPPER PROGRESS */}
-        <OrderStatusStepper orderStatus={order.orderStatus} />
+        <OrderStatusStepper
+          orderStatus={order.orderStatus}
+          cancelReason={order.cancelReason}
+          cancellationRequestReason={order.cancellationRequestReason}
+        />
 
         {/* CUSTOMER & PAYMENT DETAILS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">

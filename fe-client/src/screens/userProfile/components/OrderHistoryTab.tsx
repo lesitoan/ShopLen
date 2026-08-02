@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { PackageCheck } from "lucide-react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { PackageCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import OrderHistorySkeleton from "@/components/skeletons/userProfile/OrderHistorySkeleton";
 import { useGetCustomerOrdersQuery } from "@/services/api/orderApi";
 import { CustomerOrderResponse } from "@/types/order.type";
@@ -17,11 +17,45 @@ export default function OrderHistoryTab({ onReorder }: OrderHistoryTabProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>("ALL");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+  const tabsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    if (tabsContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+      setCanScrollLeft(scrollLeft > 2);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2);
+    }
+  }, []);
+
   const handleToggleExpand = (orderId: string) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
   const { data: apiOrders, isLoading, isError } = useGetCustomerOrdersQuery();
+
+  useEffect(() => {
+    checkScroll();
+    const timer = setTimeout(checkScroll, 100);
+    window.addEventListener("resize", checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", checkScroll);
+    };
+  }, [checkScroll, apiOrders, isLoading]);
+
+  const handleScrollLeft = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: -220, behavior: "smooth" });
+    }
+  };
+
+  const handleScrollRight = () => {
+    if (tabsContainerRef.current) {
+      tabsContainerRef.current.scrollBy({ left: 220, behavior: "smooth" });
+    }
+  };
 
   const mapApiOrderToSummary = (apiOrd: CustomerOrderResponse): OrderSummary => {
     let status: OrderStatus = "PENDING";
@@ -47,6 +81,10 @@ export default function OrderHistoryTab({ onReorder }: OrderHistoryTabProps) {
       case "COMPLETED":
         status = "DELIVERED";
         statusLabel = "Đã giao hàng";
+        break;
+      case "CANCELLATION_REQUESTED":
+        status = "CANCELLATION_REQUESTED";
+        statusLabel = "Yêu cầu hủy đơn";
         break;
       case "CANCELLED":
         status = "CANCELLED";
@@ -116,36 +154,62 @@ export default function OrderHistoryTab({ onReorder }: OrderHistoryTabProps) {
         </p>
       </div>
 
-      <div className="flex items-center gap-6 overflow-x-auto no-scrollbar border-b border-border/60">
-        {ORDER_FILTER_TABS.map((tab) => {
-          const isActive = selectedStatus === tab.id;
-          const count = getTabCount(tab.id);
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setSelectedStatus(tab.id)}
-              className={`py-3 text-[13.5px] font-semibold whitespace-nowrap transition-all border-b-2 -mb-px flex items-center gap-1.5 ${
-                isActive
-                  ? "border-primary text-secondary font-bold"
-                  : "border-transparent text-text-secondary hover:text-text-primary"
-              }`}
-            >
-              <span>{tab.label}</span>
-              {count > 0 && (
-                <span
-                  className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold transition-colors ${
-                    isActive
-                      ? "bg-secondary text-white"
-                      : "bg-border/60 text-text-secondary dark:bg-border/40"
-                  }`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+      <div className="relative flex items-center gap-2 py-1">
+        <button
+          type="button"
+          disabled={!canScrollLeft}
+          onClick={handleScrollLeft}
+          className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-text-primary hover:bg-primary-light hover:text-secondary hover:border-primary/50 transition-all disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+          title="Cuộn sang trái"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <div
+          ref={tabsContainerRef}
+          onScroll={checkScroll}
+          className="flex items-center gap-2 overflow-x-auto scroll-smooth w-full no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {ORDER_FILTER_TABS.map((tab) => {
+            const isActive = selectedStatus === tab.id;
+            const count = getTabCount(tab.id);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedStatus(tab.id)}
+                className={`py-2 px-3 rounded-xl text-[13.5px] font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+                  isActive
+                    ? "bg-primary-light text-secondary font-bold"
+                    : "text-text-secondary hover:text-text-primary hover:bg-background/80"
+                }`}
+              >
+                <span>{tab.label}</span>
+                {count > 0 && (
+                  <span
+                    className={`text-[11px] px-1.5 py-0.2 rounded-full font-bold transition-colors ${
+                      isActive
+                        ? "bg-secondary text-white"
+                        : "bg-border/60 text-text-secondary dark:bg-border/40"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          disabled={!canScrollRight}
+          onClick={handleScrollRight}
+          className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-text-primary hover:bg-primary-light hover:text-secondary hover:border-primary/50 transition-all disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
+          title="Cuộn sang phải"
+        >
+          <ChevronRight size={16} />
+        </button>
       </div>
 
       {isLoading ? (

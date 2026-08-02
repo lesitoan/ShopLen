@@ -3,10 +3,13 @@ export type ProfileTab = "PROFILE" | "ORDERS" | "ADDRESSES" | "CHANGE_PASSWORD";
 export type OrderStatus =
   | "ALL"
   | "PENDING_PAYMENT"
+  | "PAID"
   | "PENDING"
   | "PACKING"
   | "SHIPPING"
+  | "COMPLETED"
   | "DELIVERED"
+  | "CANCELLATION_REQUESTED"
   | "CANCELLED";
 
 export interface UserProfile {

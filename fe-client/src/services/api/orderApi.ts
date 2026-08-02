@@ -61,6 +61,31 @@ export const orderApi = baseApi.injectEndpoints({
         unwrapApiResponse(response),
       invalidatesTags: ["Order"],
     }),
+
+    updateOrderShippingAddress: builder.mutation<
+      OrderDetailResponse,
+      {
+        id: string;
+        customerName?: string;
+        customerPhone?: string;
+        shippingAddress: string;
+        shippingProvince?: string;
+        shippingDistrict?: string;
+        shippingWard?: string;
+      }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/orders/${id}/shipping-address`,
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: (response: ApiResponse<OrderDetailResponse>) =>
+        unwrapApiResponse(response),
+      invalidatesTags: (_result, _error, { id }) => [
+        "Order",
+        { type: "Order", id },
+      ],
+    }),
   }),
 });
 
@@ -70,4 +95,5 @@ export const {
   useGetCustomerOrdersQuery,
   useGetOrderDetailQuery,
   useCancelOrderMutation,
+  useUpdateOrderShippingAddressMutation,
 } = orderApi;

@@ -8,6 +8,7 @@ import LoadingDots from "@/components/ui/LoadingDots";
 import Button from "@/components/ui/Button";
 import OrderStatusStepper from "@/components/orders/OrderStatusStepper";
 import CancelOrderModal from "@/components/modals/CancelOrderModal";
+import ChangeAddressModal from "@/components/modals/ChangeAddressModal";
 import useModal from "@/hooks/useModal";
 import { useGetOrderDetailQuery } from "@/services/api/orderApi";
 
@@ -18,6 +19,7 @@ interface OrderDetailContentProps {
 
 export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailContentProps) {
   const cancelModal = useModal();
+  const changeAddressModal = useModal();
   const { data: detail, isLoading, isError } = useGetOrderDetailQuery(orderId, {
     skip: !orderId,
   });
@@ -80,6 +82,20 @@ export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailC
             <MapPin size={14} className="text-text-secondary shrink-0 mt-0.5" />
             <span className="text-text-primary font-medium">{detail.shippingAddress}</span>
           </div>
+
+          {["PENDING_PAYMENT", "PAID", "PACKING"].includes(detail.orderStatus) && (
+            <div className="pt-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full py-1.5 text-[12px] font-bold rounded-lg justify-center text-secondary border-primary/40 hover:bg-primary-light/40"
+                onClick={() => changeAddressModal.openModal()}
+              >
+                <MapPin size={14} />
+                <span>Đổi địa chỉ giao hàng</span>
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="bg-surface border-[1.5px] border-dashed border-primary rounded-xl p-3.5 flex flex-col gap-2 text-[12.5px]">
@@ -242,6 +258,17 @@ export default function OrderDetailContent({ orderId, onCollapse }: OrderDetailC
         orderId={detail.id}
         orderCode={detail.orderCode}
         orderStatus={detail.orderStatus}
+      />
+
+      <ChangeAddressModal
+        isOpen={changeAddressModal.isOpen}
+        onClose={changeAddressModal.closeModal}
+        orderId={detail.id}
+        orderCode={detail.orderCode}
+        orderStatus={detail.orderStatus}
+        currentCustomerName={detail.customerName}
+        currentCustomerPhone={detail.customerPhone}
+        currentShippingAddress={detail.shippingAddress}
       />
     </div>
   );

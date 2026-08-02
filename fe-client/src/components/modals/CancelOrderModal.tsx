@@ -141,10 +141,10 @@ export default function CancelOrderModal({
 
           {/* Modal Window */}
           <div
-            className={`relative w-full md:max-w-md bg-surface border-t md:border border-border rounded-t-2xl md:rounded-2xl shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[80vh] overflow-hidden transition-all duration-200 ease-out ${
+            className={`relative w-full md:max-w-md bg-surface border-t md:border border-border rounded-t-2xl md:rounded-2xl shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[80vh] overflow-hidden transition-all duration-300 md:duration-200 ease-out ${
               isVisible
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-75 translate-y-2"
+                ? "translate-y-0 opacity-100 scale-100 md:scale-100 md:translate-y-0"
+                : "translate-y-full opacity-100 scale-100 md:opacity-0 md:scale-75 md:translate-y-2"
             }`}
           >
             {/* Mobile Handle Indicator */}
@@ -230,7 +230,7 @@ export default function CancelOrderModal({
                     size="md"
                     onClick={onClose}
                     disabled={isLoading}
-                    className="rounded-xl px-5"
+                    className="flex-1 md:flex-none rounded-xl px-5"
                   >
                     Bỏ qua
                   </Button>
@@ -240,7 +240,7 @@ export default function CancelOrderModal({
                     size="md"
                     isLoading={isLoading}
                     loadingText="Đang xử lý..."
-                    className="rounded-xl px-6 font-bold"
+                    className="flex-1 md:flex-none rounded-xl px-6 font-bold"
                   >
                     {orderStatus === "PENDING_PAYMENT" ? "Xác nhận hủy đơn" : "Gửi yêu cầu hủy"}
                   </Button>

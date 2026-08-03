@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -68,11 +69,12 @@ export default function ProductSection({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {promoBgImage ? (
           <div className="lg:col-span-3 relative overflow-hidden rounded-lg border border-border p-6 flex flex-col min-h-[280px] group/promo-section">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={promoBgImage}
               alt={title}
-              className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover/promo-section:scale-105"
+              fill
+              sizes="(max-width: 1024px) 100vw, 25vw"
+              className="object-cover z-0 transition-transform duration-700 group-hover/promo-section:scale-105"
             />
             <div className="absolute inset-0 bg-black/45 z-10" />
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Clock, QrCode, ShieldCheck, ArrowLeft, Check, Copy, Download } from "lucide-react";
 import Button from "@/components/ui/Button";
 import type { PaymentQrResponseData } from "@/types/payment.type";
@@ -42,7 +43,7 @@ export default function PaymentPendingView({
     };
 
     try {
-      const image = new Image();
+      const image = new window.Image();
       image.crossOrigin = "anonymous";
       image.src = qrData.qrImageUrl;
 
@@ -99,10 +100,12 @@ export default function PaymentPendingView({
           {/* MÃ QR VIETQR & NÚT TẢI XUỐNG */}
           <div className="flex flex-col items-center gap-3 mb-6">
             <div className="relative w-64 h-64 bg-surface border-2 border-primary/40 rounded-2xl p-4 flex items-center justify-center shadow-sm">
-              <img
+              <Image
                 src={qrData.qrImageUrl}
                 alt={`Mã QR VietQR cho đơn hàng ${qrData.orderCode}`}
-                className="w-full h-full object-contain rounded-lg"
+                fill
+                sizes="256px"
+                className="object-contain p-4 rounded-2xl"
               />
             </div>
             <Button

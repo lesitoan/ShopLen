@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
@@ -41,11 +42,13 @@ export default function HeroSlider() {
           {HERO_SLIDES.map((slide) => (
             <SwiperSlide key={slide.id} className="relative h-full w-full">
               <div className="absolute inset-0 w-full h-full z-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={slide.image}
                   alt={slide.titleBold}
-                  className="w-full h-full object-cover select-none pointer-events-none transition-transform duration-700 hover:scale-[1.02]"
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover select-none pointer-events-none transition-transform duration-700 hover:scale-[1.02]"
                 />
                 
                 <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10" />

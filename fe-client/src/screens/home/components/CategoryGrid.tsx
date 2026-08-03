@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
@@ -122,10 +123,12 @@ export default function CategoryGrid() {
                         className="flex items-center gap-4 p-3 bg-surface border border-border rounded-lg hover:border-primary transition-all duration-300 cursor-pointer group h-auto"
                       >
                         <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 bg-background border border-border transition-transform duration-300 group-hover:scale-105">
-                          <img
+                          <Image
                             src={category.image || "/logo.png"}
                             alt={category.name}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="64px"
+                            className="object-cover"
                           />
                         </div>
 
@@ -152,10 +155,12 @@ export default function CategoryGrid() {
 
         <div className="lg:col-span-4 h-full">
           <div className="relative overflow-hidden rounded-lg border border-border p-8 flex flex-col justify-between min-h-[300px] lg:h-full group/promo">
-            <img
+            <Image
               src="/images/products/gau-bong-tho.png"
               alt="Gấu len handmade"
-              className="absolute inset-0 w-full h-full object-cover z-0 transition-transform duration-700 group-hover/promo:scale-105"
+              fill
+              sizes="(max-width: 1024px) 100vw, 33vw"
+              className="object-cover z-0 transition-transform duration-700 group-hover/promo:scale-105"
             />
 
             <div className="absolute inset-0 bg-black/50 z-10" />

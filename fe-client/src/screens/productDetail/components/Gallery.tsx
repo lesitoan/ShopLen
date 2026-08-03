@@ -87,7 +87,7 @@ export default function Gallery({
 
   return (
     <div className="flex flex-col gap-3">
-      <div 
+      <div
         onClick={handleMainImageClick}
         className="relative aspect-square w-full rounded-lg overflow-hidden bg-surface border border-border/60 cursor-zoom-in group/image"
         title="Bấm vào để phóng to hình ảnh"

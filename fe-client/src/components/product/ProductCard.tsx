@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 
@@ -39,10 +40,12 @@ export default function ProductCard({
   const cardContent = (
     <>
       <div className="relative aspect-square w-full bg-background overflow-hidden">
-        <img
-          src={image}
+        <Image
+          src={image || "/logo.png"}
           alt={name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
         {badge && (

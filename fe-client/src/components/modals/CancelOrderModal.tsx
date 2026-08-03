@@ -58,7 +58,6 @@ export default function CancelOrderModal({
 
   const reasonValue = watch("reason") || "";
 
-  // Hide Modal 1 when confirmModal (Modal 2) is open
   const isModal1Active = isOpen && !confirmModal.isOpen;
 
   useEffect(() => {
@@ -86,7 +85,13 @@ export default function CancelOrderModal({
     };
   }, [isModal1Active]);
 
+  const handleClose = () => {
+    if (isLoading) return;
+    onClose();
+  };
+
   const handleSelectPreset = (preset: string) => {
+    if (isLoading) return;
     setSelectedPreset(preset);
     if (preset !== "Lý do khác") {
       setValue("reason", preset, { shouldValidate: true, shouldTouch: true });
@@ -136,7 +141,7 @@ export default function CancelOrderModal({
             className={`fixed inset-0 bg-black/60 transition-opacity duration-200 ease-out ${
               isVisible ? "opacity-100" : "opacity-0"
             }`}
-            onClick={onClose}
+            onClick={handleClose}
           />
 
           {/* Modal Window */}
@@ -159,8 +164,9 @@ export default function CancelOrderModal({
               </h3>
               <button
                 type="button"
-                onClick={onClose}
-                className="p-1 md:p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-background transition-colors"
+                onClick={handleClose}
+                disabled={isLoading}
+                className="p-1 md:p-1.5 text-text-secondary hover:text-text-primary rounded-lg hover:bg-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <X size={18} />
               </button>
@@ -182,7 +188,8 @@ export default function CancelOrderModal({
                           key={preset}
                           type="button"
                           onClick={() => handleSelectPreset(preset)}
-                          className={`flex items-center justify-between p-2.5 rounded-xl border text-[12.5px] transition-all text-left ${
+                          disabled={isLoading}
+                          className={`flex items-center justify-between p-2.5 rounded-xl border text-[12.5px] transition-all text-left disabled:opacity-50 ${
                             isSelected
                               ? "border-primary bg-primary-light/50 text-secondary font-semibold"
                               : "border-border/70 hover:border-primary/50 text-text-primary bg-surface"
@@ -203,7 +210,8 @@ export default function CancelOrderModal({
                   <textarea
                     rows={3}
                     placeholder="Nhập ghi chú hoặc thông tin bổ sung cho cửa hàng (tối thiểu 20 ký tự)..."
-                    className={`w-full p-3 rounded-xl border bg-background text-text-primary text-[13px] outline-none focus:outline-none focus:ring-0 transition-all resize-none ${
+                    disabled={isLoading}
+                    className={`w-full p-3 rounded-xl border bg-background text-text-primary text-[13px] outline-none focus:outline-none focus:ring-0 transition-all resize-none disabled:opacity-50 ${
                       errors.reason
                         ? "border-error focus:border-error"
                         : "border-border/80 focus:border-primary"
@@ -228,7 +236,7 @@ export default function CancelOrderModal({
                     type="button"
                     variant="outline"
                     size="md"
-                    onClick={onClose}
+                    onClick={handleClose}
                     disabled={isLoading}
                     className="flex-1 md:flex-none rounded-xl px-5"
                   >
@@ -240,6 +248,7 @@ export default function CancelOrderModal({
                     size="md"
                     isLoading={isLoading}
                     loadingText="Đang xử lý..."
+                    disabled={isLoading}
                     className="flex-1 md:flex-none rounded-xl px-6 font-bold"
                   >
                     {orderStatus === "PENDING_PAYMENT" ? "Xác nhận hủy đơn" : "Gửi yêu cầu hủy"}
@@ -263,6 +272,8 @@ export default function CancelOrderModal({
         confirmLabel={orderStatus === "PENDING_PAYMENT" ? "Xác nhận hủy" : "Gửi yêu cầu"}
         cancelLabel="Bỏ qua"
         isDestructive
+        isLoading={isLoading}
+        loadingText="Đang xử lý..."
       />
     </>
   );

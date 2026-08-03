@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Calendar, Clock } from "lucide-react";
 
 interface BlogCardProps {
@@ -31,14 +32,15 @@ export default function BlogCard({
       className="flex flex-col h-full bg-surface border border-border rounded-lg overflow-hidden group hover:border-primary transition-all duration-300 cursor-pointer"
     >
       <div className="relative aspect-[16/10] w-full bg-background overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={image}
+        <Image
+          src={image || "/logo.png"}
           alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
 
-        <div className="absolute left-3 bottom-3">
+        <div className="absolute left-3 bottom-3 z-2">
           <span className="text-[9px] font-bold text-secondary bg-primary-light border border-primary/20 px-2.5 py-1 rounded-md tracking-wider">
             {tag}
           </span>

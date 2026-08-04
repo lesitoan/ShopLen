@@ -1,9 +1,8 @@
 import { Prisma, ProductOptionType } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
 import type { ProductListQueryDto } from "@/dto/client/productDto.js";
+import type { ProductSort } from "@/types/product.type.js";
 import { AppError } from "@/utils/appError.js";
-
-type ProductSort = ProductListQueryDto["sort"];
 
 function getOrderBy(sort: ProductSort): Prisma.ProductOrderByWithRelationInput[] {
   if (sort === "PRICE_ASC") {

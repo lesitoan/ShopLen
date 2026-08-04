@@ -1,15 +1,7 @@
 import { getRedisClient } from "@/config/redisClient.js";
+import type { PasswordResetOtpCache } from "@/types/passwordResetOtp.type.js";
 import { AppError } from "@/utils/appError.js";
 import { comparePassword, hashPassword } from "@/utils/hashPassword.js";
-
-type PasswordResetOtpCache = {
-  customerId: string;
-  email: string;
-  otpHash: string;
-  attempts: number;
-  verifiedAt: string | null;
-  createdAt: string;
-};
 
 const PASSWORD_RESET_OTP_KEY_PREFIX = "auth:password-reset";
 

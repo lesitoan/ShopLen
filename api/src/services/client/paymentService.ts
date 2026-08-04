@@ -9,13 +9,8 @@ import { env } from "@/config/envValidation.js";
 import { prisma } from "@/config/prismaClient.js";
 import { SITE_INFO } from "@/constants/siteInfo.js";
 import type { SepayWebhookDto } from "@/dto/client/paymentDto.js";
+import type { VerifySepaySignaturePayload } from "@/types/payment.type.js";
 import { AppError } from "@/utils/appError.js";
-
-type VerifySepaySignaturePayload = {
-  signature?: string;
-  timestamp?: string;
-  rawBody?: string;
-};
 
 const ORDER_CODE_PATTERN = new RegExp(
   `${SITE_INFO.bankTransferNotePrefix}[A-Z0-9]+`,

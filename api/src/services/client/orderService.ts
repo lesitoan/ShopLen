@@ -19,18 +19,14 @@ import type {
   UpdateOrderShippingAddressRequestDto,
 } from "@/dto/client/orderDto.js";
 import { emitOrderStatusChanged } from "@/sockets/orderSocket.js";
+import type {
+  ProductDelegateClient,
+  ProductOptionValue,
+} from "@/types/order.type.js";
 import { AppError } from "@/utils/appError.js";
 import { generateOrderCode } from "@/utils/generateOrderCode.js";
 
 const ORDER_PAYMENT_HOLD_MINUTES = 30;
-
-type ProductOptionValue = {
-  code?: string;
-  label?: string;
-  colorHex?: string;
-  isDefault?: boolean;
-};
-type ProductDelegateClient = Pick<Prisma.TransactionClient, "product">;
 
 function parseOptionValues(values: unknown): ProductOptionValue[] {
   if (!Array.isArray(values)) {

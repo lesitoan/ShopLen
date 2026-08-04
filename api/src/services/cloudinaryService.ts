@@ -1,11 +1,7 @@
 import { env } from "@/config/envValidation.js";
 import { getCloudinaryClient } from "@/config/cloudinaryClient.js";
+import type { UploadedImage } from "@/types/cloudinary.type.js";
 import { AppError } from "@/utils/appError.js";
-
-type UploadedImage = {
-  url: string;
-  publicId: string;
-};
 
 export const cloudinaryService = {
   async uploadImageBuffer(

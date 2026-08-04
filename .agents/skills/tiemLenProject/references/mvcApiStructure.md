@@ -15,6 +15,7 @@
 > - Trong `api/src`, dùng path alias `@/*` trỏ tới `src/*` cho mọi import nội bộ.
 > - `routes/`, `controllers/`, `services/`, `dto/` tách nhánh `admin/` và `client/` khi domain có thể phân biệt.
 > - `dto/` chứa request/response schema hoặc DTO theo API contract; `types/` chứa type nội bộ dùng chung; `models/` chỉ chứa entity/schema DB.
+> - Trong BE, không định nghĩa `type`/`interface` nội bộ trực tiếp trong `services/`; đưa vào `api/src/types/*.type.ts` và import bằng `import type`. Ngoại lệ duy nhất: type suy luận sát hàm private trong cùng service, ví dụ `type BlogPostListItem = Awaited<ReturnType<typeof findBlogPosts>>[number];`, được phép giữ tại service.
 
 ## 1. Quy ước đặt tên (bắt buộc)
 
@@ -193,6 +194,10 @@ api/
 │   │   ├── telegramService.ts
 │   │   ├── uploadService.ts
 │   │   └── auditLogService.ts
+│   │
+│   │   # Lưu ý BE: service không khai báo type/interface nội bộ; đặt type ở types/*.type.ts
+│   │   # và import type vào service. Chỉ giữ type suy luận từ hàm private cùng file
+│   │   # như Awaited<ReturnType<typeof findBlogPosts>>[number].
 │   │
 │   ├── models/                       # entity/schema (TypeORM entity, Prisma model, hoặc Mongoose schema)
 │   │   ├── userModel.ts

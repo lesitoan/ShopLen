@@ -37,6 +37,21 @@ enum CategoryStatus {
   @@map("category_status")
 }
 
+enum BlogTagStatus {
+  ACTIVE
+  HIDDEN
+
+  @@map("blog_tag_status")
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+
+  @@map("blog_post_status")
+}
+
 enum ProductStatus {
   ACTIVE
   HIDDEN
@@ -170,6 +185,7 @@ model User {
 
   auditLogs           AuditLog[]
   loyaltyTransactions LoyaltyTransaction[]
+  blogPosts           BlogPost[]
 
   @@map("users")
 }
@@ -257,6 +273,73 @@ model ProductOption {
   @@unique([productId, optionType], map: "product_options_product_option_type_key")
   @@index([productId, displayOrder], map: "product_options_product_display_order_idx")
   @@map("product_options")
+}
+
+model BlogTag {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code         String        @unique @db.VarChar(60)
+  name         String        @db.VarChar(120)
+  slug         String        @unique @db.VarChar(160)
+  description  String?
+  displayOrder Int           @default(0) @map("display_order")
+  status       BlogTagStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  posts BlogPost[]
+
+  @@index([status, displayOrder], map: "blog_tags_status_display_order_idx")
+  @@map("blog_tags")
+}
+
+model BlogPost {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code            String         @unique @db.VarChar(40)
+  slug            String         @db.VarChar(220)
+  title           String         @db.VarChar(220)
+  excerpt         String         @db.VarChar(500)
+  contentHtml     String         @map("content_html")
+  toc             Json?
+  tagId           String         @map("tag_id") @db.Uuid
+  authorUserId    String         @map("author_user_id") @db.Uuid
+  readTimeMinutes Int            @default(1) @map("read_time_minutes")
+  status          BlogPostStatus @default(DRAFT)
+  isFeatured      Boolean        @default(false) @map("is_featured")
+  showOnHome      Boolean        @default(false) @map("show_on_home")
+  viewCount       Int            @default(0) @map("view_count")
+  metaTitle       String?        @map("meta_title") @db.VarChar(180)
+  metaDescription String?        @map("meta_description") @db.VarChar(300)
+  publishedAt     DateTime?      @map("published_at") @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?      @map("deleted_at") @db.Timestamptz(6)
+
+  tag    BlogTag         @relation(fields: [tagId], references: [id], onDelete: Restrict)
+  author User            @relation(fields: [authorUserId], references: [id], onDelete: Restrict)
+  images BlogPostImage[]
+
+  @@index([status, publishedAt(sort: Desc)], map: "blog_posts_status_published_at_idx")
+  @@index([tagId, status, publishedAt(sort: Desc)], map: "blog_posts_tag_status_published_at_idx")
+  @@index([isFeatured, status, publishedAt(sort: Desc)], map: "blog_posts_featured_status_published_at_idx")
+  @@index([showOnHome, status, publishedAt(sort: Desc)], map: "blog_posts_home_status_published_at_idx")
+  @@map("blog_posts")
+}
+
+model BlogPostImage {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  blogPostId   String   @map("blog_post_id") @db.Uuid
+  url          String
+  publicId     String?  @map("public_id") @db.VarChar(255)
+  altText      String?  @map("alt_text") @db.VarChar(255)
+  displayOrder Int      @default(0) @map("display_order")
+  isThumbnail  Boolean  @default(false) @map("is_thumbnail")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@index([blogPostId, displayOrder], map: "blog_post_images_post_display_order_idx")
+  @@map("blog_post_images")
 }
 
 model Order {

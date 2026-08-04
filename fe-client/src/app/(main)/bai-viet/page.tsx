@@ -1,3 +1,4 @@
+import React, { Suspense } from "react";
 import BlogListingScreen from "@/screens/blogListing";
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <BlogListingScreen />;
+  return (
+    <Suspense fallback={null}>
+      <BlogListingScreen />
+    </Suspense>
+  );
 }

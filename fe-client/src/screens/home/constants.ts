@@ -18,7 +18,7 @@ export interface BlogPostItem {
   description: string;
   image: string;
   date: string;
-  readTime: string;
+  readTimeMinutes: number;
 }
 
 export const HERO_SLIDES: HeroSlide[] = [
@@ -54,45 +54,5 @@ export const HERO_SLIDES: HeroSlide[] = [
     primaryBtnLink: "/san-pham?category=hoa-len",
     secondaryBtnText: "Xem bộ sưu tập",
     secondaryBtnLink: "/san-pham",
-  },
-];
-
-
-export const BLOG_POSTS: BlogPostItem[] = [
-  {
-    id: 1,
-    tag: "HƯỚNG DẪN",
-    title: "Hướng dẫn móc len cơ bản cho người mới bắt đầu",
-    description: "Bắt đầu hành trình móc len thật dễ dàng với những mũi móc cơ bản nhất.",
-    image: "/images/products/hoa-tulip.png",
-    date: "20/05/2024",
-    readTime: "5 phút đọc",
-  },
-  {
-    id: 2,
-    tag: "GỢI Ý QUÀ TẶNG",
-    title: "7 món quà sinh nhật handmade ý nghĩa cho người thân",
-    description: "Tuyển chọn những món quà len xinh xắn, độc đáo và đầy yêu thương.",
-    image: "/images/products/binh-hoa-tulip.png",
-    date: "18/05/2024",
-    readTime: "4 phút đọc",
-  },
-  {
-    id: 3,
-    tag: "CẨM NANG",
-    title: "Vì sao đồ handmade luôn mang giá trị đặc biệt?",
-    description: "Khám phá câu chuyện đằng sau mỗi sản phẩm len handmade.",
-    image: "/images/products/moc-khoa-gau.png",
-    date: "15/05/2024",
-    readTime: "3 phút đọc",
-  },
-  {
-    id: 4,
-    tag: "CHĂM SÓC SẢN PHẨM",
-    title: "Cách bảo quản đồ len luôn bền đẹp",
-    description: "Mẹo nhỏ giúp sản phẩm len của bạn luôn mềm mại và như mới.",
-    image: "/images/products/tui-hoa-cuc.png",
-    date: "12/05/2024",
-    readTime: "4 phút đọc",
   },
 ];

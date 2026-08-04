@@ -1,17 +1,34 @@
 import React from "react";
-import type { BlogTag } from "@/types/blog.type";
+import Skeleton from "@/components/skeletons/Skeleton";
+import { useGetBlogTagsQuery } from "@/services/api/blogApi";
 
 interface TagFilterBarProps {
-  tags: BlogTag[];
   activeTag: string;
   onTagChange: (key: string) => void;
 }
 
-export default function TagFilterBar({ tags, activeTag, onTagChange }: TagFilterBarProps) {
+export default function TagFilterBar({ activeTag, onTagChange }: TagFilterBarProps) {
+  const { data: apiTagsData, isLoading } = useGetBlogTagsQuery();
+
+  const tagList = [
+    { key: "tat-ca", label: "Tất cả" },
+    ...(apiTagsData ?? []),
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex gap-4 py-2 border-b border-border overflow-x-auto no-scrollbar">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Skeleton key={i} className="w-20 h-6 rounded-md shrink-0" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="relative border-b border-border">
       <div className="flex gap-6 overflow-x-auto no-scrollbar -mb-px">
-        {tags.map((tag) => (
+        {tagList.map((tag) => (
           <button
             key={tag.key}
             type="button"

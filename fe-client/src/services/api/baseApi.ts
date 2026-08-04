@@ -100,6 +100,7 @@ export const baseApi = createApi({
     "Customer",
     "CustomerAddress",
     "Banner",
+    "Blog",
   ],
   endpoints: () => ({}),
 });

@@ -1,11 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { BLOG_POSTS } from "../constants";
+import { ArrowRight, FileText } from "lucide-react";
 import BlogCard from "@/components/blog/BlogCard";
+import { useGetBlogPostsQuery } from "@/services/api/blogApi";
+import BlogGridSkeleton from "@/components/skeletons/blog/BlogGridSkeleton";
+import EmptyState from "@/components/ui/EmptyState";
 
 export default function BlogSection() {
+  const { data, isLoading } = useGetBlogPostsQuery({ home: true, limit: 4 });
+
+  const posts = data?.items ?? [];
+
   return (
     <section className="w-full max-w-6xl mx-auto px-4 md:px-6 mb-16">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
@@ -26,20 +32,25 @@ export default function BlogSection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {BLOG_POSTS.map((post) => (
-          <BlogCard
-            key={post.id}
-            id={post.id}
-            title={post.title}
-            description={post.description}
-            image={post.image}
-            tag={post.tag}
-            date={post.date}
-            readTime={post.readTime}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <BlogGridSkeleton count={4} variant="responsive" />
+      ) : posts.length === 0 ? (
+        <EmptyState
+          icon={<FileText size={32} />}
+          title="Chưa có bài viết nào"
+          description="Các bài viết chia sẻ kinh nghiệm móc len sẽ sớm được cập nhật."
+        />
+      ) : (
+        <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6">
+          {posts.map((post) => (
+            <BlogCard
+              key={post.id}
+              post={post}
+              variant="responsive"
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

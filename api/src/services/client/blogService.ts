@@ -204,4 +204,91 @@ export const blogService = {
 
     return post ? formatPostListItem(post) : null;
   },
+
+  async getPostBySlug(slug: string) {
+    const post = await prisma.blogPost.findFirst({
+      where: {
+        slug,
+        status: "PUBLISHED",
+        deletedAt: null,
+        publishedAt: { lte: new Date() },
+        tag: { status: "ACTIVE" },
+      },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        contentHtml: true,
+        toc: true,
+        readTimeMinutes: true,
+        metaTitle: true,
+        metaDescription: true,
+        publishedAt: true,
+        author: {
+          select: {
+            fullName: true,
+            avatar: true,
+          },
+        },
+        tag: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        images: {
+          orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+          select: {
+            id: true,
+            url: true,
+            altText: true,
+            isThumbnail: true,
+          },
+        },
+      },
+    });
+
+    if (!post) return null;
+
+    // Increment view count asynchronously
+    prisma.blogPost
+      .update({
+        where: { id: post.id },
+        data: { viewCount: { increment: 1 } },
+      })
+      .catch(() => {});
+
+    const thumbnail =
+      post.images.find((img) => img.isThumbnail) ?? post.images[0] ?? null;
+
+    return {
+      id: post.id,
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      contentHtml: post.contentHtml,
+      toc: post.toc,
+      metaTitle: post.metaTitle,
+      metaDescription: post.metaDescription,
+      publishedAt: post.publishedAt?.toISOString() ?? null,
+      readTimeMinutes: post.readTimeMinutes,
+      author: post.author?.fullName || "Tiệm Len Nhà Kiều",
+      authorAvatar: post.author?.avatar || "/logo.png",
+      tag: {
+        id: post.tag.id,
+        key: post.tag.slug,
+        label: post.tag.name,
+        slug: post.tag.slug,
+      },
+      thumbnail: thumbnail
+        ? {
+            id: thumbnail.id,
+            url: thumbnail.url,
+            altText: thumbnail.altText,
+          }
+        : null,
+    };
+  },
 };

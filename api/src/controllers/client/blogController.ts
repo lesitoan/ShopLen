@@ -25,4 +25,19 @@ export const blogController = {
       data: post,
     });
   },
+
+  async getPostBySlug(request: Request, response: Response) {
+    const slug = String(request.params.slug);
+    const post = await blogService.getPostBySlug(slug);
+
+    if (!post) {
+      return response.status(404).json({
+        success: false,
+        message: "Không tìm thấy bài viết.",
+        data: null,
+      });
+    }
+
+    return sendSuccess(response, post);
+  },
 };

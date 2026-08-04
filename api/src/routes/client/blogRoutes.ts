@@ -13,3 +13,4 @@ blogRoutes.get(
   asyncHandler(blogController.listPosts),
 );
 blogRoutes.get("/posts/featured", asyncHandler(blogController.getFeaturedPost));
+blogRoutes.get("/posts/:slug", asyncHandler(blogController.getPostBySlug));

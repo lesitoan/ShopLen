@@ -22,3 +22,15 @@ export type PasswordResetOtpEmailParams = {
 export type SendPasswordResetOtpEmailParams = PasswordResetOtpEmailParams & {
   to: string;
 };
+
+export type OrderPaidEmailParams = {
+  orderCode: string;
+  customerName: string;
+  totalAmount: number;
+  paidAt: Date;
+  orderDetailUrl?: string;
+};
+
+export type SendOrderPaidEmailParams = OrderPaidEmailParams & {
+  to: string;
+};

@@ -1,8 +1,12 @@
 import { env } from "@/config/envValidation.js";
 import { logger } from "@/config/logger.js";
 import { hasEmailProvider, sendMail } from "@/emails/emailClient.js";
+import { renderOrderPaidEmail } from "@/emails/templates/orderPaidEmail.js";
 import { renderPasswordResetOtpEmail } from "@/emails/templates/passwordResetOtpEmail.js";
-import type { SendPasswordResetOtpEmailParams } from "@/types/email.type.js";
+import type {
+  SendOrderPaidEmailParams,
+  SendPasswordResetOtpEmailParams,
+} from "@/types/email.type.js";
 
 function isDevMode() {
   return env.NODE_ENV === "development" || env.NODE_ENV === "test";
@@ -21,6 +25,29 @@ export const emailService = {
     const email = renderPasswordResetOtpEmail({
       otpCode: params.otpCode,
       expiresInMinutes: params.expiresInMinutes,
+    });
+
+    await sendMail({
+      to: params.to,
+      ...email,
+    });
+  },
+
+  async sendOrderPaidEmail(params: SendOrderPaidEmailParams) {
+    if (!hasEmailProvider() && isDevMode()) {
+      logger.info(
+        { to: params.to, orderCode: params.orderCode },
+        "Order paid email generated in dev mode",
+      );
+      return;
+    }
+
+    const email = renderOrderPaidEmail({
+      orderCode: params.orderCode,
+      customerName: params.customerName,
+      totalAmount: params.totalAmount,
+      paidAt: params.paidAt,
+      orderDetailUrl: params.orderDetailUrl,
     });
 
     await sendMail({

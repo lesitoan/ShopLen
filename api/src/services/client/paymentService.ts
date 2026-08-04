@@ -6,9 +6,11 @@ import {
   Prisma,
 } from "@prisma/client";
 import { env } from "@/config/envValidation.js";
+import { logger } from "@/config/logger.js";
 import { prisma } from "@/config/prismaClient.js";
 import { SITE_INFO } from "@/constants/siteInfo.js";
 import type { SepayWebhookDto } from "@/dto/client/paymentDto.js";
+import { emailService } from "@/services/emailService.js";
 import type { VerifySepaySignaturePayload } from "@/types/payment.type.js";
 import { AppError } from "@/utils/appError.js";
 
@@ -67,6 +69,40 @@ function getOrderCodeCandidates(payload: SepayWebhookDto) {
   }
 
   return [...orderCodeCandidates];
+}
+
+async function sendOrderPaidEmail(orderId: string) {
+  const orderDetailUrl = env.FRONTEND_URL
+    ? `${env.FRONTEND_URL.replace(/\/$/, "")}/don-hang`
+    : undefined;
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      orderCode: true,
+      customerName: true,
+      customerEmail: true,
+      totalAmount: true,
+      paidAt: true,
+    },
+  });
+
+  if (!order?.customerEmail || !order.paidAt) {
+    logger.warn(
+      { orderId, orderCode: order?.orderCode },
+      "Skip order paid email because order email data is missing",
+    );
+    return;
+  }
+
+  await emailService.sendOrderPaidEmail({
+    to: order.customerEmail,
+    orderCode: order.orderCode,
+    customerName: order.customerName,
+    totalAmount: order.totalAmount,
+    paidAt: order.paidAt,
+    orderDetailUrl: orderDetailUrl,
+  });
 }
 
 export const paymentService = {
@@ -207,7 +243,7 @@ export const paymentService = {
       return;
     }
 
-    await prisma.$transaction(async (tx) => {
+    const paidOrderId = await prisma.$transaction(async (tx) => {
       if (transactionRef) {
         const existedPayment = await tx.payment.findFirst({
           where: {
@@ -219,7 +255,7 @@ export const paymentService = {
         });
 
         if (existedPayment) {
-          return;
+          return null;
         }
       }
 
@@ -247,7 +283,7 @@ export const paymentService = {
       });
 
       if (!payment) {
-        return;
+        return null;
       }
 
       const paidAt = payload.transactionDate
@@ -266,7 +302,7 @@ export const paymentService = {
             status: PaymentStatus.MISMATCHED,
           },
         });
-        return;
+        return null;
       }
 
       await tx.payment.update({
@@ -293,7 +329,24 @@ export const paymentService = {
             paidAt,
           },
         });
+
+        return payment.orderId;
       }
+
+      return null;
     });
+
+    if (!paidOrderId) {
+      return;
+    }
+
+    try {
+      await sendOrderPaidEmail(paidOrderId);
+    } catch (error) {
+      logger.error(
+        { err: error, orderId: paidOrderId },
+        "Failed to send order paid email",
+      );
+    }
   },
 };

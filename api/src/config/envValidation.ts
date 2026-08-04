@@ -1,6 +1,13 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const optionalUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .optional()
+  .or(z.literal("").transform(() => undefined));
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   LOG_LEVEL: z
@@ -32,6 +39,7 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
   CLOUDINARY_UPLOAD_FOLDER: z.string().default("tiem-len"),
+  FRONTEND_URL: optionalUrlSchema,
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().default("Tiệm Len Nhà Kiều <no-reply@tiemlennhakieu.io.vn>"),
   TELEGRAM_BOT_TOKEN: z.string().optional(),

@@ -86,3 +86,11 @@ export interface BlogPostListResponse {
     totalPages: number;
   };
 }
+
+export interface BlogDetailApiItem extends BlogPostApiItem {
+  contentHtml?: string;
+  content?: string;
+  toc?: TocItem[] | any;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+}

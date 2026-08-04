@@ -4,8 +4,8 @@ import type {
   BlogPostApiItem,
   BlogPostListParams,
   BlogPostListResponse,
+  BlogDetailApiItem,
 } from "@/types/blog.type";
-
 
 export const blogApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -27,6 +27,11 @@ export const blogApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<BlogPostListResponse>,
       providesTags: ["Blog"],
     }),
+    getBlogDetail: builder.query<BlogDetailApiItem | null, string>({
+      query: (slug) => `/blog/posts/${slug}`,
+      transformResponse: unwrapApiResponse<BlogDetailApiItem | null>,
+      providesTags: (result, error, slug) => [{ type: "Blog", id: slug }],
+    }),
   }),
 });
 
@@ -34,4 +39,5 @@ export const {
   useGetBlogTagsQuery,
   useGetFeaturedPostQuery,
   useGetBlogPostsQuery,
+  useGetBlogDetailQuery,
 } = blogApi;

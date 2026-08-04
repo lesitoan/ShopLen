@@ -1,13 +1,28 @@
 import React from "react";
-import type { BlogPost } from "@/types/blog.type";
-import ArticleCard from "@/screens/blogListing/components/ArticleCard";
+import BlogCard from "@/components/blog/BlogCard";
+import { useGetBlogPostsQuery } from "@/services/api/blogApi";
 
 interface RelatedArticlesProps {
-  posts: BlogPost[];
+  currentSlug?: string;
+  tagSlug?: string;
+  limit?: number;
 }
 
-export default function RelatedArticles({ posts }: RelatedArticlesProps) {
-  if (!posts || posts.length === 0) return null;
+export default function RelatedArticles({
+  currentSlug,
+  tagSlug,
+  limit = 3,
+}: RelatedArticlesProps) {
+  const { data, isLoading } = useGetBlogPostsQuery({
+    limit: limit + 1,
+    tag: tagSlug,
+  });
+
+  const posts = (data?.items ?? [])
+    .filter((post) => post.slug !== currentSlug)
+    .slice(0, limit);
+
+  if (isLoading || posts.length === 0) return null;
 
   return (
     <div className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
@@ -17,7 +32,7 @@ export default function RelatedArticles({ posts }: RelatedArticlesProps) {
 
       <div className="flex flex-col divide-y divide-border">
         {posts.map((post) => (
-          <ArticleCard key={post.id} post={post} />
+          <BlogCard key={post.id} post={post} variant="horizontal" />
         ))}
       </div>
     </div>

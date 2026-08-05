@@ -33,6 +33,7 @@ const loadCartFromStorage = (): CartItem[] => {
         quantity,
         color: rawItem.color || rawItem.colorName || optionCode,
         colorCode: optionCode,
+        selectedOptions: rawItem.selectedOptions,
         name: rawItem.name || "",
         category: rawItem.category || "Móc khóa",
         price: typeof rawItem.price === "number" ? rawItem.price : 0,
@@ -56,6 +57,7 @@ const saveCartToStorage = (items: CartItem[]) => {
       productId: item.productId || String(item.id).split("-")[0],
       quantity: item.quantity,
       optionCode: item.colorCode || item.color || "DEFAULT",
+      selectedOptions: item.selectedOptions,
     }));
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(minimalItems));
   } catch (error) {
@@ -79,7 +81,7 @@ export const cartSlice = createSlice({
     },
 
     addToCart: (state, action: PayloadAction<AddToCartPayload>) => {
-      const { product, color, colorCode, quantity } = action.payload;
+      const { product, color, colorCode, selectedOptions, quantity } = action.payload;
       const addQty = quantity && quantity > 0 ? quantity : 1;
       const optCode = colorCode || color || "DEFAULT";
       const colorName = color || colorCode || "Mặc định";
@@ -101,6 +103,9 @@ export const cartSlice = createSlice({
         item.productId = productId;
         item.colorCode = optCode;
         item.color = colorName;
+        if (selectedOptions) {
+          item.selectedOptions = selectedOptions;
+        }
         state.error = null;
         saveCartToStorage(state.items);
         return;
@@ -136,6 +141,7 @@ export const cartSlice = createSlice({
         category: categoryVal,
         color: colorName,
         colorCode: optCode,
+        selectedOptions,
         price: priceVal,
         originalPrice: originalPriceVal,
         quantity: addQty,
@@ -209,39 +215,34 @@ export const cartSlice = createSlice({
           freshProd.options &&
           freshProd.options.length > 0
         ) {
-          const colorOption = freshProd.options.find(
-            (opt) => opt.optionType === "COLOR"
-          );
+          let foundMatch = false;
 
-          if (colorOption && Array.isArray(colorOption.values) && colorOption.values.length > 0) {
-            let matchedVal: any = null;
+          for (const opt of freshProd.options) {
+            if (!Array.isArray(opt.values) || opt.values.length === 0) continue;
 
-            for (const val of colorOption.values) {
+            for (const val of opt.values) {
               if (typeof val === "string") {
                 if (val.toLowerCase() === currentCode) {
-                  matchedVal = val;
+                  matchedOptionLabel = val;
+                  foundMatch = true;
                   break;
                 }
               } else if (typeof val === "object" && val !== null) {
                 const vCode = (val.code || val.value || val.label || val.name || "").toLowerCase();
                 const vLabel = (val.label || val.value || val.name || val.code || "").toLowerCase();
                 if (vCode === currentCode || vLabel === currentCode) {
-                  matchedVal = val;
+                  matchedOptionLabel = val.label || val.name || val.value || val.code || item.color;
+                  foundMatch = true;
                   break;
                 }
               }
             }
 
-            if (!matchedVal) {
-              // Option code not found in backend DB -> REMOVE item!
-              continue;
-            }
+            if (foundMatch) break;
+          }
 
-            if (typeof matchedVal === "object" && matchedVal !== null) {
-              matchedOptionLabel = matchedVal.label || matchedVal.name || matchedVal.value || item.color;
-            } else if (typeof matchedVal === "string") {
-              matchedOptionLabel = matchedVal;
-            }
+          if (!foundMatch) {
+            continue;
           }
         }
 

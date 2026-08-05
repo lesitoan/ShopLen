@@ -27,7 +27,6 @@ async function fetchBlogDetailServer(slug: string): Promise<BlogDetailApiItem | 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
   const post = await fetchBlogDetailServer(slug);
-  console.log(post);
   if (!post) {
     return {
       title: "Không tìm thấy bài viết | Tiệm Len Nhà Kiều",

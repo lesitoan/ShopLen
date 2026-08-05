@@ -1,3 +1,9 @@
+export interface SelectedItemOption {
+  optionType: "COLOR" | "SIZE";
+  code: string;
+  label?: string;
+}
+
 export interface CartItem {
   id: string | number;
   productId?: string;
@@ -5,6 +11,7 @@ export interface CartItem {
   category?: string;
   color?: string;
   colorCode?: string;
+  selectedOptions?: SelectedItemOption[];
   price: number;
   originalPrice?: number;
   quantity: number;
@@ -18,6 +25,7 @@ export interface StoredCartItem {
   productId: string;
   quantity: number;
   optionCode: string;
+  selectedOptions?: SelectedItemOption[];
 }
 
 export interface CartState {
@@ -43,6 +51,7 @@ export interface AddToCartPayload {
   };
   color?: string;
   colorCode?: string;
+  selectedOptions?: SelectedItemOption[];
   quantity?: number;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -30,7 +30,7 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
   const dispatch = useAppDispatch();
   const cartItems = useAppSelector((state) => state.cart.items);
 
-  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
 
   const {
@@ -50,11 +50,54 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     return relatedResponse.items.filter((p) => p.slug !== slug).slice(0, 4);
   }, [relatedResponse, slug]);
 
-  const hasColors = useMemo(() => {
-    if (!product?.options) return false;
-    const colorOpt = product.options.find((opt) => opt.optionType === "COLOR");
-    return Boolean(colorOpt && colorOpt.values.length > 0);
+  const sortedOptions = useMemo(() => {
+    if (!product?.options) return [];
+    return [...product.options].sort((a, b) => a.displayOrder - b.displayOrder);
   }, [product]);
+
+  const hasOptions = sortedOptions.length > 0;
+
+  const allOptionsSelected = useMemo(() => {
+    if (!hasOptions) return true;
+    return sortedOptions.every((opt) => !!selectedOptions[opt.id]);
+  }, [hasOptions, sortedOptions, selectedOptions]);
+
+  const handleSelectOption = useCallback((optionId: string, valueCode: string) => {
+    setSelectedOptions((prev) => ({ ...prev, [optionId]: valueCode }));
+  }, []);
+
+  const resolveOptionInfo = () => {
+    if (!product || !hasOptions) {
+      return { optionLabel: "Mặc định", optionCode: "DEFAULT", selectedOptionsList: undefined };
+    }
+
+    const labels: string[] = [];
+    const codes: string[] = [];
+    const selectedOptionsList: Array<{ optionType: "COLOR" | "SIZE"; code: string; label?: string }> = [];
+
+    for (const opt of sortedOptions) {
+      const selectedCode = selectedOptions[opt.id];
+      if (!selectedCode) continue;
+
+      const matchedVal = opt.values.find((v) => v.code === selectedCode);
+      const codeVal = matchedVal?.code || selectedCode;
+      const labelVal = matchedVal?.label || selectedCode;
+
+      labels.push(labelVal);
+      codes.push(codeVal);
+      selectedOptionsList.push({
+        optionType: opt.optionType,
+        code: codeVal.toUpperCase(),
+        label: labelVal,
+      });
+    }
+
+    return {
+      optionLabel: labels.join(" - ") || "Mặc định",
+      optionCode: codes.join("-") || "DEFAULT",
+      selectedOptionsList: selectedOptionsList.length > 0 ? selectedOptionsList : undefined,
+    };
+  };
 
   if (!isLoading && (isError || !product)) {
     return (
@@ -75,53 +118,17 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     );
   }
 
-  const resolveColorInfo = (chosenColor?: string) => {
-    if (!product || !chosenColor) {
-      return { colorName: chosenColor || "Mặc định", colorCode: chosenColor || "DEFAULT" };
-    }
-
-    const colorOption = product.options?.find((opt) => opt.optionType === "COLOR");
-    let colorName = chosenColor;
-    let colorCode = chosenColor;
-
-    if (colorOption && Array.isArray(colorOption.values)) {
-      const matched: any = colorOption.values.find((val: any) => {
-        if (typeof val === "string") return val === chosenColor;
-        return (
-          val.code === chosenColor ||
-          val.value === chosenColor ||
-          val.label === chosenColor ||
-          val.name === chosenColor
-        );
-      });
-
-      if (matched) {
-        if (typeof matched === "object") {
-          colorCode = matched.code || matched.value || matched.label || matched.name || chosenColor;
-          colorName = matched.label || matched.name || matched.value || matched.code || chosenColor;
-        } else {
-          colorCode = matched;
-          colorName = matched;
-        }
-      }
-    }
-
-    return { colorName, colorCode };
-  };
-
-  const handleAddToCart = (color?: string, qty?: number) => {
+  const handleAddToCart = () => {
     if (!product) return;
 
-    const chosenColor = color ?? selectedColor;
-    const chosenQty = qty ?? quantity;
-
-    if (hasColors && !chosenColor) {
-      toast.warning("Vui lòng chọn màu sắc trước khi thêm vào giỏ hàng!");
+    if (hasOptions && !allOptionsSelected) {
+      const missing = sortedOptions.find((opt) => !selectedOptions[opt.id]);
+      toast.warning(`Vui lòng chọn ${missing?.name?.toLowerCase() || "phân loại"} trước khi thêm vào giỏ hàng!`);
       return;
     }
 
-    const { colorName, colorCode } = resolveColorInfo(chosenColor);
-    const itemId = `${product.id}-${colorCode}`;
+    const { optionLabel, optionCode, selectedOptionsList } = resolveOptionInfo();
+    const itemId = `${product.id}-${optionCode}`;
     const isExisting = cartItems.some(
       (item) => String(item.id) === String(itemId)
     );
@@ -131,23 +138,29 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    dispatch(addToCart({ product, color: colorName, colorCode, quantity: chosenQty }));
+    dispatch(
+      addToCart({
+        product,
+        color: optionLabel,
+        colorCode: optionCode,
+        selectedOptions: selectedOptionsList,
+        quantity,
+      })
+    );
     toast.success("Đã thêm sản phẩm vào giỏ hàng!");
   };
 
-  const handleBuyNow = (color?: string, qty?: number) => {
+  const handleBuyNow = () => {
     if (!product) return;
 
-    const chosenColor = color ?? selectedColor;
-    const chosenQty = qty ?? quantity;
-
-    if (hasColors && !chosenColor) {
-      toast.warning("Vui lòng chọn màu sắc trước khi mua hàng!");
+    if (hasOptions && !allOptionsSelected) {
+      const missing = sortedOptions.find((opt) => !selectedOptions[opt.id]);
+      toast.warning(`Vui lòng chọn ${missing?.name?.toLowerCase() || "phân loại"} trước khi mua hàng!`);
       return;
     }
 
-    const { colorName, colorCode } = resolveColorInfo(chosenColor);
-    const itemId = `${product.id}-${colorCode}`;
+    const { optionLabel, optionCode, selectedOptionsList } = resolveOptionInfo();
+    const itemId = `${product.id}-${optionCode}`;
     const isExisting = cartItems.some(
       (item) => String(item.id) === String(itemId)
     );
@@ -157,7 +170,15 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
       return;
     }
 
-    dispatch(addToCart({ product, color: colorName, colorCode, quantity: chosenQty }));
+    dispatch(
+      addToCart({
+        product,
+        color: optionLabel,
+        colorCode: optionCode,
+        selectedOptions: selectedOptionsList,
+        quantity,
+      })
+    );
     router.push("/gio-hang");
   };
 
@@ -180,8 +201,8 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
               product && (
                 <ProductInfo
                   product={product}
-                  selectedColor={selectedColor}
-                  setSelectedColor={setSelectedColor}
+                  selectedOptions={selectedOptions}
+                  onSelectOption={handleSelectOption}
                   quantity={quantity}
                   setQuantity={setQuantity}
                   onAddToCart={handleAddToCart}
@@ -207,8 +228,8 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
 
       {!isLoading && product && (
         <MobileActionBar
-          onAddToCart={() => handleAddToCart(selectedColor, quantity)}
-          onBuyNow={() => handleBuyNow(selectedColor, quantity)}
+          onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNow}
         />
       )}
     </div>

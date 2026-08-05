@@ -180,24 +180,37 @@ export default function CheckoutScreen() {
 
       const orderItemsPayload = cartItems.map((item) => {
         const prodId = item.productId || String(item.id).split("-")[0];
-        const colorCode = item.colorCode || item.color;
-        const hasCustomOption =
-          colorCode &&
-          colorCode.toUpperCase() !== "DEFAULT" &&
-          colorCode.toUpperCase() !== "DEFAULT_OPTION" &&
-          colorCode !== "Mặc định";
+        
+        let selectedOptionsPayload = item.selectedOptions?.map((opt) => ({
+          optionType: opt.optionType,
+          code: opt.code.toUpperCase(),
+        }));
+
+        if (!selectedOptionsPayload || selectedOptionsPayload.length === 0) {
+          const colorCode = item.colorCode || item.color;
+          const hasCustomOption =
+            colorCode &&
+            colorCode.toUpperCase() !== "DEFAULT" &&
+            colorCode.toUpperCase() !== "DEFAULT_OPTION" &&
+            colorCode !== "Mặc định";
+
+          if (hasCustomOption) {
+            selectedOptionsPayload = [
+              {
+                optionType: "COLOR" as const,
+                code: colorCode.toUpperCase(),
+              },
+            ];
+          }
+        }
 
         return {
           productId: prodId,
           quantity: item.quantity,
-          selectedOptions: hasCustomOption
-            ? [
-                {
-                  optionType: "COLOR" as const,
-                  code: colorCode.toUpperCase(),
-                },
-              ]
-            : undefined,
+          selectedOptions:
+            selectedOptionsPayload && selectedOptionsPayload.length > 0
+              ? selectedOptionsPayload
+              : undefined,
         };
       });
 

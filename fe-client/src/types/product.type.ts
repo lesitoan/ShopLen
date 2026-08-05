@@ -19,16 +19,14 @@ export interface ProductDetailImage {
 }
 
 export interface ProductOptionValue {
+  code: string;
   label: string;
-  value: string;
-  code?: string;
-  hex?: string;
-  priceAdjustment?: number;
+  colorHex?: string;
 }
 
 export interface ProductOption {
   id: string;
-  optionType: "COLOR" | "CUSTOM";
+  optionType: "COLOR" | "SIZE";
   name: string;
   displayOrder: number;
   values: ProductOptionValue[];

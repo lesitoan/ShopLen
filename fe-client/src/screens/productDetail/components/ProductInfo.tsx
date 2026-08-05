@@ -1,26 +1,25 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "react-toastify";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import VariantSelector from "./VariantSelector";
-import { COLOR_FILTERS } from "@/screens/products/constants";
+import OptionSelector from "./OptionSelector";
 import type { ProductDetail } from "@/types/product.type";
 
 interface ProductInfoProps {
   product: ProductDetail;
-  selectedColor: string;
-  setSelectedColor: (color: string) => void;
+  selectedOptions: Record<string, string>;
+  onSelectOption: (optionId: string, valueCode: string) => void;
   quantity: number;
   setQuantity: React.Dispatch<React.SetStateAction<number>>;
-  onAddToCart?: (color: string, quantity: number) => void;
-  onBuyNow?: (color: string, quantity: number) => void;
+  onAddToCart?: () => void;
+  onBuyNow?: () => void;
 }
 
 export default function ProductInfo({
   product,
-  selectedColor,
-  setSelectedColor,
+  selectedOptions,
+  onSelectOption,
   quantity,
   setQuantity,
   onAddToCart,
@@ -34,49 +33,34 @@ export default function ProductInfo({
       : undefined;
   const badgeLabel = product.highlightLabel || undefined;
 
-  const availableColors = useMemo(() => {
-    if (!product) return [];
-    const colorOption = product.options?.find(
-      (opt) => opt.optionType === "COLOR"
-    );
+  const sortedOptions = [...(product.options || [])].sort(
+    (a, b) => a.displayOrder - b.displayOrder
+  );
 
-    if (colorOption && colorOption.values.length > 0) {
-      return colorOption.values.map((val) => ({
-        name: val.label || val.value,
-        code: val.code || val.value,
-        hex: val.hex || COLOR_FILTERS.find((c) => c.value === val.code)?.hex || "#E5E7EB",
-      }));
-    }
-
-    return COLOR_FILTERS.slice(0, 4).map((c) => ({
-      name: c.name,
-      code: c.value,
-      hex: c.hex,
-    }));
-  }, [product]);
+  const allOptionsSelected =
+    sortedOptions.length === 0 ||
+    sortedOptions.every((opt) => !!selectedOptions[opt.id]);
 
   const handleQtyChange = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta));
   };
 
   const handleAddToCartClick = () => {
-    if (availableColors.length > 0 && !selectedColor) {
-      toast.warning("Vui lòng chọn màu sắc trước khi thêm vào giỏ hàng!");
+    if (!allOptionsSelected) {
+      const missing = sortedOptions.find((opt) => !selectedOptions[opt.id]);
+      toast.warning(`Vui lòng chọn ${missing?.name?.toLowerCase() || "phân loại"} trước khi thêm vào giỏ hàng!`);
       return;
     }
-    if (onAddToCart) {
-      onAddToCart(selectedColor || "Mặc định", quantity);
-    }
+    onAddToCart?.();
   };
 
   const handleBuyNowClick = () => {
-    if (availableColors.length > 0 && !selectedColor) {
-      toast.warning("Vui lòng chọn màu sắc trước khi mua hàng!");
+    if (!allOptionsSelected) {
+      const missing = sortedOptions.find((opt) => !selectedOptions[opt.id]);
+      toast.warning(`Vui lòng chọn ${missing?.name?.toLowerCase() || "phân loại"} trước khi mua hàng!`);
       return;
     }
-    if (onBuyNow) {
-      onBuyNow(selectedColor || "Mặc định", quantity);
-    }
+    onBuyNow?.();
   };
 
   const price = product.price ?? product.salePrice ?? product.originalPrice ?? 0;
@@ -129,13 +113,14 @@ export default function ProductInfo({
         </p>
       </div>
 
-      {availableColors.length > 0 && (
-        <VariantSelector
-          availableColors={availableColors}
-          selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
+      {sortedOptions.map((opt) => (
+        <OptionSelector
+          key={opt.id}
+          option={opt}
+          selectedValue={selectedOptions[opt.id] || ""}
+          onSelect={(code) => onSelectOption(opt.id, code)}
         />
-      )}
+      ))}
 
       <div className="mb-6 select-none">
         <h4 className="text-[12px] font-bold text-text-secondary uppercase mb-2.5 select-none">

@@ -10,7 +10,9 @@ import { logger } from "@/config/logger.js";
 import { prisma } from "@/config/prismaClient.js";
 import { SITE_INFO } from "@/constants/siteInfo.js";
 import type { SepayWebhookDto } from "@/dto/client/paymentDto.js";
+import { enqueueNotification } from "@/queues/notificationQueue.js";
 import { emailService } from "@/services/emailService.js";
+import { NOTIFICATION_JOB_NAMES } from "@/types/notification.type.js";
 import type { VerifySepaySignaturePayload } from "@/types/payment.type.js";
 import { AppError } from "@/utils/appError.js";
 
@@ -73,7 +75,7 @@ function getOrderCodeCandidates(payload: SepayWebhookDto) {
 
 async function sendOrderPaidEmail(orderId: string) {
   const orderDetailUrl = env.FRONTEND_URL
-    ? `${env.FRONTEND_URL.replace(/\/$/, "")}/don-hang`
+    ? `${env.FRONTEND_URL.replace(/\/$/, "")}/tai-khoan?tab=don-hang`
     : undefined;
 
   const order = await prisma.order.findUnique({
@@ -243,7 +245,7 @@ export const paymentService = {
       return;
     }
 
-    const paidOrderId = await prisma.$transaction(async (tx) => {
+    const paidOrderNotification = await prisma.$transaction(async (tx) => {
       if (transactionRef) {
         const existedPayment = await tx.payment.findFirst({
           where: {
@@ -271,6 +273,7 @@ export const paymentService = {
           id: true,
           orderId: true,
           amount: true,
+          transferContent: true,
           status: true,
           order: {
             select: {
@@ -330,23 +333,36 @@ export const paymentService = {
           },
         });
 
-        return payment.orderId;
+        return {
+          orderId: payment.orderId,
+          orderCode: payment.transferContent,
+          paidAt: paidAt.toISOString(),
+        };
       }
 
       return null;
     });
 
-    if (!paidOrderId) {
+    if (!paidOrderNotification) {
       return;
     }
 
     try {
-      await sendOrderPaidEmail(paidOrderId);
+      await sendOrderPaidEmail(paidOrderNotification.orderId);
     } catch (error) {
       logger.error(
-        { err: error, orderId: paidOrderId },
+        { err: error, orderId: paidOrderNotification.orderId },
         "Failed to send order paid email",
       );
     }
+
+    await enqueueNotification(
+      NOTIFICATION_JOB_NAMES.ORDER_PAID,
+      paidOrderNotification,
+      {
+        orderId: paidOrderNotification.orderId,
+        orderCode: paidOrderNotification.orderCode,
+      },
+    );
   },
 };

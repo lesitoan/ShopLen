@@ -1,6 +1,6 @@
 import { SITE_INFO } from "@/constants/siteInfo.js";
-import { escapeHtml } from "@/emails/htmlEscape.js";
 import type { EmailLayoutParams } from "@/types/email.type.js";
+import { escapeHtml } from "@/utils/htmlEscape.js";
 
 export function renderEmailLayout(params: EmailLayoutParams) {
   const title = escapeHtml(params.title);

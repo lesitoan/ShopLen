@@ -1,11 +1,12 @@
 import { SITE_INFO } from "@/constants/siteInfo.js";
 import { renderEmailLayout } from "@/emails/emailLayout.js";
-import { escapeHtml } from "@/emails/htmlEscape.js";
 import type {
   EmailTemplateResult,
   OrderPaidEmailParams,
 } from "@/types/email.type.js";
 import { formatCurrency } from "@/utils/formatCurrency.js";
+import { formatDateTime } from "@/utils/formatDateTime.js";
+import { escapeHtml } from "@/utils/htmlEscape.js";
 
 function renderOrderDetailLink(orderDetailUrl?: string) {
   if (!orderDetailUrl) {
@@ -32,13 +33,7 @@ export function renderOrderPaidEmail(
   const shopName = escapeHtml(SITE_INFO.shopName);
   const orderCode = escapeHtml(params.orderCode);
   const customerName = escapeHtml(params.customerName);
-  const paidAt = escapeHtml(
-    new Intl.DateTimeFormat("vi-VN", {
-      dateStyle: "short",
-      timeStyle: "short",
-      timeZone: "Asia/Ho_Chi_Minh",
-    }).format(params.paidAt),
-  );
+  const paidAt = escapeHtml(formatDateTime(params.paidAt));
   const totalAmount = escapeHtml(formatCurrency(params.totalAmount));
 
   return {

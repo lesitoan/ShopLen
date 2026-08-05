@@ -42,6 +42,10 @@ const envSchema = z.object({
   FRONTEND_URL: optionalUrlSchema,
   RESEND_API_KEY: z.string().optional(),
   RESEND_FROM_EMAIL: z.string().default("Tiệm Len Nhà Kiều <no-reply@tiemlennhakieu.io.vn>"),
+  TELEGRAM_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_ADMIN_CHAT_ID: z.string().optional(),
   BANK_ACCOUNT_NUMBER: z.string().optional(),

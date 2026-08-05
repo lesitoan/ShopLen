@@ -12,9 +12,11 @@ import type {
   ResetPasswordRequestDto,
   VerifyPasswordOtpRequestDto,
 } from "@/dto/client/authDto.js";
+import { enqueueNotification } from "@/queues/notificationQueue.js";
 import { emailService } from "@/services/emailService.js";
 import { passwordResetOtpService } from "@/services/client/passwordResetOtpService.js";
 import type { AuthData, CustomerSession } from "@/types/clientAuth.type.js";
+import { NOTIFICATION_JOB_NAMES } from "@/types/notification.type.js";
 import { AppError } from "@/utils/appError.js";
 import { verifyGoogleIdToken } from "@/utils/googleAuth.js";
 import { comparePassword, hashPassword } from "@/utils/hashPassword.js";
@@ -107,6 +109,23 @@ export const authService = {
           lastLoginAt: new Date(),
         },
       });
+
+      await enqueueNotification(
+        NOTIFICATION_JOB_NAMES.CUSTOMER_REGISTERED,
+        {
+          customerId: customer.id,
+          code: customer.code,
+          fullName: customer.fullName,
+          email: customer.email,
+          phone: customer.phone,
+          registerMethod: "EMAIL",
+          registeredAt: customer.createdAt.toISOString(),
+        },
+        {
+          customerId: customer.id,
+          email: customer.email,
+        },
+      );
 
       return createAuthData(customer);
     } catch (error) {
@@ -228,6 +247,23 @@ export const authService = {
         lastLoginAt: new Date(),
       },
     });
+
+    await enqueueNotification(
+      NOTIFICATION_JOB_NAMES.CUSTOMER_REGISTERED,
+      {
+        customerId: customer.id,
+        code: customer.code,
+        fullName: customer.fullName,
+        email: customer.email,
+        phone: customer.phone,
+        registerMethod: "GOOGLE",
+        registeredAt: customer.createdAt.toISOString(),
+      },
+      {
+        customerId: customer.id,
+        email: customer.email,
+      },
+    );
 
     return createAuthData(customer);
   },

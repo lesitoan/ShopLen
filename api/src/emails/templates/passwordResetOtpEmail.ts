@@ -1,10 +1,10 @@
 import { SITE_INFO } from "@/constants/siteInfo.js";
 import { renderEmailLayout } from "@/emails/emailLayout.js";
-import { escapeHtml } from "@/emails/htmlEscape.js";
 import type {
   EmailTemplateResult,
   PasswordResetOtpEmailParams,
 } from "@/types/email.type.js";
+import { escapeHtml } from "@/utils/htmlEscape.js";
 
 export function renderPasswordResetOtpEmail(
   params: PasswordResetOtpEmailParams,

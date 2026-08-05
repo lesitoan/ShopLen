@@ -18,7 +18,9 @@ import type {
   LookupOrderRequestDto,
   UpdateOrderShippingAddressRequestDto,
 } from "@/dto/client/orderDto.js";
+import { enqueueNotification } from "@/queues/notificationQueue.js";
 import { emitOrderStatusChanged } from "@/sockets/orderSocket.js";
+import { NOTIFICATION_JOB_NAMES } from "@/types/notification.type.js";
 import type {
   ProductDelegateClient,
   ProductOptionValue,
@@ -730,6 +732,21 @@ export const orderService = {
     });
 
     emitOrderStatusChanged(orderId, result.orderStatus);
+
+    await enqueueNotification(
+      NOTIFICATION_JOB_NAMES.ORDER_CANCELLED,
+      {
+        orderId,
+        orderStatus: result.orderStatus,
+        reason: payload.reason,
+        cancelledAt: new Date().toISOString(),
+      },
+      {
+        orderId,
+        orderStatus: result.orderStatus,
+      },
+    );
+
     return result;
   },
 
@@ -745,6 +762,10 @@ export const orderService = {
       },
       select: {
         id: true,
+        shippingAddress: true,
+        shippingProvince: true,
+        shippingDistrict: true,
+        shippingWard: true,
       },
     });
 
@@ -786,7 +807,7 @@ export const orderService = {
       );
     }
 
-    return prisma.order.findUniqueOrThrow({
+    const updatedShippingAddress = await prisma.order.findUniqueOrThrow({
       where: { id: order.id },
       select: {
         customerName: true,
@@ -797,5 +818,22 @@ export const orderService = {
         shippingWard: true,
       },
     });
+
+    await enqueueNotification(
+      NOTIFICATION_JOB_NAMES.ORDER_SHIPPING_ADDRESS_UPDATED,
+      {
+        orderId: order.id,
+        customerName: updatedShippingAddress.customerName,
+        customerPhone: updatedShippingAddress.customerPhone,
+        oldShippingAddress: `${order?.shippingAddress || ""}, ${order?.shippingWard || ""}, ${order?.shippingDistrict || ""}, ${order?.shippingProvince || ""}`,
+        newShippingAddress: `${updatedShippingAddress.shippingAddress || ""}, ${updatedShippingAddress.shippingWard || ""}, ${updatedShippingAddress.shippingDistrict || ""}, ${updatedShippingAddress.shippingProvince || ""}`,
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        orderId: order.id,
+      },
+    );
+
+    return updatedShippingAddress;
   },
 };

@@ -37,8 +37,8 @@ export default function LoginFormView({
     formState: { errors },
   } = useForm<LoginFormData>({
     defaultValues: {
-      email: "demo@gmail.com",
-      password: "12345678",
+      email: "",
+      password: "",
       rememberMe: true,
     },
     mode: "onTouched",

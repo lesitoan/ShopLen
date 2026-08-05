@@ -23,6 +23,7 @@ import { useCreateOrderMutation } from "@/services/api/orderApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearCart, syncCartWithApiData } from "@/store/slices/cartSlice";
 import { CartSummaryData } from "@/types/cart.type";
+import { STANDARD_SHIPPING_FEE } from "@/screens/cart/constants";
 import { getApiErrorMessage } from "@/utils/apiErrorUtils";
 import { CheckoutFormData } from "./types";
 
@@ -147,7 +148,7 @@ export default function CheckoutScreen() {
   };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingFee = subtotal === 0 ? 0 : 30000;
+  const shippingFee = subtotal === 0 ? 0 : STANDARD_SHIPPING_FEE;
   const voucherDiscount = 0;
   const pointsDiscount = 0;
   const total = Math.max(0, subtotal + shippingFee - voucherDiscount - pointsDiscount);

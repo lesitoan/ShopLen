@@ -22,7 +22,7 @@ export default function ArticleList({
   onPageChange,
 }: ArticleListProps) {
   const queryTag = activeTag === "tat-ca" ? undefined : activeTag;
-  const { data: apiData, isLoading, isError } = useGetBlogPostsQuery({
+  const { data: apiData, isFetching, isError } = useGetBlogPostsQuery({
     page: currentPage,
     limit,
     tag: queryTag,
@@ -37,7 +37,7 @@ export default function ArticleList({
         {title}
       </h2>
 
-      {isLoading ? (
+      {isFetching ? (
         <BlogGridSkeleton count={limit} variant="horizontal" />
       ) : isError ? (
         <div className="py-8">

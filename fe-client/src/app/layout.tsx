@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
 import NavigationReset from "@/components/common/NavigationReset";
@@ -28,6 +29,7 @@ export default function RootLayout({
           <NavigationReset />
           {children}
         </AppProviders>
+        <Analytics />
       </body>
     </html>
   );

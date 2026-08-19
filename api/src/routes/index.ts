@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { adminAuthRoutes } from "@/routes/admin/authRoutes.js";
 import { adminDashboardRoutes } from "@/routes/admin/adminDashboardRoutes.js";
 import { adminOrderRoutes } from "@/routes/admin/adminOrderRoutes.js";
 import { uploadRoutes } from "@/routes/admin/uploadRoutes.js";
@@ -23,6 +24,7 @@ routes.use("/cart", cartRoutes);
 routes.use("/orders", orderRoutes);
 routes.use("/payments", paymentRoutes);
 routes.use("/categories", categoryRoutes);
+routes.use("/admin/auth", adminAuthRoutes);
 routes.use("/admin/uploads", uploadRoutes);
 routes.use("/admin/orders", adminOrderRoutes);
 routes.use("/admin/dashboard", adminDashboardRoutes);

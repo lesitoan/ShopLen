@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { uploadController } from "@/controllers/admin/uploadController.js";
-import { authMiddleware } from "@/middlewares/authMiddleware.js";
+import { adminAuthMiddleware } from "@/middlewares/adminAuthMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 
 export const uploadRoutes = Router();
 
-uploadRoutes.post("/", authMiddleware, asyncHandler(uploadController.createUploadTarget));
+uploadRoutes.post(
+  "/",
+  asyncHandler(adminAuthMiddleware),
+  asyncHandler(uploadController.createUploadTarget),
+);

@@ -5,6 +5,10 @@ import type {
   CustomerAccessTokenPayload,
   CustomerRefreshTokenPayload,
 } from "@/types/clientAuth.type.js";
+import type {
+  AdminAccessTokenPayload,
+  AdminRefreshTokenPayload,
+} from "@/types/adminAuth.type.js";
 
 function getAccessSecret(): Secret {
   const secret = env.JWT_ACCESS_SECRET ?? env.JWT_SECRET;
@@ -43,6 +47,18 @@ export function signCustomerAccessToken(payload: CustomerAccessTokenPayload) {
 }
 
 export function signCustomerRefreshToken(payload: CustomerRefreshTokenPayload) {
+  return jwt.sign(payload, getRefreshSecret(), {
+    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+  } as SignOptions);
+}
+
+export function signAdminAccessToken(payload: AdminAccessTokenPayload) {
+  return jwt.sign(payload, getAccessSecret(), {
+    expiresIn: env.JWT_ACCESS_EXPIRES_IN,
+  } as SignOptions);
+}
+
+export function signAdminRefreshToken(payload: AdminRefreshTokenPayload) {
   return jwt.sign(payload, getRefreshSecret(), {
     expiresIn: env.JWT_REFRESH_EXPIRES_IN,
   } as SignOptions);
@@ -97,4 +113,56 @@ export function verifyCustomerRefreshToken(token: string) {
   }
 
   return payload as CustomerRefreshTokenPayload;
+}
+
+export function verifyAdminAccessToken(token: string) {
+  let payload: string | jwt.JwtPayload;
+
+  try {
+    payload = jwt.verify(token, getAccessSecret());
+  } catch (error) {
+    throw new AppError(
+      "Token không hợp lệ hoặc đã hết hạn.",
+      401,
+      "UNAUTHORIZED",
+      error instanceof Error ? error.message : "Admin access token verify failed",
+    );
+  }
+
+  if (
+    typeof payload !== "object" ||
+    payload.tokenType !== "ADMIN" ||
+    typeof payload.sub !== "string" ||
+    typeof payload.email !== "string" ||
+    typeof payload.role !== "string"
+  ) {
+    throw new AppError("Token không hợp lệ.", 401, "UNAUTHORIZED");
+  }
+
+  return payload as AdminAccessTokenPayload;
+}
+
+export function verifyAdminRefreshToken(token: string) {
+  let payload: string | jwt.JwtPayload;
+
+  try {
+    payload = jwt.verify(token, getRefreshSecret());
+  } catch (error) {
+    throw new AppError(
+      "Refresh token không hợp lệ hoặc đã hết hạn.",
+      401,
+      "REFRESH_TOKEN_INVALID",
+      error instanceof Error ? error.message : "Admin refresh token verify failed",
+    );
+  }
+
+  if (
+    typeof payload !== "object" ||
+    payload.tokenType !== "ADMIN_REFRESH" ||
+    typeof payload.sub !== "string"
+  ) {
+    throw new AppError("Refresh token không hợp lệ.", 401, "REFRESH_TOKEN_INVALID");
+  }
+
+  return payload as AdminRefreshTokenPayload;
 }

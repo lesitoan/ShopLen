@@ -7,6 +7,10 @@ import { Breadcrumb } from "../ui/Breadcrumb";
 import { DropdownMenu } from "../ui/DropdownMenu";
 import { Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucide-react";
 import { BREADCRUMB_ROUTE_MAP } from "./constants";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useAdminLogoutMutation } from "@/services/api/adminAuthApi";
+import { clearAuthTokens, getRefreshToken } from "@/services/authStorage";
+import { clearAuthState } from "@/store/slices/authSlice";
 
 export interface TopbarProps {
   isCollapsed: boolean;
@@ -15,7 +19,23 @@ export interface TopbarProps {
 export default function Topbar({ isCollapsed }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const admin = useAppSelector((state) => state.auth.admin);
+  const [adminLogout] = useAdminLogoutMutation();
   const [unreadCount, setUnreadCount] = useState(2);
+
+  const handleLogout = async () => {
+    const refreshToken = getRefreshToken();
+    try {
+      await adminLogout(refreshToken ? { refreshToken } : undefined).unwrap();
+    } catch {
+      // Ignore logout backend errors and clear client session
+    } finally {
+      clearAuthTokens();
+      dispatch(clearAuthState());
+      router.push("/login");
+    }
+  };
 
   const getBreadcrumbItems = () => {
     const segments = pathname.split("/").filter(Boolean);
@@ -43,15 +63,22 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
     },
   ];
 
+  const roleLabels: Record<string, string> = {
+    SUPER_ADMIN: "Quản trị viên tối cao",
+    ADMIN: "Quản trị viên",
+    STAFF: "Nhân viên",
+  };
+
   const userMenuItems = [
     {
       key: "profile",
-      label: "Thông tin cá nhân",
+      label: admin?.email ? `Email: ${admin.email}` : "Thông tin cá nhân",
       icon: <User className="w-4 h-4 text-text-muted" />,
+      disabled: true,
     },
     {
       key: "role",
-      label: "Quyền Quản trị viên (Super Admin)",
+      label: `Quyền: ${roleLabels[admin?.role || "ADMIN"] || "Quản trị viên"}`,
       icon: <ShieldCheck className="w-4 h-4 text-primary" />,
       disabled: true,
     },
@@ -60,9 +87,7 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
       label: "Đăng xuất",
       icon: <LogOut className="w-4 h-4 text-status-danger" />,
       danger: true,
-      onClick: () => {
-        router.push("/login");
-      },
+      onClick: handleLogout,
     },
   ];
 
@@ -99,17 +124,19 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
           trigger={
             <div className="flex items-center gap-3 cursor-pointer px-3.5 py-2 rounded-lg hover:bg-surface-hover transition-colors select-none">
               <Image
-                src="/images/avatar.svg"
-                alt="Admin Kiều Avatar"
+                src={admin?.avatar || "/images/avatar.svg"}
+                alt={admin?.fullName || "Admin Avatar"}
                 width={36}
                 height={36}
                 className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-primary/20"
               />
               <div className="hidden lg:flex flex-col text-left">
                 <span className="text-xs font-semibold text-text-highlight leading-tight">
-                  Admin Kiều
+                  {admin?.fullName || "Admin Kiều"}
                 </span>
-                <span className="text-[10px] text-text-muted mt-0.5">Quản trị viên</span>
+                <span className="text-[10px] text-text-muted mt-0.5">
+                  {roleLabels[admin?.role || "ADMIN"] || "Quản trị viên"}
+                </span>
               </div>
             </div>
           }

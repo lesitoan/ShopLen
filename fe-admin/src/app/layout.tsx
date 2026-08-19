@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
+import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
+
+import AppProviders from "./providers";
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["vietnamese"],
@@ -21,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={beVietnamPro.variable}>
       <body className="antialiased">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

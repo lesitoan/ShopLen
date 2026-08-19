@@ -7,6 +7,7 @@ import { BankSettingsCard } from "./components/BankSettingsCard";
 import { ShippingSettingsCard } from "./components/ShippingSettingsCard";
 import { LoyaltySettingsCard } from "./components/LoyaltySettingsCard";
 import { TelegramSettingsCard } from "./components/TelegramSettingsCard";
+import { toast } from "react-toastify";
 import {
   DEFAULT_SETTINGS_STATE,
   SettingTabId,
@@ -17,8 +18,6 @@ import {
   Truck,
   Award,
   Send,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 
 export function SettingsScreen() {
@@ -27,7 +26,6 @@ export function SettingsScreen() {
   const [initialSettings, setInitialSettings] = useState<SystemSettingsState>(DEFAULT_SETTINGS_STATE);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   useEffect(() => {
     async function loadSettings() {
@@ -59,16 +57,11 @@ export function SettingsScreen() {
 
   const handleReset = () => {
     setSettings(initialSettings);
-    setToast({
-      type: "success",
-      message: "Đã khôi phục cài đặt về trạng thái ban đầu.",
-    });
-    setTimeout(() => setToast(null), 3000);
+    toast.success("Đã khôi phục cài đặt về trạng thái ban đầu.");
   };
 
   const handleSave = async () => {
     setIsSaving(true);
-    setToast(null);
 
     try {
       const response = await fetch("/api/admin/settings", {
@@ -84,25 +77,15 @@ export function SettingsScreen() {
       if (response.ok && res.success) {
         setInitialSettings(res.data);
         setLastSavedTime(new Date().toLocaleTimeString("vi-VN"));
-        setToast({
-          type: "success",
-          message: "Lưu cấu hình hệ thống thành công!",
-        });
+        toast.success("Lưu cấu hình hệ thống thành công!");
       } else {
-        setToast({
-          type: "error",
-          message: res.message || "Không thể lưu cấu hình hệ thống.",
-        });
+        toast.error(res.message || "Không thể lưu cấu hình hệ thống.");
       }
     } catch (err) {
       const error = err as Error;
-      setToast({
-        type: "error",
-        message: `Lỗi kết nối máy chủ: ${error.message}`,
-      });
+      toast.error(`Lỗi kết nối máy chủ: ${error.message}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setToast(null), 4000);
     }
   };
 
@@ -132,32 +115,6 @@ export function SettingsScreen() {
   return (
     <div className="space-y-5">
       <SettingsHeader lastSavedTime={lastSavedTime} />
-
-      {toast && (
-        <div
-          className={`p-4 rounded-lg border text-sm font-medium flex items-center justify-between shadow-lg transition-all duration-200 ${
-            toast.type === "success"
-              ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
-              : "bg-red-500/15 border-red-500/30 text-red-300"
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            {toast.type === "success" ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            )}
-            <span>{toast.message}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setToast(null)}
-            className="text-xs opacity-70 hover:opacity-100 cursor-pointer"
-          >
-            Đóng
-          </button>
-        </div>
-      )}
 
       <Tabs
         tabs={tabs}

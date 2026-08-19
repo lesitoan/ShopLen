@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Inbox } from "lucide-react";
 import { Pagination } from "./Pagination";
+import { EmptyState } from "./EmptyState";
+import { Loading } from "./Loading";
 
 export interface Column<T> {
   key: string;
@@ -66,25 +67,15 @@ export function DataTable<T>({
           </thead>
           <tbody className="divide-y divide-border/60">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, rowIndex) => (
-                <tr key={`skeleton-${rowIndex}`} className="animate-pulse">
-                  {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-4">
-                      <div className="h-4 bg-surface-hover rounded w-3/4" />
-                    </td>
-                  ))}
-                </tr>
-              ))
+              <tr>
+                <td colSpan={columns.length} className="px-4 py-8 text-center">
+                  <Loading size="lg" />
+                </td>
+              </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-12 text-center text-text-muted"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <Inbox className="w-10 h-10 stroke-1 text-border-light" />
-                    <p className="text-sm font-medium">{emptyMessage}</p>
-                  </div>
+                <td colSpan={columns.length} className="px-4 py-4">
+                  <EmptyState message={emptyMessage} />
                 </td>
               </tr>
             ) : (

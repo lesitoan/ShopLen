@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { Loading } from "@/components/ui/Loading";
+import { getDefaultRouteForRole } from "@/constants/permissions";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -20,7 +21,8 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
     if (requireAuth && !admin) {
       router.replace("/login");
     } else if (!requireAuth && admin) {
-      router.replace("/");
+      const defaultRoute = getDefaultRouteForRole(admin.role);
+      router.replace(defaultRoute);
     }
   }, [admin, isInitialized, requireAuth, router]);
 

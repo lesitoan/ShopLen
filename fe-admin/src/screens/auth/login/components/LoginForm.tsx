@@ -15,6 +15,7 @@ import { saveAuthTokens } from "@/services/authStorage";
 import { setAdminProfile } from "@/store/slices/authSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { getApiErrorMessage } from "@/utils/apiErrorUtils";
+import { getDefaultRouteForRole } from "@/constants/permissions";
 
 interface LoginFormValues {
   account: string;
@@ -53,8 +54,9 @@ export function LoginForm() {
 
       toast.success("Đăng nhập thành công! Đang chuyển hướng...");
 
+      const defaultRoute = getDefaultRouteForRole(admin.role);
       setTimeout(() => {
-        router.push("/");
+        router.push(defaultRoute);
       }, 500);
     } catch (err: unknown) {
       toast.error(

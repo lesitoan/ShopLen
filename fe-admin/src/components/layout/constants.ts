@@ -12,26 +12,28 @@ import {
   Settings,
   BarChart3,
 } from "lucide-react";
+import type { PermissionKey } from "@/constants/permissions";
 
 export interface MenuItem {
   name: string;
   path: string;
   icon: LucideIcon;
   badge?: number;
+  permission?: PermissionKey;
 }
 
 export const NAV_MENU_ITEMS: MenuItem[] = [
-  { name: "Dashboard", path: "/", icon: LayoutDashboard },
-  { name: "Đơn hàng", path: "/orders", icon: ShoppingBag, badge: 3 },
-  { name: "Sản phẩm", path: "/products", icon: Package },
-  { name: "Danh mục", path: "/categories", icon: FolderTree },
-  { name: "Khách hàng", path: "/customers", icon: Users },
-  { name: "Khuyến mãi", path: "/promotions", icon: Percent },
-  { name: "Điểm thưởng", path: "/rewards/config", icon: Award },
-  { name: "Bài viết", path: "/blog", icon: FileText },
-  { name: "Nhân viên", path: "/staff", icon: UserCheck },
-  { name: "Thống kê", path: "/analytics", icon: BarChart3 },
-  { name: "Cấu hình", path: "/settings", icon: Settings },
+  { name: "Dashboard", path: "/", icon: LayoutDashboard, permission: "dashboard.view" },
+  { name: "Đơn hàng", path: "/orders", icon: ShoppingBag, badge: 3, permission: "orders.read" },
+  { name: "Sản phẩm", path: "/products", icon: Package, permission: "products.read" },
+  { name: "Danh mục", path: "/categories", icon: FolderTree, permission: "categories.read" },
+  { name: "Khách hàng", path: "/customers", icon: Users, permission: "customers.read" },
+  { name: "Khuyến mãi", path: "/promotions", icon: Percent, permission: "promotions.read" },
+  { name: "Điểm thưởng", path: "/rewards/config", icon: Award, permission: "rewards.manage" },
+  { name: "Bài viết", path: "/blog", icon: FileText, permission: "blog.read" },
+  { name: "Nhân viên", path: "/staff", icon: UserCheck, permission: "staff.manage" },
+  { name: "Thống kê", path: "/analytics", icon: BarChart3, permission: "analytics.view" },
+  { name: "Cấu hình", path: "/settings", icon: Settings, permission: "settings.manage" },
 ];
 
 export const BREADCRUMB_ROUTE_MAP: Record<string, string> = {

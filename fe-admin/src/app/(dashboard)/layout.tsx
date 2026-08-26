@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { usePermission } from "@/hooks/usePermission";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +13,20 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const { canAccessRoute, getDefaultRoute, isInitialized, admin } = usePermission();
+
+  const isAllowed = canAccessRoute(pathname);
+
+  useEffect(() => {
+    if (isInitialized && admin && !isAllowed) {
+      const defaultRoute = getDefaultRoute();
+      if (pathname !== defaultRoute) {
+        router.replace(defaultRoute);
+      }
+    }
+  }, [isInitialized, admin, isAllowed, router, getDefaultRoute, pathname]);
 
   return (
     <AuthGuard requireAuth={true}>
@@ -25,11 +41,10 @@ export default function DashboardLayout({
           <Topbar isCollapsed={isCollapsed} />
 
           <main className="flex-1 p-6 pt-24 overflow-x-hidden">
-            {children}
+            {isAllowed ? children : null}
           </main>
         </div>
       </div>
     </AuthGuard>
   );
 }
-

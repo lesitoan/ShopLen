@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { RotateCw, Download, Sparkles } from "lucide-react";
+import React from "react";
+import { Download } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { QuickStatCards } from "./components/QuickStatCards";
 import { RevenueChart } from "./components/RevenueChart";
@@ -9,22 +9,12 @@ import { RecentOrdersTable } from "./components/RecentOrdersTable";
 import { TopSellingProducts } from "./components/TopSellingProducts";
 import { LowStockWarning } from "./components/LowStockWarning";
 import {
-  MOCK_STAT_CARDS,
   MOCK_RECENT_ORDERS,
   MOCK_TOP_PRODUCTS,
   MOCK_LOW_STOCK_PRODUCTS,
 } from "./constants";
 
 export default function DashboardScreen() {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 600);
-  };
-
   return (
     <div className="space-y-6 pb-10">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -40,7 +30,6 @@ export default function DashboardScreen() {
         </div>
 
         <div className="flex items-center gap-3">
-
           <Button
             variant="primary"
             size="md"
@@ -51,7 +40,7 @@ export default function DashboardScreen() {
         </div>
       </div>
 
-      <QuickStatCards stats={MOCK_STAT_CARDS} />
+      <QuickStatCards />
 
       <RevenueChart />
 

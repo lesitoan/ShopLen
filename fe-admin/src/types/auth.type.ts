@@ -1,4 +1,4 @@
-export type UserRole = "SUPER_ADMIN" | "ADMIN" | "STAFF";
+export type UserRole = "SUPER_ADMIN" | "ADMIN" | "STAFF_ORDER" | "STAFF_CONTENT";
 
 export type AdminSession = {
   id: string;

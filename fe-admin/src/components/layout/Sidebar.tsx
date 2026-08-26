@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NAV_MENU_ITEMS } from "./constants";
+import { usePermission } from "@/hooks/usePermission";
 
 export interface SidebarProps {
   isCollapsed: boolean;
@@ -14,10 +15,16 @@ export interface SidebarProps {
 
 export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
   const pathname = usePathname();
+  const { hasPermission } = usePermission();
 
   const handleToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  const visibleMenuItems = NAV_MENU_ITEMS.filter((item) => {
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
 
   return (
     <aside
@@ -64,7 +71,7 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </div>
 
         <nav className="p-2 space-y-1 overflow-y-auto max-h-[calc(100vh-5rem)]">
-          {NAV_MENU_ITEMS.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               item.path === "/"

@@ -1,11 +1,9 @@
 import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
-
-export type DashboardSummary = {
-  revenueToday: number;
-  newOrdersToday: number;
-  pendingPaymentOrders: number;
-  newCustomersToday: number;
-};
+import type {
+  DashboardSummary,
+  DashboardRevenueQueryDto,
+  DashboardRevenue,
+} from "@/types/analytics.type";
 
 export const analyticsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -13,7 +11,18 @@ export const analyticsApi = baseApi.injectEndpoints({
       query: () => "/admin/amalytics/dashboard/summary",
       transformResponse: unwrapApiResponse<DashboardSummary>,
     }),
+    getDashboardRevenue: builder.query<
+      DashboardRevenue,
+      DashboardRevenueQueryDto
+    >({
+      query: (params) => ({
+        url: "/admin/amalytics/dashboard/revenue",
+        params,
+      }),
+      transformResponse: unwrapApiResponse<DashboardRevenue>,
+    }),
   }),
 });
 
-export const { useGetDashboardSummaryQuery } = analyticsApi;
+export const { useGetDashboardSummaryQuery, useGetDashboardRevenueQuery } =
+  analyticsApi;

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { amalyticsRoutes } from "@/routes/admin/amalyticsRoutes.js";
 import { adminAuthRoutes } from "@/routes/admin/authRoutes.js";
 import { adminDashboardRoutes } from "@/routes/admin/adminDashboardRoutes.js";
 import { adminOrderRoutes } from "@/routes/admin/adminOrderRoutes.js";
@@ -24,6 +25,7 @@ routes.use("/cart", cartRoutes);
 routes.use("/orders", orderRoutes);
 routes.use("/payments", paymentRoutes);
 routes.use("/categories", categoryRoutes);
+routes.use("/admin/amalytics", amalyticsRoutes);
 routes.use("/admin/auth", adminAuthRoutes);
 routes.use("/admin/uploads", uploadRoutes);
 routes.use("/admin/orders", adminOrderRoutes);

@@ -137,11 +137,11 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
         </nav>
       </div>
 
-      {!isCollapsed && (
+      {/* {!isCollapsed && (
         <div className="p-3 border-t border-border bg-surface-muted/30 text-[11px] text-text-muted select-none text-center">
           v1.0.0 Admin Control Center
         </div>
-      )}
+      )} */}
     </aside>
   );
 }

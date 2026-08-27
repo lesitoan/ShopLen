@@ -24,7 +24,7 @@ export interface MenuItem {
 
 export const NAV_MENU_ITEMS: MenuItem[] = [
   { name: "Dashboard", path: "/", icon: LayoutDashboard, permission: "dashboard.view" },
-  { name: "Đơn hàng", path: "/orders", icon: ShoppingBag, badge: 3, permission: "orders.read" },
+  { name: "Đơn hàng", path: "/orders", icon: ShoppingBag, permission: "orders.read" },
   { name: "Sản phẩm", path: "/products", icon: Package, permission: "products.read" },
   { name: "Danh mục", path: "/categories", icon: FolderTree, permission: "categories.read" },
   { name: "Khách hàng", path: "/customers", icon: Users, permission: "customers.read" },

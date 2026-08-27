@@ -3,7 +3,14 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
-export type FilterValue = string | number | boolean | null | undefined;
+export type FilterValue =
+  | string
+  | number
+  | boolean
+  | string[]
+  | number[]
+  | null
+  | undefined;
 
 export function useTableFilters<TFilters extends Record<string, any>>(
   defaultFilters: TFilters
@@ -20,7 +27,12 @@ export function useTableFilters<TFilters extends Record<string, any>>(
       const paramValue = searchParams.get(key);
 
       if (paramValue !== null && paramValue !== undefined && paramValue !== "") {
-        if (typeof defaultValue === "number") {
+        if (Array.isArray(defaultValue)) {
+          (result as any)[key] = paramValue
+            .split(",")
+            .map((v) => v.trim())
+            .filter(Boolean);
+        } else if (typeof defaultValue === "number") {
           const num = Number(paramValue);
           if (!isNaN(num)) {
             (result as any)[key] = num;
@@ -47,9 +59,13 @@ export function useTableFilters<TFilters extends Record<string, any>>(
           value === null ||
           value === undefined ||
           value === "" ||
-          (defaultValue !== undefined && String(value) === String(defaultValue))
+          (Array.isArray(value) && value.length === 0) ||
+          (defaultValue !== undefined &&
+            String(value) === String(defaultValue))
         ) {
           params.delete(key);
+        } else if (Array.isArray(value)) {
+          params.set(key, value.join(","));
         } else {
           params.set(key, String(value));
         }

@@ -1,27 +1,44 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Edit, Trash2, Check, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Check,
+  X,
+  Package,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Switch } from "@/components/ui/Switch";
-import { ProductListItem, ProductStatus } from "../constants";
-
-type SortField = "price" | "stock";
-type SortOrder = "ASC" | "DESC";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Loading } from "@/components/ui/Loading";
+import type {
+  AdminProductListItem,
+  AdminProductSortOption,
+  ProductStatus,
+} from "@/types/product.type";
 
 interface ProductTableProps {
-  products: ProductListItem[];
+  products: AdminProductListItem[];
   totalItems: number;
   page: number;
   pageSize: number;
+  sort?: AdminProductSortOption;
+  onSortChange?: (sort: AdminProductSortOption) => void;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  isError?: boolean;
   onPageChange: (page: number) => void;
-  onUpdateStock: (productId: string, newStock: number) => void;
-  onToggleStatus: (productId: string, currentStatus: ProductStatus) => void;
-  onDeleteProduct: (product: ProductListItem) => void;
-  onEditProduct?: (product: ProductListItem) => void;
+  onUpdateStock?: (productId: string, newStock: number) => void;
+  onToggleStatus?: (productId: string, currentStatus: ProductStatus) => void;
+  onDeleteProduct?: (product: AdminProductListItem) => void;
+  onEditProduct?: (product: AdminProductListItem) => void;
 }
 
 export function ProductTable({
@@ -29,6 +46,11 @@ export function ProductTable({
   totalItems,
   page,
   pageSize,
+  sort = "NEWEST",
+  onSortChange,
+  isLoading,
+  isFetching,
+  isError,
   onPageChange,
   onUpdateStock,
   onToggleStatus,
@@ -37,22 +59,20 @@ export function ProductTable({
 }: ProductTableProps) {
   const [editingStockId, setEditingStockId] = useState<string | null>(null);
   const [editingStockVal, setEditingStockVal] = useState<number>(0);
-  const [sortConfig, setSortConfig] = useState<{ field: SortField | null; order: SortOrder }>({
-    field: null,
-    order: "ASC",
-  });
 
   const formatMoney = (amount: number) => {
     return amount.toLocaleString("vi-VN") + "đ";
   };
 
-  const handleStartEditStock = (product: ProductListItem) => {
+  const handleStartEditStock = (product: AdminProductListItem) => {
     setEditingStockId(product.id);
     setEditingStockVal(product.stockQuantity);
   };
 
   const handleSaveStock = (productId: string) => {
-    onUpdateStock(productId, Math.max(0, editingStockVal));
+    if (onUpdateStock) {
+      onUpdateStock(productId, Math.max(0, editingStockVal));
+    }
     setEditingStockId(null);
   };
 
@@ -60,64 +80,64 @@ export function ProductTable({
     setEditingStockId(null);
   };
 
-  const handleToggleSort = (field: SortField) => {
-    setSortConfig((prev) => {
-      if (prev.field !== field) {
-        return { field, order: "ASC" };
-      }
-      if (prev.order === "ASC") {
-        return { field, order: "DESC" };
-      }
-      return { field: null, order: "ASC" };
-    });
+  const handleToggleProductSort = () => {
+    if (!onSortChange) return;
+    if (sort === "NEWEST") onSortChange("OLDEST");
+    else onSortChange("NEWEST");
   };
 
-  const sortedProducts = useMemo(() => {
-    if (!sortConfig.field) return products;
-    return [...products].sort((a, b) => {
-      if (sortConfig.field === "price") {
-        const priceA = a.salePrice ?? a.originalPrice;
-        const priceB = b.salePrice ?? b.originalPrice;
-        return sortConfig.order === "ASC" ? priceA - priceB : priceB - priceA;
-      }
-      if (sortConfig.field === "stock") {
-        return sortConfig.order === "ASC"
-          ? a.stockQuantity - b.stockQuantity
-          : b.stockQuantity - a.stockQuantity;
-      }
-      return 0;
-    });
-  }, [products, sortConfig]);
-
-  const totalPages = Math.ceil(totalItems / pageSize) || 1;
-
-  const renderSortIcon = (field: SortField) => {
-    if (sortConfig.field !== field) {
-      return <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />;
-    }
-    return sortConfig.order === "ASC" ? (
-      <ArrowUp className="w-3.5 h-3.5 text-primary" />
-    ) : (
-      <ArrowDown className="w-3.5 h-3.5 text-primary" />
-    );
+  const handleTogglePriceSort = () => {
+    if (!onSortChange) return;
+    if (sort === "PRICE_ASC") onSortChange("PRICE_DESC");
+    else if (sort === "PRICE_DESC") onSortChange("NEWEST");
+    else onSortChange("PRICE_ASC");
   };
 
-  const columns: Column<ProductListItem>[] = [
+  const handleToggleStockSort = () => {
+    if (!onSortChange) return;
+    if (sort === "STOCK_ASC") onSortChange("STOCK_DESC");
+    else if (sort === "STOCK_DESC") onSortChange("NEWEST");
+    else onSortChange("STOCK_ASC");
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  const columns: Column<AdminProductListItem>[] = [
     {
       key: "productInfo",
-      header: "Sản phẩm",
+      header: (
+        <button
+          type="button"
+          onClick={handleToggleProductSort}
+          className="inline-flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer select-none"
+          title="Bấm để đổi xếp mới nhất / cũ nhất"
+        >
+          <span>Sản phẩm</span>
+          {sort === "NEWEST" ? (
+            <ArrowDown className="w-3.5 h-3.5 text-primary" />
+          ) : sort === "OLDEST" ? (
+            <ArrowUp className="w-3.5 h-3.5 text-primary" />
+          ) : (
+            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
+          )}
+        </button>
+      ),
       align: "left",
       width: "35%",
       render: (product) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 rounded-lg bg-surface-muted border border-border overflow-hidden shrink-0">
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              unoptimized
-              className="object-cover"
-            />
+          <div className="relative w-12 h-12 rounded-lg bg-surface-muted border border-border overflow-hidden shrink-0 flex items-center justify-center">
+            {product.thumbnail?.url ? (
+              <Image
+                src={product.thumbnail.url}
+                alt={product.thumbnail.altText || product.name}
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            ) : (
+              <Package className="w-5 h-5 text-text-muted" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <Link
@@ -129,11 +149,6 @@ export function ProductTable({
             </Link>
             <div className="flex items-center gap-2 text-[11px] text-text-muted mt-0.5">
               <span className="font-mono text-text-secondary">{product.code}</span>
-              {product.isFeatured && (
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
-                  Nổi bật
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -145,7 +160,7 @@ export function ProductTable({
       align: "left",
       render: (product) => (
         <span className="inline-block px-2.5 py-1 rounded-md bg-surface-muted text-text-secondary font-medium text-xs border border-border/60">
-          {product.categoryName}
+          {product.category?.name || "Chưa phân loại"}
         </span>
       ),
     },
@@ -154,21 +169,27 @@ export function ProductTable({
       header: (
         <button
           type="button"
-          onClick={() => handleToggleSort("price")}
+          onClick={handleTogglePriceSort}
           className="inline-flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer select-none"
-          title="Bấm để sắp xếp theo giá"
+          title="Bấm để xếp theo giá bán"
         >
           <span>Giá bán</span>
-          {renderSortIcon("price")}
+          {sort === "PRICE_ASC" ? (
+            <ArrowUp className="w-3.5 h-3.5 text-primary" />
+          ) : sort === "PRICE_DESC" ? (
+            <ArrowDown className="w-3.5 h-3.5 text-primary" />
+          ) : (
+            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
+          )}
         </button>
       ),
       align: "right",
       render: (product) => (
         <div className="text-right">
           <div className="font-bold text-text-highlight text-xs">
-            {formatMoney(product.salePrice ?? product.originalPrice)}
+            {formatMoney(product.price)}
           </div>
-          {product.salePrice && (
+          {product.salePrice && product.salePrice < product.originalPrice && (
             <div className="text-[11px] text-text-muted line-through">
               {formatMoney(product.originalPrice)}
             </div>
@@ -181,12 +202,18 @@ export function ProductTable({
       header: (
         <button
           type="button"
-          onClick={() => handleToggleSort("stock")}
+          onClick={handleToggleStockSort}
           className="inline-flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer select-none"
-          title="Bấm để sắp xếp theo tồn kho"
+          title="Bấm để xếp theo tồn kho"
         >
           <span>Tồn kho</span>
-          {renderSortIcon("stock")}
+          {sort === "STOCK_ASC" ? (
+            <ArrowUp className="w-3.5 h-3.5 text-primary" />
+          ) : sort === "STOCK_DESC" ? (
+            <ArrowDown className="w-3.5 h-3.5 text-primary" />
+          ) : (
+            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
+          )}
         </button>
       ),
       align: "center",
@@ -280,7 +307,9 @@ export function ProductTable({
         <div className="flex items-center justify-end gap-2.5">
           <Switch
             checked={product.status === "ACTIVE"}
-            onChange={() => onToggleStatus(product.id, product.status)}
+            onChange={() =>
+              onToggleStatus ? onToggleStatus(product.id, product.status) : undefined
+            }
             size="sm"
           />
 
@@ -293,7 +322,7 @@ export function ProductTable({
           </button>
 
           <button
-            onClick={() => onDeleteProduct(product)}
+            onClick={() => (onDeleteProduct ? onDeleteProduct(product) : undefined)}
             title="Xóa sản phẩm"
             className="p-1.5 rounded-lg text-text-muted hover:text-status-danger hover:bg-status-danger/10 transition-colors"
           >
@@ -306,20 +335,30 @@ export function ProductTable({
 
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={sortedProducts}
-        keyExtractor={(product) => product.id}
-        className="!border-0 !rounded-none !shadow-none"
-        emptyMessage="Không tìm thấy sản phẩm nào phù hợp"
-        pagination={{
-          currentPage: page,
-          totalPages,
-          totalItems,
-          pageSize,
-          onPageChange,
-        }}
-      />
+      {isLoading || isFetching ? (
+        <div className="p-12 flex items-center justify-center">
+          <Loading size="md" />
+        </div>
+      ) : isError ? (
+        <div className="p-8">
+          <EmptyState message="Không thể tải danh sách sản phẩm" />
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={products}
+          keyExtractor={(product) => product.id}
+          className="!border-0 !rounded-none !shadow-none"
+          emptyMessage="Không tìm thấy sản phẩm nào phù hợp"
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems,
+            pageSize,
+            onPageChange,
+          }}
+        />
+      )}
     </div>
   );
 }

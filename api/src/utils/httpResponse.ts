@@ -1,5 +1,11 @@
 import type { Response } from "express";
 
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+};
+
 export function sendSuccess<TData>(
   response: Response,
   data: TData,
@@ -21,5 +27,21 @@ export function sendCreated<TData>(
     success: true,
     message,
     data,
+  });
+}
+
+export function sendPaginated<TItem>(
+  response: Response,
+  items: TItem[],
+  pagination: PaginationMeta,
+  message = "Thành công.",
+) {
+  return response.json({
+    success: true,
+    message,
+    data: {
+      items,
+      pagination,
+    },
   });
 }

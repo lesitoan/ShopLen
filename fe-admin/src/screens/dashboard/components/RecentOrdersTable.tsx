@@ -7,22 +7,29 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Loading } from "@/components/ui/Loading";
 import { ORDER_STATUS_MAP } from "@/constants/orders";
-import { RecentOrderItem } from "../constants";
+import { useListOrdersQuery } from "@/services/api/orderApi";
+import type { AdminOrderListItem } from "@/types/order.type";
 
-interface RecentOrdersTableProps {
-  orders: RecentOrderItem[];
-}
+export function RecentOrdersTable() {
+  const { data, isLoading, isFetching, isError } = useListOrdersQuery({
+    limit: 10,
+  });
 
-export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
-  const columns: Column<RecentOrderItem>[] = [
+  const columns: Column<AdminOrderListItem>[] = [
     {
       key: "orderCode",
       header: "Mã đơn",
       render: (order) => (
         <div>
-          <span className="font-semibold text-text-highlight block">{order.orderCode}</span>
-          <span className="text-[10px] font-normal text-text-muted">{order.createdAt}</span>
+          <span className="font-semibold text-text-highlight block">
+            {order.orderCode}
+          </span>
+          <span className="text-[10px] font-normal text-text-muted">
+            {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+          </span>
         </div>
       ),
     },
@@ -36,7 +43,7 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
               {order.customerName}
             </div>
           </Tooltip>
-          <div className="text-[11px] text-text-muted">{order.phone}</div>
+          <div className="text-[11px] text-text-muted">{order.customerPhone}</div>
         </div>
       ),
     },
@@ -55,13 +62,16 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
       ),
     },
     {
-      key: "status",
+      key: "orderStatus",
       header: "Trạng thái",
       render: (order) => {
-        const statusConfig = ORDER_STATUS_MAP[order.status];
+        const statusConfig = ORDER_STATUS_MAP[order.orderStatus];
         return (
-          <Badge variant={statusConfig?.variant ?? "neutral"} dot={statusConfig?.dot}>
-            {statusConfig?.label ?? order.status}
+          <Badge
+            variant={statusConfig?.variant ?? "neutral"}
+            dot={statusConfig?.dot}
+          >
+            {statusConfig?.label ?? order.orderStatus}
           </Badge>
         );
       },
@@ -82,6 +92,8 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
     },
   ];
 
+  const orders = data?.items || [];
+
   return (
     <Card className="h-full flex flex-col justify-between">
       <div>
@@ -96,12 +108,22 @@ export function RecentOrdersTable({ orders }: RecentOrdersTableProps) {
         </CardHeader>
 
         <CardContent className="p-0 border-t-0">
-          <DataTable
-            columns={columns}
-            data={orders}
-            keyExtractor={(item) => item.id}
-            className="border-0 shadow-none rounded-none border-t border-border"
-          />
+          {isLoading || isFetching ? (
+            <div className="p-8 flex items-center justify-center">
+              <Loading size="md" />
+            </div>
+          ) : isError ? (
+            <div className="p-6">
+              <EmptyState message="Không thể tải danh sách đơn hàng gần đây" />
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={orders}
+              keyExtractor={(item) => item.id}
+              className="border-0 shadow-none rounded-none border-t border-border"
+            />
+          )}
         </CardContent>
       </div>
     </Card>

@@ -8,3 +8,10 @@ export type ApiResponse<TData> = {
     details?: unknown;
   };
 };
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+};
+

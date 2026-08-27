@@ -6,6 +6,7 @@ export type OrderStatus =
   | "PACKING"
   | "SHIPPING"
   | "COMPLETED"
+  | "CANCELLATION_REQUESTED"
   | "CANCELLED";
 
 export interface OrderStatusConfig {
@@ -20,5 +21,7 @@ export const ORDER_STATUS_MAP: Record<string, OrderStatusConfig> = {
   PACKING: { label: "Đang đóng gói", variant: "info", dot: true },
   SHIPPING: { label: "Đang giao hàng", variant: "info", dot: true },
   COMPLETED: { label: "Hoàn tất", variant: "success", dot: true },
+  CANCELLATION_REQUESTED: { label: "Yêu cầu hủy", variant: "warning", dot: true },
   CANCELLED: { label: "Đã hủy", variant: "danger", dot: true },
 };
+

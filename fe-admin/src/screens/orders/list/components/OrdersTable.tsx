@@ -5,14 +5,20 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Loading } from "@/components/ui/Loading";
 import { ORDER_STATUS_MAP } from "@/constants/orders";
-import { OrderListItem } from "../constants";
+import type { AdminOrderListItem } from "@/types/order.type";
 
 interface OrdersTableProps {
-  orders: OrderListItem[];
+  orders: AdminOrderListItem[];
   totalCount: number;
   page: number;
   pageSize: number;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  isError?: boolean;
   onPageChange: (page: number) => void;
   onPageSizeChange?: (pageSize: number) => void;
 }
@@ -22,13 +28,15 @@ export function OrdersTable({
   totalCount,
   page,
   pageSize,
+  isLoading,
+  isFetching,
+  isError,
   onPageChange,
+  onPageSizeChange,
 }: OrdersTableProps) {
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const startIndex = (page - 1) * pageSize;
-  const paginatedOrders = orders.slice(startIndex, startIndex + pageSize);
 
-  const columns: Column<OrderListItem>[] = [
+  const columns: Column<AdminOrderListItem>[] = [
     {
       key: "orderCode",
       header: "Mã đơn hàng",
@@ -42,7 +50,10 @@ export function OrdersTable({
             {order.orderCode}
           </Link>
           <span className="block text-[10px] text-text-muted mt-0.5 font-normal">
-            {order.createdAt}
+            {new Date(order.createdAt).toLocaleString("vi-VN", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
           </span>
         </div>
       ),
@@ -53,63 +64,63 @@ export function OrdersTable({
       align: "left",
       render: (order) => (
         <div>
-          <div
-            title={order.customerName}
-            className="font-medium text-text-primary text-xs truncate max-w-[150px]"
-          >
-            {order.customerName}
+          <Tooltip content={order.customerName} position="top">
+            <div className="font-medium text-text-primary text-xs truncate max-w-[150px] cursor-default">
+              {order.customerName}
+            </div>
+          </Tooltip>
+          <div className="text-[11px] text-text-muted font-mono">
+            {order.customerPhone}
           </div>
-          <div className="text-[11px] text-text-muted font-mono">{order.phone}</div>
         </div>
       ),
     },
     {
-      key: "itemsSummary",
-      header: "Sản phẩm & Giá trị",
+      key: "totalAmount",
+      header: "Tổng tiền & Sản phẩm",
       align: "left",
       render: (order) => (
         <div>
-          <div
-            title={order.itemsSummary}
-            className="text-text-secondary text-xs truncate max-w-[200px]"
-          >
-            {order.itemsSummary}
-          </div>
-          <div className="text-xs font-semibold text-primary mt-0.5">
+          <div className="text-xs font-semibold text-primary">
             {order.totalAmount.toLocaleString("vi-VN")}đ
-            <span className="text-[10px] font-normal text-text-muted ml-1">
-              ({order.itemsCount} món)
-            </span>
+          </div>
+          <div className="text-[10px] font-normal text-text-muted mt-0.5">
+            ({order.itemsCount} sản phẩm)
           </div>
         </div>
       ),
     },
     {
-      key: "payment",
+      key: "paymentStatus",
       header: "Thanh toán",
       align: "left",
-      render: (order) => (
-        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-muted text-text-secondary border border-border">
-          {order.paymentMethod === "BANK_TRANSFER"
-            ? "Chuyển khoản ngân hàng"
-            : order.paymentMethod === "COD" || order.paymentMethod === "CASH_ON_DELIVERY"
-            ? "COD (Tiền mặt)"
-            : order.paymentMethod}
-        </span>
-      ),
+      render: (order) => {
+        const isPaid = order.paymentStatus === "PAID";
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${
+              isPaid
+                ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
+                : "bg-amber-950/40 text-amber-400 border-amber-500/30"
+            }`}
+          >
+            {isPaid ? "Đã thanh toán" : "Chờ thanh toán"}
+          </span>
+        );
+      },
     },
     {
       key: "status",
-      header: "Trạng thái",
+      header: "Trạng thái đơn",
       align: "left",
       render: (order) => {
-        const statusConfig = ORDER_STATUS_MAP[order.status];
+        const statusConfig = ORDER_STATUS_MAP[order.orderStatus];
         return (
           <Badge
             variant={statusConfig?.variant ?? "neutral"}
             dot={statusConfig?.dot}
           >
-            {statusConfig?.label ?? order.status}
+            {statusConfig?.label ?? order.orderStatus}
           </Badge>
         );
       },
@@ -134,20 +145,30 @@ export function OrdersTable({
 
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={paginatedOrders}
-        keyExtractor={(order) => order.id}
-        className="!border-0 !rounded-none !shadow-none"
-        emptyMessage="Không tìm thấy đơn hàng nào phù hợp"
-        pagination={{
-          currentPage: page,
-          totalPages,
-          totalItems: totalCount,
-          pageSize,
-          onPageChange,
-        }}
-      />
+      {isLoading || isFetching ? (
+        <div className="p-12 flex items-center justify-center">
+          <Loading size="md" />
+        </div>
+      ) : isError ? (
+        <div className="p-8">
+          <EmptyState message="Không thể tải danh sách đơn hàng" />
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={orders}
+          keyExtractor={(order) => order.id}
+          className="!border-0 !rounded-none !shadow-none"
+          emptyMessage="Không tìm thấy đơn hàng nào phù hợp"
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: totalCount,
+            pageSize,
+            onPageChange,
+          }}
+        />
+      )}
     </div>
   );
 }

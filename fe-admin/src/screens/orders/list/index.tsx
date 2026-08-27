@@ -1,107 +1,88 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import {
-  MOCK_ORDERS,
-  OrderStatusFilter,
-  DateRangeFilter,
-  SortOption,
-} from "./constants";
+import React, { useMemo } from "react";
+import { useTableFilters } from "@/hooks/useTableFilters";
+import { useListOrdersQuery } from "@/services/api/orderApi";
+import type { AdminOrderListQueryDto, OrderStatus } from "@/types/order.type";
 import { OrderListHeader } from "./components/OrderListHeader";
 import { OrderStatusTabs } from "./components/OrderStatusTabs";
 import { OrderFilterBar } from "./components/OrderFilterBar";
 import { OrdersTable } from "./components/OrdersTable";
+import { DEFAULT_ORDER_FILTERS, OrderStatusFilter } from "./constants";
+import { toast } from "react-toastify";
 
 export function OrdersListScreen() {
-  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState<DateRangeFilter>("ALL");
-  const [sortBy, setSortBy] = useState<SortOption>("NEWEST");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { filters, setFilter, setFilters, resetFilters } = useTableFilters(
+    DEFAULT_ORDER_FILTERS
+  );
 
-  const filteredOrders = useMemo(() => {
-    return MOCK_ORDERS.filter((order) => {
-      if (statusFilter !== "ALL" && order.status !== statusFilter) {
-        return false;
-      }
+  const queryDto: AdminOrderListQueryDto = useMemo(() => {
+    return {
+      page: filters.page,
+      limit: filters.limit,
+      status:
+        filters.status === "ALL"
+          ? undefined
+          : (filters.status as OrderStatus),
+      search: filters.search.trim() || undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined,
+      sort: filters.sort,
+    };
+  }, [filters]);
 
-      if (searchQuery.trim() !== "") {
-        const query = searchQuery.toLowerCase().trim();
-        const matchCode = order.orderCode.toLowerCase().includes(query);
-        const matchName = order.customerName.toLowerCase().includes(query);
-        const matchPhone = order.phone.toLowerCase().includes(query);
+  const { data, isLoading, isFetching, isError } = useListOrdersQuery(queryDto);
 
-        if (!matchCode && !matchName && !matchPhone) {
-          return false;
-        }
-      }
-
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === "NEWEST") return b.id.localeCompare(a.id);
-      if (sortBy === "OLDEST") return a.id.localeCompare(b.id);
-      if (sortBy === "TOTAL_HIGH") return b.totalAmount - a.totalAmount;
-      if (sortBy === "TOTAL_LOW") return a.totalAmount - b.totalAmount;
-      return 0;
-    });
-  }, [statusFilter, searchQuery, dateFilter, sortBy]);
-
-  const handleResetFilter = () => {
-    setStatusFilter("ALL");
-    setSearchQuery("");
-    setDateFilter("ALL");
-    setSortBy("NEWEST");
-    setPage(1);
-  };
+  const orders = data?.items || [];
+  const totalCount = data?.pagination.total || 0;
 
   const handleExportExcel = () => {
-    alert(`Xuất file Excel danh sách ${filteredOrders.length} đơn hàng thành công!`);
+    toast.info("Tính năng đang phát triển", {
+      position: "top-right",
+      autoClose: 5000,
+    });
   };
 
   return (
     <div className="space-y-5">
       <OrderListHeader
-        totalCount={filteredOrders.length}
+        totalCount={totalCount}
         onExportExcel={handleExportExcel}
       />
 
       <OrderStatusTabs
-        currentTab={statusFilter}
-        onSelectTab={(tab) => {
-          setStatusFilter(tab);
-          setPage(1);
-        }}
-        orders={MOCK_ORDERS}
+        currentTab={filters.status as OrderStatusFilter}
+        onSelectTab={(tab) => setFilter("status", tab)}
       />
 
       <OrderFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={(q) => {
-          setSearchQuery(q);
-          setPage(1);
+        searchQuery={filters.search}
+        onSearchChange={(q) => setFilter("search", q)}
+        dateRange={{
+          startDate: filters.startDate,
+          endDate: filters.endDate,
         }}
-        dateFilter={dateFilter}
-        onDateFilterChange={(d) => {
-          setDateFilter(d);
-          setPage(1);
-        }}
-        sortBy={sortBy}
-        onSortByChange={(s) => {
-          setSortBy(s);
-          setPage(1);
-        }}
-        onResetFilter={handleResetFilter}
-        totalFilteredCount={filteredOrders.length}
+        onDateRangeChange={(range) =>
+          setFilters({
+            startDate: range.startDate,
+            endDate: range.endDate,
+          })
+        }
+        sortBy={filters.sort}
+        onSortByChange={(s) => setFilter("sort", s)}
+        onResetFilter={resetFilters}
       />
 
       <OrdersTable
-        orders={filteredOrders}
-        totalCount={filteredOrders.length}
-        page={page}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
+        orders={orders}
+        totalCount={totalCount}
+        page={filters.page}
+        pageSize={filters.limit}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        isError={isError}
+        onPageChange={(p) => setFilter("page", p)}
+        onPageSizeChange={(limit) => setFilter("limit", limit)}
       />
     </div>
   );

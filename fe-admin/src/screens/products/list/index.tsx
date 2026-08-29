@@ -5,7 +5,10 @@ import { Plus } from "lucide-react";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import {
   useListProductsQuery,
+  useGetProductDetailQuery,
   useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
 } from "@/services/api/productApi";
 import type {
   AdminProductListItem,
@@ -26,10 +29,16 @@ export function ProductsListScreen() {
   );
 
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
-  const [editingProduct, setEditingProduct] =
-    useState<AdminProductListItem | null>(null);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  const { data: editingProductDetail, isFetching: isFetchingDetail } =
+    useGetProductDetailQuery(editingProductId!, {
+      skip: !editingProductId,
+    });
 
   const [pendingToggleProduct, setPendingToggleProduct] = useState<{
     product: AdminProductListItem;
@@ -64,13 +73,14 @@ export function ProductsListScreen() {
 
   const handleSaveProduct = async (productData: CreateAdminProductDto) => {
     try {
-      if (editingProduct) {
-        toast.info("Tính năng chỉnh sửa sản phẩm sẽ được cập nhật tiếp theo.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
+      if (editingProductId) {
+        await updateProduct({
+          id: editingProductId,
+          body: productData,
+        }).unwrap();
+        toast.success("Cập nhật thông tin sản phẩm thành công!");
         setIsAddDrawerOpen(false);
-        setEditingProduct(null);
+        setEditingProductId(null);
       } else {
         await createProduct(productData).unwrap();
         toast.success("Tạo sản phẩm mới thành công!");
@@ -80,16 +90,25 @@ export function ProductsListScreen() {
       toast.error(
         error?.data?.message ||
           error?.message ||
-          "Có lỗi xảy ra khi tạo sản phẩm."
+          "Có lỗi xảy ra khi lưu sản phẩm."
       );
     }
   };
 
-  const handleUpdateStock = (_productId: string, _newStock: number) => {
-    toast.info("Tính năng cập nhật tồn kho nhanh đang kết nối API", {
-      position: "top-right",
-      autoClose: 3000,
-    });
+  const handleUpdateStock = async (productId: string, newStock: number) => {
+    try {
+      await updateProduct({
+        id: productId,
+        body: { stockQuantity: newStock },
+      }).unwrap();
+      toast.success("Cập nhật số lượng tồn kho thành công!");
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Cập nhật tồn kho thất bại."
+      );
+    }
   };
 
   const handleRequestToggleStatus = (
@@ -103,22 +122,41 @@ export function ProductsListScreen() {
     setPendingToggleProduct({ product, nextStatus });
   };
 
-  const handleConfirmToggleStatus = () => {
-    if (pendingToggleProduct) {
-      toast.info("Tính năng đổi trạng thái sản phẩm đang kết nối API", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+  const handleConfirmToggleStatus = async () => {
+    if (!pendingToggleProduct) return;
+    try {
+      await updateProduct({
+        id: pendingToggleProduct.product.id,
+        body: { status: pendingToggleProduct.nextStatus },
+      }).unwrap();
+      toast.success(
+        pendingToggleProduct.nextStatus === "ACTIVE"
+          ? "Đã cho phép hiển thị sản phẩm trên cửa hàng!"
+          : "Đã ẩn sản phẩm khỏi cửa hàng!"
+      );
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Thay đổi trạng thái sản phẩm thất bại."
+      );
+    } finally {
       setPendingToggleProduct(null);
     }
   };
 
-  const handleConfirmDelete = () => {
-    if (pendingDeleteProduct) {
-      toast.info("Tính năng xóa sản phẩm đang kết nối API", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteProduct) return;
+    try {
+      await deleteProduct(pendingDeleteProduct.id).unwrap();
+      toast.success(`Đã xóa sản phẩm "${pendingDeleteProduct.name}" thành công!`);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Xóa sản phẩm thất bại."
+      );
+    } finally {
       setPendingDeleteProduct(null);
     }
   };
@@ -137,7 +175,7 @@ export function ProductsListScreen() {
 
         <button
           onClick={() => {
-            setEditingProduct(null);
+            setEditingProductId(null);
             setIsAddDrawerOpen(true);
           }}
           className="inline-flex items-center justify-center gap-2 px-4 h-[38px] bg-primary hover:bg-primary-hover text-bg-deep font-bold text-xs rounded-lg transition-all shadow-md shadow-primary/20 shrink-0 cursor-pointer"
@@ -167,18 +205,18 @@ export function ProductsListScreen() {
         onUpdateStock={handleUpdateStock}
         onToggleStatus={handleRequestToggleStatus}
         onDeleteProduct={(product) => setPendingDeleteProduct(product)}
-        onEditProduct={(product) => setEditingProduct(product)}
+        onEditProduct={(product) => setEditingProductId(product.id)}
       />
 
       <ProductDrawerForm
-        isOpen={isAddDrawerOpen || Boolean(editingProduct)}
-        initialData={editingProduct ? (editingProduct as any) : null}
+        isOpen={isAddDrawerOpen || Boolean(editingProductId)}
+        initialData={editingProductId ? editingProductDetail : null}
         onSave={handleSaveProduct}
         onClose={() => {
           setIsAddDrawerOpen(false);
-          setEditingProduct(null);
+          setEditingProductId(null);
         }}
-        isLoading={isCreating}
+        isLoading={isCreating || isUpdating || isFetchingDetail}
       />
 
       {/* Confirm Modals */}

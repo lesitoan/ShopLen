@@ -3,7 +3,9 @@ import type {
   AdminProductListItem,
   AdminProductListQueryDto,
   AdminProductListResponse,
+  AdminProductDetail,
   CreateAdminProductDto,
+  UpdateAdminProductDto,
 } from "@/types/product.type";
 
 export const productApi = baseApi.injectEndpoints({
@@ -19,6 +21,13 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<AdminProductListResponse>,
       providesTags: ["Product"],
     }),
+    getProductDetail: builder.query<AdminProductDetail, string>({
+      query: (id) => ({
+        url: `/admin/products/${id}`,
+      }),
+      transformResponse: unwrapApiResponse<AdminProductDetail>,
+      providesTags: (_result, _error, id) => [{ type: "Product", id }],
+    }),
     createProduct: builder.mutation<
       AdminProductListItem,
       CreateAdminProductDto
@@ -31,7 +40,33 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<AdminProductListItem>,
       invalidatesTags: ["Product"],
     }),
+    updateProduct: builder.mutation<
+      AdminProductDetail,
+      { id: string; body: UpdateAdminProductDto }
+    >({
+      query: ({ id, body }) => ({
+        url: `/admin/products/${id}`,
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: unwrapApiResponse<AdminProductDetail>,
+      invalidatesTags: ["Product"],
+    }),
+    deleteProduct: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/admin/products/${id}`,
+        method: "DELETE",
+      }),
+      transformResponse: unwrapApiResponse<void>,
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
-export const { useListProductsQuery, useCreateProductMutation } = productApi;
+export const {
+  useListProductsQuery,
+  useGetProductDetailQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} = productApi;

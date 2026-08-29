@@ -17,18 +17,25 @@ import {
   FileText,
   ShieldCheck,
   Search,
+  Palette,
+  Ruler,
+  Sliders,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { Drawer } from "@/components/ui/Drawer";
 import { Input } from "@/components/ui/Input";
 import { DropdownMenu } from "@/components/ui/DropdownMenu";
 import { Switch } from "@/components/ui/Switch";
+import { Modal } from "@/components/ui/Modal";
 import { SwiperImageModal } from "@/components/ui/SwiperImageModal";
 import { useListCategoriesQuery } from "@/services/api/categoryApi";
 import { useUploadManyImagesMutation } from "@/services/api/uploadApi";
 import type {
   ProductStatus,
   ProductHighlightType,
+  ProductOptionType,
+  ProductOptionItem,
   CreateAdminProductDto,
 } from "@/types/product.type";
 import { MOCK_CATEGORIES } from "../constants";
@@ -58,6 +65,21 @@ interface ImageItem {
   publicId?: string | null;
 }
 
+interface FormOptionValue {
+  id: string;
+  code: string;
+  label: string;
+  colorHex?: string | null;
+  priceDiff?: number;
+  isDefault?: boolean;
+}
+
+interface FormOption {
+  optionType: ProductOptionType;
+  name: string;
+  values: FormOptionValue[];
+}
+
 interface ProductDrawerFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -75,6 +97,35 @@ const HIGHLIGHT_TYPE_OPTIONS: {
   { key: "TODAY_DEAL", label: "Deal hôm nay (TODAY_DEAL)" },
   { key: "HOT_TIKTOK", label: "Hot TikTok (HOT_TIKTOK)" },
 ];
+
+const COLOR_PRESETS = [
+  { label: "Hồng", hex: "#FFB6C1" },
+  { label: "Xanh dương", hex: "#60A5FA" },
+  { label: "Vàng", hex: "#FDE047" },
+  { label: "Trắng", hex: "#F8FAFC" },
+  { label: "Tím", hex: "#C084FC" },
+  { label: "Nâu", hex: "#D97706" },
+  { label: "Xanh lá", hex: "#4ADE80" },
+  { label: "Đỏ", hex: "#F87171" },
+  { label: "Đen", hex: "#1E293B" },
+];
+
+const SIZE_PRESETS = ["Tiêu chuẩn", "Nhỏ (5cm)", "Vừa (8cm)", "Lớn (12cm)"];
+
+function generateOptionCode(label: string, prefix = ""): string {
+  const normalized = label
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .replace(/[^A-Z0-9]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+  return prefix && !normalized.startsWith(prefix)
+    ? `${prefix}_${normalized}`
+    : normalized || "VALUE";
+}
 
 export function ProductDrawerForm({
   isOpen,
@@ -95,6 +146,8 @@ export function ProductDrawerForm({
     useUploadManyImagesMutation();
 
   const [imageList, setImageList] = useState<ImageItem[]>([]);
+  const [productOptions, setProductOptions] = useState<FormOption[]>([]);
+  const [showCloseConfirmModal, setShowCloseConfirmModal] = useState(false);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -113,7 +166,7 @@ export function ProductDrawerForm({
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<ProductFormData>({
     defaultValues: {
       name: initialData?.name || "",
@@ -138,6 +191,59 @@ export function ProductDrawerForm({
   const status = watch("status");
   const originalPriceVal = watch("originalPrice");
 
+  // Determine if form has unsaved modifications
+  const isImagesDirty = isEditMode
+    ? imageList.some((img) => !img.isUploaded) ||
+      imageList.length !==
+        (initialData?.images?.length ?? (initialData?.image ? 1 : 0))
+    : imageList.length > 0;
+
+  const isOptionsDirty = isEditMode
+    ? JSON.stringify(
+        productOptions.map((o) => ({
+          t: o.optionType,
+          n: o.name,
+          v: o.values.map((v) => ({ l: v.label, p: v.priceDiff, c: v.colorHex })),
+        }))
+      ) !==
+      JSON.stringify(
+        (initialData?.options || []).map((o: any) => ({
+          t: o.optionType,
+          n: o.name,
+          v: (o.values || []).map((v: any) => ({
+            l: v.label,
+            p: v.priceDiff,
+            c: v.colorHex,
+          })),
+        }))
+      )
+    : productOptions.length > 0;
+
+  const isFormDirty = Boolean(
+    isDirty || isImagesDirty || isOptionsDirty || nameVal.trim() !== ""
+  );
+
+  const handleRequestClose = () => {
+    if (isFormDirty) {
+      setShowCloseConfirmModal(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowCloseConfirmModal(false);
+    imageList.forEach((item) => {
+      if (!item.isUploaded) {
+        URL.revokeObjectURL(item.url);
+      }
+    });
+    setImageList([]);
+    setProductOptions([]);
+    reset();
+    onClose();
+  };
+
   // Auto generate slug from product name when creating new product
   useEffect(() => {
     if (nameVal && !isEditMode) {
@@ -155,10 +261,11 @@ export function ProductDrawerForm({
     }
   }, [nameVal, isEditMode, setValue]);
 
-  // Re-fill form and images when drawer opens or initialData changes
+  // Re-fill form, images and options when drawer opens or initialData changes
   useEffect(() => {
     if (!isOpen) {
       setImageList([]);
+      setProductOptions([]);
       return;
     }
 
@@ -183,18 +290,50 @@ export function ProductDrawerForm({
         metaDescription: initialData.metaDescription || "",
       });
 
-      const initialImgUrl =
-        initialData.image || initialData.thumbnail?.url || "";
-      if (initialImgUrl) {
-        setImageList([
-          {
-            id: `init-${Date.now()}`,
-            url: initialImgUrl,
+      if (Array.isArray(initialData.images) && initialData.images.length > 0) {
+        setImageList(
+          initialData.images.map((img: any) => ({
+            id: img.id || `img-${Date.now()}-${Math.random()}`,
+            url: img.url,
             isUploaded: true,
-          },
-        ]);
+            publicId: img.publicId || null,
+          }))
+        );
       } else {
-        setImageList([]);
+        const initialImgUrl =
+          initialData.image || initialData.thumbnail?.url || "";
+        if (initialImgUrl) {
+          setImageList([
+            {
+              id: `init-${Date.now()}`,
+              url: initialImgUrl,
+              isUploaded: true,
+            },
+          ]);
+        } else {
+          setImageList([]);
+        }
+      }
+
+      if (initialData.options && Array.isArray(initialData.options)) {
+        setProductOptions(
+          initialData.options.map((opt: any) => ({
+            optionType: opt.optionType,
+            name: opt.name,
+            values: Array.isArray(opt.values)
+              ? opt.values.map((v: any, i: number) => ({
+                  id: `init-opt-${i}-${Date.now()}`,
+                  code: v.code,
+                  label: v.label,
+                  colorHex: v.colorHex || null,
+                  priceDiff: v.priceDiff || 0,
+                  isDefault: Boolean(v.isDefault),
+                }))
+              : [],
+          }))
+        );
+      } else {
+        setProductOptions([]);
       }
     } else {
       reset({
@@ -213,6 +352,7 @@ export function ProductDrawerForm({
         metaDescription: "",
       });
       setImageList([]);
+      setProductOptions([]);
     }
   }, [isOpen, initialData, reset, categories]);
 
@@ -247,6 +387,7 @@ export function ProductDrawerForm({
       }),
   }));
 
+  // Image handling
   const handleFilesSelect = (files: FileList | File[]) => {
     const validFiles = Array.from(files).filter((file) =>
       file.type.startsWith("image/")
@@ -335,6 +476,137 @@ export function ProductDrawerForm({
     });
   };
 
+  // Option handling
+  const handleAddOption = (type: ProductOptionType) => {
+    if (productOptions.some((o) => o.optionType === type)) return;
+    if (type === "COLOR") {
+      setProductOptions((prev) => [
+        ...prev,
+        {
+          optionType: "COLOR",
+          name: "Màu sắc",
+          values: [
+            {
+              id: `color-${Date.now()}-1`,
+              label: "Hồng",
+              code: "COLOR_HONG",
+              colorHex: "#FFB6C1",
+              priceDiff: 0,
+              isDefault: true,
+            },
+            {
+              id: `color-${Date.now()}-2`,
+              label: "Xanh dương",
+              code: "COLOR_XANH_DUONG",
+              colorHex: "#60A5FA",
+              priceDiff: 0,
+              isDefault: false,
+            },
+          ],
+        },
+      ]);
+    } else {
+      setProductOptions((prev) => [
+        ...prev,
+        {
+          optionType: "SIZE",
+          name: "Kích thước",
+          values: [
+            {
+              id: `size-${Date.now()}-1`,
+              label: "Tiêu chuẩn",
+              code: "SIZE_TIEU_CHUAN",
+              priceDiff: 0,
+              isDefault: true,
+            },
+          ],
+        },
+      ]);
+    }
+  };
+
+  const handleRemoveOption = (type: ProductOptionType) => {
+    setProductOptions((prev) => prev.filter((o) => o.optionType !== type));
+  };
+
+  const handleUpdateOptionName = (type: ProductOptionType, name: string) => {
+    setProductOptions((prev) =>
+      prev.map((o) => (o.optionType === type ? { ...o, name } : o))
+    );
+  };
+
+  const handleAddOptionValue = (
+    type: ProductOptionType,
+    label: string,
+    colorHex?: string
+  ) => {
+    setProductOptions((prev) =>
+      prev.map((o) => {
+        if (o.optionType !== type) return o;
+        const code = generateOptionCode(label, type);
+        const isFirst = o.values.length === 0;
+        return {
+          ...o,
+          values: [
+            ...o.values,
+            {
+              id: `val-${Date.now()}-${Math.random()}`,
+              label,
+              code,
+              colorHex: colorHex || (type === "COLOR" ? "#FFB6C1" : null),
+              priceDiff: 0,
+              isDefault: isFirst,
+            },
+          ],
+        };
+      })
+    );
+  };
+
+  const handleUpdateOptionValue = (
+    type: ProductOptionType,
+    valId: string,
+    partial: Partial<FormOptionValue>
+  ) => {
+    setProductOptions((prev) =>
+      prev.map((o) => {
+        if (o.optionType !== type) return o;
+        return {
+          ...o,
+          values: o.values.map((v) => {
+            if (v.id !== valId) {
+              if (partial.isDefault) {
+                return { ...v, isDefault: false };
+              }
+              return v;
+            }
+            const updated = { ...v, ...partial };
+            if (partial.label !== undefined) {
+              updated.code = generateOptionCode(partial.label, type);
+            }
+            return updated;
+          }),
+        };
+      })
+    );
+  };
+
+  const handleRemoveOptionValue = (type: ProductOptionType, valId: string) => {
+    setProductOptions((prev) =>
+      prev.map((o) => {
+        if (o.optionType !== type) return o;
+        const remaining = o.values.filter((v) => v.id !== valId);
+        if (remaining.length > 0 && !remaining.some((v) => v.isDefault)) {
+          remaining[0].isDefault = true;
+        }
+        return {
+          ...o,
+          values: remaining,
+        };
+      })
+    );
+  };
+
   const pendingCount = imageList.filter((item) => !item.isUploaded).length;
 
   const onSubmit = async (data: ProductFormData) => {
@@ -383,6 +655,47 @@ export function ProductDrawerForm({
       return;
     }
 
+    // Validate options
+    for (const opt of productOptions) {
+      if (opt.values.length === 0) {
+        toast.error(
+          `Tùy chọn "${opt.name}" phải có ít nhất 1 giá trị phân loại.`
+        );
+        return;
+      }
+      for (const val of opt.values) {
+        if (!val.label.trim()) {
+          toast.error(
+            `Vui lòng nhập tên giá trị cho phân loại trong nhóm "${opt.name}".`
+          );
+          return;
+        }
+      }
+    }
+
+    const formattedOptions: ProductOptionItem[] | undefined =
+      productOptions.length > 0
+        ? productOptions.map((opt, optIndex) => ({
+            optionType: opt.optionType,
+            name:
+              opt.name.trim() ||
+              (opt.optionType === "COLOR" ? "Màu sắc" : "Kích thước"),
+            displayOrder: optIndex,
+            values: opt.values.map((val) => ({
+              code: (
+                val.code || generateOptionCode(val.label, opt.optionType)
+              ).trim(),
+              label: val.label.trim(),
+              colorHex:
+                opt.optionType === "COLOR" && val.colorHex?.trim()
+                  ? val.colorHex.trim()
+                  : null,
+              priceDiff: val.priceDiff ? Number(val.priceDiff) : 0,
+              isDefault: Boolean(val.isDefault),
+            })),
+          }))
+        : undefined;
+
     const productPayload: CreateAdminProductDto = {
       name: data.name.trim(),
       slug: (
@@ -416,15 +729,20 @@ export function ProductDrawerForm({
         displayOrder: index,
         isThumbnail: index === 0,
       })),
+      options: formattedOptions,
     };
 
     await onSave(productPayload);
   };
 
+  const hasColorOption = productOptions.some((o) => o.optionType === "COLOR");
+  const hasSizeOption = productOptions.some((o) => o.optionType === "SIZE");
+
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
+    <>
+      <Drawer
+        isOpen={isOpen}
+        onClose={handleRequestClose}
       title={isEditMode ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
       description={
         isEditMode
@@ -563,7 +881,248 @@ export function ProductDrawerForm({
           </div>
         </div>
 
-        {/* 3. HÌNH ẢNH SẢN PHẨM */}
+        {/* 3. TÙY CHỌN SẢN PHẨM (PHÂN LOẠI MÀU SẮC, KÍCH THƯỚC) */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+              <Sliders className="w-3.5 h-3.5 text-primary" />
+              <span>Phân loại hàng</span>
+              <span className="text-[11px] text-text-muted font-normal lowercase">
+                (tùy chọn)
+              </span>
+            </h3>
+
+            <div className="flex items-center gap-2">
+              {!hasColorOption && (
+                <button
+                  type="button"
+                  onClick={() => handleAddOption("COLOR")}
+                  className="px-2.5 py-1.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-all cursor-pointer"
+                >
+                  + Thêm màu sắc
+                </button>
+              )}
+
+              {!hasSizeOption && (
+                <button
+                  type="button"
+                  onClick={() => handleAddOption("SIZE")}
+                  className="px-2.5 py-1.5 rounded-lg border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-all cursor-pointer"
+                >
+                  + Thêm kích thước
+                </button>
+              )}
+            </div>
+          </div>
+
+          {productOptions.length === 0 ? (
+            <div className="py-3 px-4 rounded-xl border border-dashed border-border bg-surface-muted/30 text-center">
+              <p className="text-xs text-text-muted">
+                Chưa có phân loại (màu sắc, kích thước).
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {productOptions.map((opt) => (
+                <div
+                  key={opt.optionType}
+                  className="p-3.5 rounded-xl bg-surface-muted/30 border border-border space-y-3"
+                >
+                  {/* Option Group Header */}
+                  <div className="flex items-center justify-between gap-3 pb-2 border-b border-border/60">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="p-1.5 rounded-md bg-primary/15 text-primary">
+                        {opt.optionType === "COLOR" ? (
+                          <Palette className="w-4 h-4" />
+                        ) : (
+                          <Ruler className="w-4 h-4" />
+                        )}
+                      </span>
+                      <div className="flex-1 max-w-xs">
+                        <input
+                          type="text"
+                          value={opt.name}
+                          onChange={(e) =>
+                            handleUpdateOptionName(opt.optionType, e.target.value)
+                          }
+                          placeholder={
+                            opt.optionType === "COLOR"
+                              ? "Tên nhóm: Màu sắc"
+                              : "Tên nhóm: Kích thước"
+                          }
+                          className="w-full px-2.5 py-1 text-xs font-bold rounded-md border border-border bg-surface text-text-primary focus:outline-none focus:border-primary"
+                        />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-surface border border-border text-text-muted font-bold">
+                        {opt.optionType}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveOption(opt.optionType)}
+                      className="p-1.5 rounded-lg text-text-muted hover:text-status-danger hover:bg-status-danger/10 transition-colors cursor-pointer"
+                      title="Xóa nhóm tùy chọn này"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Option Values List */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-12 gap-2 text-[11px] font-semibold text-text-muted px-1">
+                      <div className="col-span-7">Tên phân loại</div>
+                      <div className="col-span-3">Chênh lệch giá (±VNĐ)</div>
+                      <div className="col-span-2 text-right">Mặc định</div>
+                    </div>
+
+                    {opt.values.map((val) => (
+                      <div
+                        key={val.id}
+                        className="grid grid-cols-12 gap-2 items-center p-2 rounded-lg bg-surface border border-border/80"
+                      >
+                        {/* Label & Color Picker */}
+                        <div className="col-span-7 flex items-center gap-2">
+                          {opt.optionType === "COLOR" && (
+                            <div className="relative shrink-0">
+                              <input
+                                type="color"
+                                value={val.colorHex || "#FFB6C1"}
+                                onChange={(e) =>
+                                  handleUpdateOptionValue(opt.optionType, val.id, {
+                                    colorHex: e.target.value,
+                                  })
+                                }
+                                className="w-6 h-6 rounded-full border border-border cursor-pointer overflow-hidden p-0 bg-transparent"
+                                title="Chọn mã màu hex"
+                              />
+                            </div>
+                          )}
+                          <input
+                            type="text"
+                            value={val.label}
+                            onChange={(e) =>
+                              handleUpdateOptionValue(opt.optionType, val.id, {
+                                label: e.target.value,
+                              })
+                            }
+                            placeholder={
+                              opt.optionType === "COLOR"
+                                ? "Ví dụ: Hồng pastel..."
+                                : "Ví dụ: Size Nhỏ 5cm..."
+                            }
+                            className="w-full px-2 py-1 text-xs rounded border border-border bg-surface-muted/30 text-text-primary focus:outline-none focus:border-primary"
+                          />
+                        </div>
+
+                        {/* Price Diff */}
+                        <div className="col-span-3">
+                          <input
+                            type="number"
+                            step={1000}
+                            value={val.priceDiff || 0}
+                            onChange={(e) =>
+                              handleUpdateOptionValue(opt.optionType, val.id, {
+                                priceDiff: Number(e.target.value),
+                              })
+                            }
+                            placeholder="±0"
+                            className="w-full px-2 py-1 text-xs rounded border border-border bg-surface-muted/30 text-text-primary focus:outline-none focus:border-primary"
+                          />
+                        </div>
+
+                        {/* Default Radio & Delete */}
+                        <div className="col-span-2 flex items-center justify-end gap-2">
+                          <label
+                            className="flex items-center gap-1 cursor-pointer"
+                            title="Đặt làm giá trị mặc định khi khách vào trang sản phẩm"
+                          >
+                            <input
+                              type="radio"
+                              name={`default-${opt.optionType}`}
+                              checked={Boolean(val.isDefault)}
+                              onChange={() =>
+                                handleUpdateOptionValue(opt.optionType, val.id, {
+                                  isDefault: true,
+                                })
+                              }
+                              className="w-3.5 h-3.5 text-primary accent-primary cursor-pointer"
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveOptionValue(opt.optionType, val.id)}
+                            className="p-1 rounded text-text-muted hover:text-status-danger transition-colors cursor-pointer"
+                            title="Xóa giá trị này"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Preset quick buttons & Add custom value */}
+                  <div className="pt-2 border-t border-border/50 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] text-text-muted font-medium">
+                        Gợi ý nhanh:
+                      </span>
+                      {opt.optionType === "COLOR"
+                        ? COLOR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.label}
+                              type="button"
+                              onClick={() =>
+                                handleAddOptionValue(
+                                  "COLOR",
+                                  preset.label,
+                                  preset.hex
+                                )
+                              }
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface border border-border hover:border-primary/60 text-[10px] font-medium text-text-secondary transition-colors cursor-pointer"
+                            >
+                              <span
+                                className="w-2 h-2 rounded-full border border-black/20"
+                                style={{ backgroundColor: preset.hex }}
+                              />
+                              <span>{preset.label}</span>
+                            </button>
+                          ))
+                        : SIZE_PRESETS.map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => handleAddOptionValue("SIZE", preset)}
+                              className="px-2 py-0.5 rounded-md bg-surface border border-border hover:border-primary/60 text-[10px] font-medium text-text-secondary transition-colors cursor-pointer"
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleAddOptionValue(
+                          opt.optionType,
+                          opt.optionType === "COLOR" ? "Màu mới" : "Kích thước mới"
+                        )
+                      }
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-muted hover:bg-surface-hover border border-border text-text-primary text-xs font-semibold transition-colors cursor-pointer ml-auto"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-primary" />
+                      <span>Thêm giá trị</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 4. HÌNH ẢNH SẢN PHẨM */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
@@ -755,7 +1314,7 @@ export function ProductDrawerForm({
           )}
         </div>
 
-        {/* 4. MÔ TẢ & HƯỚNG DẪN BẢO QUẢN (TÙY CHỌN) */}
+        {/* 5. MÔ TẢ & HƯỚNG DẪN BẢO QUẢN (TÙY CHỌN) */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-primary" />
@@ -817,7 +1376,7 @@ export function ProductDrawerForm({
           </div>
         </div>
 
-        {/* 5. TỐI ƯU SEO (TÙY CHỌN) */}
+        {/* 6. TỐI ƯU SEO (TÙY CHỌN) */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
             <Search className="w-3.5 h-3.5 text-primary" />
@@ -853,7 +1412,7 @@ export function ProductDrawerForm({
           </div>
         </div>
 
-        {/* 6. TRẠNG THÁI BÁN HÀNG */}
+        {/* 7. TRẠNG THÁI BÁN HÀNG */}
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-muted/40 border border-border/60">
             <div>
@@ -880,7 +1439,7 @@ export function ProductDrawerForm({
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleRequestClose}
             disabled={isLoading || isUploadingImages}
             className="px-4 py-2 text-xs font-semibold rounded-lg bg-surface-hover hover:bg-surface-active text-text-primary transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -911,5 +1470,19 @@ export function ProductDrawerForm({
         onClose={() => setPreviewIndex(null)}
       />
     </Drawer>
-  );
+
+    {/* Discard changes confirmation modal */}
+    <Modal
+      isOpen={showCloseConfirmModal}
+      onClose={() => setShowCloseConfirmModal(false)}
+      onConfirm={handleConfirmDiscard}
+      type="WARNING"
+      title="Xác nhận hủy thay đổi"
+      description="Thông tin sản phẩm đã được chỉnh sửa. Bạn có chắc chắn muốn bỏ qua các thay đổi này và đóng lại không?"
+      confirmText="Bỏ thay đổi"
+      cancelText="Tiếp tục sửa"
+      size="sm"
+    />
+  </>
+);
 }

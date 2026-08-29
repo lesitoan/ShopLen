@@ -140,10 +140,76 @@ export const createAdminProductDto = z
     },
   );
 
+export const adminProductParamsDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+});
+
+export const updateAdminProductDto = z
+  .object({
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    body: z.object({
+      name: z.string().trim().min(1).max(180).optional(),
+      slug: z.string().trim().min(1).max(220).optional(),
+      categoryId: z.string().uuid().optional(),
+      shortDescription: nullableTextDto(500),
+      descriptionHtml: nullableTextDto(20000),
+      careInstructionHtml: nullableTextDto(20000),
+      originalPrice: z.number().int().min(0).optional(),
+      salePrice: z.number().int().min(0).nullable().optional(),
+      stockQuantity: z.number().int().min(0).optional(),
+      status: z.enum(["ACTIVE", "HIDDEN", "OUT_OF_STOCK"]).optional(),
+      highlightType: z
+        .enum(["HOT_PRODUCT", "TODAY_DEAL", "HOT_TIKTOK"])
+        .nullable()
+        .optional(),
+      metaTitle: nullableTextDto(180),
+      metaDescription: nullableTextDto(300),
+      images: z.array(productImageInputDto).min(1).optional(),
+      options: z.array(productOptionDto).max(2).optional(),
+    }),
+  })
+  .refine(
+    (value) =>
+      Object.values(value.body).some((fieldValue) => fieldValue !== undefined),
+    {
+      message: "Vui lòng nhập ít nhất một thông tin cần cập nhật.",
+      path: ["body"],
+    },
+  )
+  .refine(
+    (value) =>
+      value.body.originalPrice === undefined ||
+      value.body.salePrice === undefined ||
+      value.body.salePrice === null ||
+      value.body.salePrice <= value.body.originalPrice,
+    {
+      message: "Giá khuyến mãi không được lớn hơn giá gốc.",
+      path: ["body", "salePrice"],
+    },
+  )
+  .refine(
+    (value) => {
+      const optionTypes = value.body.options?.map((option) => option.optionType) ?? [];
+      return optionTypes.length === new Set(optionTypes).size;
+    },
+    {
+      message: "Mỗi loại tùy chọn chỉ được khai báo một lần.",
+      path: ["body", "options"],
+    },
+  );
+
 export type AdminProductListQueryDto = z.infer<
   typeof adminProductListQueryDto
 >["query"];
 
 export type CreateAdminProductDto = z.infer<
   typeof createAdminProductDto
+>["body"];
+
+export type UpdateAdminProductDto = z.infer<
+  typeof updateAdminProductDto
 >["body"];

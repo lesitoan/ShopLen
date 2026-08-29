@@ -5,21 +5,23 @@ import Image from "next/image";
 import { Edit, Trash2, FolderTree, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { Switch } from "@/components/ui/Switch";
-import { CategoryListItem, CategoryStatus, CategorySortKey, SortOrder } from "../constants";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Loading } from "@/components/ui/Loading";
+import type { AdminCategoryItem, AdminCategorySortOption } from "@/types/category.type";
 
 interface CategoryTableProps {
-  categories: CategoryListItem[];
+  categories: AdminCategoryItem[];
   totalItems: number;
   page: number;
   pageSize: number;
-  sortBy: CategorySortKey;
-  sortOrder: SortOrder;
-  onSortChange: (key: CategorySortKey) => void;
+  sort?: AdminCategorySortOption;
+  onSortChange?: (sort: AdminCategorySortOption) => void;
+  isLoading?: boolean;
+  isFetching?: boolean;
+  isError?: boolean;
   onPageChange: (page: number) => void;
-  onToggleStatus: (categoryId: string, currentStatus: CategoryStatus) => void;
-  onEditCategory: (category: CategoryListItem) => void;
-  onDeleteCategory: (category: CategoryListItem) => void;
+  onEditCategory: (category: AdminCategoryItem) => void;
+  onDeleteCategory: (category: AdminCategoryItem) => void;
 }
 
 export function CategoryTable({
@@ -27,20 +29,52 @@ export function CategoryTable({
   totalItems,
   page,
   pageSize,
-  sortBy,
-  sortOrder,
+  sort = "NEWEST",
   onSortChange,
+  isLoading,
+  isFetching,
+  isError,
   onPageChange,
-  onToggleStatus,
   onEditCategory,
   onDeleteCategory,
 }: CategoryTableProps) {
-  const columns: Column<CategoryListItem>[] = [
+  const handleToggleNameSort = () => {
+    if (!onSortChange) return;
+    if (sort === "NAME_ASC") onSortChange("NAME_DESC");
+    else if (sort === "NAME_DESC") onSortChange("NEWEST");
+    else onSortChange("NAME_ASC");
+  };
+
+  const handleToggleDateSort = () => {
+    if (!onSortChange) return;
+    if (sort === "NEWEST") onSortChange("OLDEST");
+    else onSortChange("NEWEST");
+  };
+
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  const columns: Column<AdminCategoryItem>[] = [
     {
       key: "categoryInfo",
-      header: "Danh mục",
+      header: (
+        <button
+          type="button"
+          onClick={handleToggleNameSort}
+          className="inline-flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer select-none"
+          title="Bấm để xếp theo tên danh mục"
+        >
+          <span>Danh mục</span>
+          {sort === "NAME_ASC" ? (
+            <ArrowUp className="w-3.5 h-3.5 text-primary" />
+          ) : sort === "NAME_DESC" ? (
+            <ArrowDown className="w-3.5 h-3.5 text-primary" />
+          ) : (
+            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
+          )}
+        </button>
+      ),
       align: "left",
-      width: "35%",
+      width: "40%",
       render: (category) => (
         <div className="flex items-center gap-3">
           <div className="relative w-11 h-11 rounded-lg bg-surface-muted border border-border overflow-hidden shrink-0 flex items-center justify-center">
@@ -62,11 +96,6 @@ export function CategoryTable({
             </div>
             <div className="flex items-center gap-2 text-[11px] text-text-muted mt-0.5">
               <span className="font-mono text-text-secondary">{category.code}</span>
-              {category.description && (
-                <span className="truncate max-w-[220px] text-text-muted hidden sm:inline" title={category.description}>
-                  • {category.description}
-                </span>
-              )}
             </div>
           </div>
         </div>
@@ -76,7 +105,7 @@ export function CategoryTable({
       key: "slug",
       header: "Đường dẫn (Slug)",
       align: "left",
-      width: "20%",
+      width: "25%",
       render: (category) => (
         <span className="font-mono text-xs text-text-secondary bg-surface-muted/60 px-2 py-1 rounded border border-border/40">
           /{category.slug}
@@ -84,58 +113,29 @@ export function CategoryTable({
       ),
     },
     {
-      key: "displayOrder",
+      key: "createdAt",
       header: (
         <button
           type="button"
-          onClick={() => onSortChange("displayOrder")}
-          className="inline-flex items-center justify-center gap-1 hover:text-text-primary transition-colors cursor-pointer group"
+          onClick={handleToggleDateSort}
+          className="inline-flex items-center gap-1.5 hover:text-text-primary transition-colors cursor-pointer select-none"
+          title="Bấm để xếp mới nhất / cũ nhất"
         >
-          <span>Thứ tự</span>
-          {sortBy === "displayOrder" ? (
-            sortOrder === "asc" ? (
-              <ArrowUp className="w-3.5 h-3.5 text-primary" />
-            ) : (
-              <ArrowDown className="w-3.5 h-3.5 text-primary" />
-            )
+          <span>Ngày tạo</span>
+          {sort === "NEWEST" ? (
+            <ArrowDown className="w-3.5 h-3.5 text-primary" />
+          ) : sort === "OLDEST" ? (
+            <ArrowUp className="w-3.5 h-3.5 text-primary" />
           ) : (
-            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted opacity-60 group-hover:opacity-100" />
-          )}
-        </button>
-      ),
-      align: "center",
-      width: "10%",
-      render: (category) => (
-        <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-surface-muted text-xs font-bold text-text-primary border border-border">
-          {category.displayOrder}
-        </span>
-      ),
-    },
-    {
-      key: "productCount",
-      header: (
-        <button
-          type="button"
-          onClick={() => onSortChange("productCount")}
-          className="inline-flex items-center justify-center gap-1 hover:text-text-primary transition-colors cursor-pointer group"
-        >
-          <span>Số sản phẩm</span>
-          {sortBy === "productCount" ? (
-            sortOrder === "asc" ? (
-              <ArrowUp className="w-3.5 h-3.5 text-primary" />
-            ) : (
-              <ArrowDown className="w-3.5 h-3.5 text-primary" />
-            )
-          ) : (
-            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted opacity-60 group-hover:opacity-100" />
+            <ArrowUpDown className="w-3.5 h-3.5 text-text-muted hover:text-text-primary" />
           )}
         </button>
       ),
       align: "center",
       width: "15%",
       render: (category) => (
-        <span className="text-xs font-semibold text-text-primary">
-          {category.productCount} sản phẩm
+        <span className="text-xs text-text-muted font-mono">
+          {new Date(category.createdAt).toLocaleDateString("vi-VN")}
         </span>
       ),
     },
@@ -143,7 +143,7 @@ export function CategoryTable({
       key: "status",
       header: "Trạng thái",
       align: "center",
-      width: "12%",
+      width: "10%",
       render: (category) =>
         category.status === "ACTIVE" ? (
           <Badge variant="success" dot>
@@ -159,19 +159,13 @@ export function CategoryTable({
       key: "actions",
       header: "Hành động",
       align: "right",
-      width: "13%",
+      width: "10%",
       render: (category) => (
-        <div className="flex items-center justify-end gap-2.5">
-          <Switch
-            checked={category.status === "ACTIVE"}
-            onChange={() => onToggleStatus(category.id, category.status)}
-            size="sm"
-          />
-
+        <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => onEditCategory(category)}
             title="Chỉnh sửa danh mục"
-            className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-surface-muted transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-primary hover:bg-surface-muted transition-colors cursor-pointer"
           >
             <Edit className="w-4 h-4" />
           </button>
@@ -179,7 +173,7 @@ export function CategoryTable({
           <button
             onClick={() => onDeleteCategory(category)}
             title="Xóa danh mục"
-            className="p-1.5 rounded-lg text-text-muted hover:text-status-danger hover:bg-status-danger/10 transition-colors"
+            className="p-1.5 rounded-lg text-text-muted hover:text-status-danger hover:bg-status-danger/10 transition-colors cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -190,19 +184,29 @@ export function CategoryTable({
 
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden">
-      <DataTable
-        columns={columns}
-        data={categories}
-        keyExtractor={(category) => category.id}
-        pagination={{
-          currentPage: page,
-          totalPages: Math.ceil(totalItems / pageSize) || 1,
-          totalItems,
-          pageSize,
-          onPageChange,
-        }}
-        emptyMessage="Không tìm thấy danh mục nào phù hợp"
-      />
+      {isLoading || isFetching ? (
+        <div className="p-12 flex items-center justify-center">
+          <Loading size="md" />
+        </div>
+      ) : isError ? (
+        <div className="p-8">
+          <EmptyState message="Không thể tải danh sách danh mục" />
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={categories}
+          keyExtractor={(category) => category.id}
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems,
+            pageSize,
+            onPageChange,
+          }}
+          emptyMessage="Không tìm thấy danh mục nào phù hợp"
+        />
+      )}
     </div>
   );
 }

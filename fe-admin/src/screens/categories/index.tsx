@@ -2,159 +2,101 @@
 
 import React, { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
+import { useTableFilters } from "@/hooks/useTableFilters";
 import {
-  MOCK_CATEGORIES_DATA,
-  CategoryListItem,
-  CategoryStatus,
-  CategoryFilterState,
-  CategorySortKey,
-} from "./constants";
+  useListCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} from "@/services/api/categoryApi";
+import type {
+  AdminCategoryItem,
+  AdminCategoryListQueryDto,
+  CreateAdminCategoryDto,
+} from "@/types/category.type";
+import { DEFAULT_CATEGORY_FILTERS } from "./constants";
 import { CategoryFilterBar } from "./components/CategoryFilterBar";
 import { CategoryTable } from "./components/CategoryTable";
 import { CategoryDrawerForm } from "./components/CategoryDrawerForm";
 import { Modal } from "@/components/ui/Modal";
+import { toast } from "react-toastify";
 
 export function CategoriesListScreen() {
-  const [categories, setCategories] = useState<CategoryListItem[]>(MOCK_CATEGORIES_DATA);
+  const { filters, setFilter, setFilters, resetFilters } = useTableFilters(
+    DEFAULT_CATEGORY_FILTERS
+  );
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryListItem | null>(null);
+  const [editingCategory, setEditingCategory] =
+    useState<AdminCategoryItem | null>(null);
 
-  const [pendingToggleCategory, setPendingToggleCategory] = useState<{
-    category: CategoryListItem;
-    nextStatus: CategoryStatus;
-  } | null>(null);
+  const [pendingDeleteCategory, setPendingDeleteCategory] =
+    useState<AdminCategoryItem | null>(null);
 
-  const [pendingDeleteCategory, setPendingDeleteCategory] = useState<CategoryListItem | null>(null);
+  const queryDto: AdminCategoryListQueryDto = useMemo(() => {
+    return {
+      page: filters.page,
+      limit: filters.limit,
+      search: filters.search.trim() || undefined,
+      sort: filters.sort,
+    };
+  }, [filters]);
 
-  const [filters, setFilters] = useState<CategoryFilterState>({
-    searchQuery: "",
-    statusFilter: "ALL",
-    sortBy: "displayOrder",
-    sortOrder: "asc",
-    page: 1,
-    pageSize: 10,
-  });
+  const { data, isLoading, isFetching, isError } =
+    useListCategoriesQuery(queryDto);
 
-  const handleFilterChange = (updated: Partial<CategoryFilterState>) => {
-    setFilters((prev) => ({ ...prev, ...updated }));
-  };
+  const [createCategory, { isLoading: isCreating }] =
+    useCreateCategoryMutation();
+  const [updateCategory, { isLoading: isUpdating }] =
+    useUpdateCategoryMutation();
+  const [deleteCategory, { isLoading: isDeleting }] =
+    useDeleteCategoryMutation();
 
-  const handleSortChange = (sortKey: CategorySortKey) => {
-    setFilters((prev) => {
-      if (prev.sortBy === sortKey) {
-        return {
-          ...prev,
-          sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
-        };
-      }
-      return {
-        ...prev,
-        sortBy: sortKey,
-        sortOrder: sortKey === "productCount" ? "desc" : "asc",
-      };
-    });
-  };
+  const categories = data?.items || [];
+  const totalItems = data?.pagination.total || 0;
 
-  const handleSaveCategory = (
-    categoryData: Omit<CategoryListItem, "id" | "createdAt" | "updatedAt" | "productCount">
+  const handleFilterChange = (
+    updated: Partial<typeof DEFAULT_CATEGORY_FILTERS>
   ) => {
-    if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === editingCategory.id
-            ? {
-                ...c,
-                ...categoryData,
-                updatedAt: "Vừa xong",
-              }
-            : c
-        )
+    setFilters(updated);
+  };
+
+  const handleSaveCategory = async (categoryData: CreateAdminCategoryDto) => {
+    try {
+      if (editingCategory) {
+        await updateCategory({
+          id: editingCategory.id,
+          data: categoryData,
+        }).unwrap();
+        toast.success("Cập nhật danh mục thành công.");
+        setEditingCategory(null);
+      } else {
+        await createCategory(categoryData).unwrap();
+        toast.success("Tạo danh mục thành công.");
+        setIsDrawerOpen(false);
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message || error?.message || "Có lỗi xảy ra khi lưu danh mục"
       );
-      setEditingCategory(null);
-    } else {
-      const createdCategory: CategoryListItem = {
-        ...categoryData,
-        id: `cat_${Date.now()}`,
-        productCount: 0,
-        createdAt: new Date().toISOString().split("T")[0],
-        updatedAt: "Vừa xong",
-      };
-      setCategories((prev) => [createdCategory, ...prev]);
-      setIsDrawerOpen(false);
     }
   };
 
-  const handleRequestToggleStatus = (categoryId: string, currentStatus: CategoryStatus) => {
-    const category = categories.find((c) => c.id === categoryId);
-    if (!category) return;
-    const nextStatus: CategoryStatus = currentStatus === "ACTIVE" ? "HIDDEN" : "ACTIVE";
-    setPendingToggleCategory({ category, nextStatus });
-  };
-
-  const handleConfirmToggleStatus = () => {
-    if (pendingToggleCategory) {
-      const { category, nextStatus } = pendingToggleCategory;
-      setCategories((prev) =>
-        prev.map((c) => {
-          if (c.id === category.id) {
-            return {
-              ...c,
-              status: nextStatus,
-              updatedAt: "Vừa xong",
-            };
-          }
-          return c;
-        })
-      );
-      setPendingToggleCategory(null);
-    }
-  };
-
-  const handleConfirmDelete = () => {
-    if (pendingDeleteCategory) {
-      setCategories((prev) => prev.filter((c) => c.id !== pendingDeleteCategory.id));
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteCategory) return;
+    try {
+      await deleteCategory(pendingDeleteCategory.id).unwrap();
+      toast.success("Xóa danh mục thành công.");
       setPendingDeleteCategory(null);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message || error?.message || "Không thể xóa danh mục này"
+      );
     }
   };
-
-  const filteredCategories = useMemo(() => {
-    return categories
-      .filter((cat) => {
-        if (filters.searchQuery.trim()) {
-          const query = filters.searchQuery.toLowerCase();
-          const matchesName = cat.name.toLowerCase().includes(query);
-          const matchesCode = cat.code.toLowerCase().includes(query);
-          const matchesSlug = cat.slug.toLowerCase().includes(query);
-          if (!matchesName && !matchesCode && !matchesSlug) return false;
-        }
-
-        if (filters.statusFilter !== "ALL" && cat.status !== filters.statusFilter) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        let diff = 0;
-        if (filters.sortBy === "displayOrder") {
-          diff = a.displayOrder - b.displayOrder;
-        } else if (filters.sortBy === "productCount") {
-          diff = a.productCount - b.productCount;
-        }
-        return filters.sortOrder === "asc" ? diff : -diff;
-      });
-  }, [categories, filters]);
-
-  const totalCount = filteredCategories.length;
-
-  const paginatedCategories = useMemo(() => {
-    const start = (filters.page - 1) * filters.pageSize;
-    return filteredCategories.slice(start, start + filters.pageSize);
-  }, [filteredCategories, filters.page, filters.pageSize]);
 
   return (
     <div className="space-y-5">
-      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-highlight tracking-tight">
@@ -170,38 +112,38 @@ export function CategoriesListScreen() {
             setEditingCategory(null);
             setIsDrawerOpen(true);
           }}
-          className="inline-flex items-center justify-center gap-2 px-4 h-[38px] bg-primary hover:bg-primary-hover text-bg-deep font-bold text-xs rounded-lg transition-all shadow-md shadow-primary/20 shrink-0"
+          className="inline-flex items-center justify-center gap-2 px-4 h-[38px] bg-primary hover:bg-primary-hover text-bg-deep font-bold text-xs rounded-lg transition-all shadow-md shadow-primary/20 shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Thêm danh mục</span>
         </button>
       </div>
 
-      {/* Filter Bar */}
       <CategoryFilterBar
         filters={filters}
         onFilterChange={handleFilterChange}
+        onResetFilter={resetFilters}
       />
 
-      {/* Category Table */}
       <CategoryTable
-        categories={paginatedCategories}
-        totalItems={totalCount}
+        categories={categories}
+        totalItems={totalItems}
         page={filters.page}
-        pageSize={filters.pageSize}
-        sortBy={filters.sortBy}
-        sortOrder={filters.sortOrder}
-        onSortChange={handleSortChange}
-        onPageChange={(page) => handleFilterChange({ page })}
-        onToggleStatus={handleRequestToggleStatus}
+        pageSize={filters.limit}
+        sort={filters.sort}
+        onSortChange={(s) => setFilter("sort", s)}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        isError={isError}
+        onPageChange={(page) => setFilter("page", page)}
         onEditCategory={(category) => setEditingCategory(category)}
         onDeleteCategory={(category) => setPendingDeleteCategory(category)}
       />
 
-      {/* Shared Drawer Form */}
       <CategoryDrawerForm
         isOpen={isDrawerOpen || Boolean(editingCategory)}
         initialData={editingCategory}
+        isLoading={isCreating || isUpdating}
         onSave={handleSaveCategory}
         onClose={() => {
           setIsDrawerOpen(false);
@@ -209,36 +151,14 @@ export function CategoriesListScreen() {
         }}
       />
 
-      {/* Confirm Modals */}
-      <Modal
-        isOpen={Boolean(pendingToggleCategory)}
-        onClose={() => setPendingToggleCategory(null)}
-        onConfirm={handleConfirmToggleStatus}
-        type={pendingToggleCategory?.nextStatus === "HIDDEN" ? "WARNING" : "CONFIRM"}
-        title={
-          pendingToggleCategory?.nextStatus === "HIDDEN"
-            ? "Ẩn danh mục khỏi website"
-            : "Hiện danh mục trên website"
-        }
-        description={
-          pendingToggleCategory?.nextStatus === "HIDDEN"
-            ? `Bạn có chắc chắn muốn ẩn danh mục "${pendingToggleCategory?.category.name}" khỏi cửa hàng không?`
-            : `Bạn có chắc chắn muốn cho phép hiển thị lại danh mục "${pendingToggleCategory?.category.name}" trên cửa hàng không?`
-        }
-        confirmText={
-          pendingToggleCategory?.nextStatus === "HIDDEN" ? "Ẩn danh mục" : "Hiện danh mục"
-        }
-        cancelText="Bỏ qua"
-        size="sm"
-      />
-
       <Modal
         isOpen={Boolean(pendingDeleteCategory)}
         onClose={() => setPendingDeleteCategory(null)}
         onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
         type="DANGER"
         title="Xác nhận xóa danh mục"
-        description={`Bạn có chắc chắn muốn xóa vĩnh viễn danh mục "${pendingDeleteCategory?.name}" (${pendingDeleteCategory?.productCount} sản phẩm) không? Thao tác này không thể hoàn tác.`}
+        description={`Bạn có chắc chắn muốn xóa vĩnh viễn danh mục "${pendingDeleteCategory?.name}" không? Thao tác này không thể hoàn tác.`}
         confirmText="Xác nhận xóa"
         cancelText="Bỏ qua"
         size="sm"

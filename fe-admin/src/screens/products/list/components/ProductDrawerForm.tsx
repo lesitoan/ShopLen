@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/Input";
 import { DropdownMenu } from "@/components/ui/DropdownMenu";
 import { Switch } from "@/components/ui/Switch";
 import { ImageUploader } from "@/components/ui/ImageUploader";
-import { MOCK_CATEGORIES, ProductListItem, ProductStatus } from "../constants";
+import { MOCK_CATEGORIES, ProductStatus } from "../constants";
 
 interface ProductFormData {
   code: string;
@@ -24,8 +24,8 @@ interface ProductFormData {
 interface ProductDrawerFormProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: ProductListItem | null;
-  onSave: (productData: Omit<ProductListItem, "id" | "updatedAt">) => void;
+  initialData?: any;
+  onSave: (productData: any) => void;
 }
 
 export function ProductDrawerForm({
@@ -35,6 +35,11 @@ export function ProductDrawerForm({
   onSave,
 }: ProductDrawerFormProps) {
   const isEditMode = Boolean(initialData);
+
+  const initialCategoryId =
+    initialData?.categoryId || initialData?.category?.id || MOCK_CATEGORIES[0]?.id || "CAT-KEYCHAIN";
+  const initialImage = initialData?.image || initialData?.thumbnail?.url || "";
+  const initialSalePrice = initialData?.salePrice ?? undefined;
 
   const {
     register,
@@ -47,12 +52,12 @@ export function ProductDrawerForm({
     defaultValues: {
       code: initialData?.code || `SP-LEN-${Math.floor(100 + Math.random() * 900)}`,
       name: initialData?.name || "",
-      categoryId: initialData?.categoryId || MOCK_CATEGORIES[0]?.id || "CAT-KEYCHAIN",
+      categoryId: initialCategoryId,
       originalPrice: initialData?.originalPrice || 75000,
-      salePrice: initialData?.salePrice,
+      salePrice: initialSalePrice,
       stockQuantity: initialData?.stockQuantity ?? 10,
       status: initialData?.status || "HIDDEN",
-      images: initialData?.image ? [initialData.image] : [],
+      images: initialImage ? [initialImage] : [],
     },
   });
 
@@ -62,12 +67,12 @@ export function ProductDrawerForm({
       reset({
         code: initialData.code,
         name: initialData.name,
-        categoryId: initialData.categoryId,
+        categoryId: initialData.categoryId || initialData.category?.id || MOCK_CATEGORIES[0]?.id,
         originalPrice: initialData.originalPrice,
-        salePrice: initialData.salePrice,
+        salePrice: initialData.salePrice ?? undefined,
         stockQuantity: initialData.stockQuantity,
         status: initialData.status,
-        images: initialData.image ? [initialData.image] : [],
+        images: (initialData.image || initialData.thumbnail?.url) ? [(initialData.image || initialData.thumbnail?.url)] : [],
       });
     } else {
       reset({
@@ -134,7 +139,7 @@ export function ProductDrawerForm({
       }
       size="third"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
         <div className="space-y-4">
           <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider">
             Thông tin cơ bản

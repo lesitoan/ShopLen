@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { amalyticsRoutes } from "@/routes/admin/amalyticsRoutes.js";
 import { adminAuthRoutes } from "@/routes/admin/authRoutes.js";
+import { adminCategoryRoutes } from "@/routes/admin/adminCategoryRoutes.js";
 import { adminDashboardRoutes } from "@/routes/admin/adminDashboardRoutes.js";
 import { adminOrderRoutes } from "@/routes/admin/adminOrderRoutes.js";
 import { adminProductRoutes } from "@/routes/admin/adminProductRoutes.js";
@@ -28,7 +29,8 @@ routes.use("/payments", paymentRoutes);
 routes.use("/categories", categoryRoutes);
 routes.use("/admin/amalytics", amalyticsRoutes);
 routes.use("/admin/auth", adminAuthRoutes);
-routes.use("/admin/uploads", uploadRoutes);
+routes.use("/admin/upload", uploadRoutes);
+routes.use("/admin/categories", adminCategoryRoutes);
 routes.use("/admin/orders", adminOrderRoutes);
 routes.use("/admin/products", adminProductRoutes);
 routes.use("/admin/dashboard", adminDashboardRoutes);

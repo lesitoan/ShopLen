@@ -2,6 +2,8 @@ import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
 import type {
   AdminOrderListQueryDto,
   AdminOrderListResponse,
+  AdminOrderDetail,
+  UpdateAdminOrderStatusDto,
 } from "@/types/order.type";
 
 export const orderApi = baseApi.injectEndpoints({
@@ -17,7 +19,39 @@ export const orderApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<AdminOrderListResponse>,
       providesTags: ["Order"],
     }),
+    getOrderDetail: builder.query<AdminOrderDetail, string>({
+      query: (id) => ({
+        url: `/admin/orders/${id}`,
+      }),
+      transformResponse: unwrapApiResponse<AdminOrderDetail>,
+      providesTags: (_result, _error, id) => [{ type: "Order", id }],
+    }),
+    updateOrderStatus: builder.mutation<
+      AdminOrderDetail,
+      { id: string; body: UpdateAdminOrderStatusDto }
+    >({
+      query: ({ id, body }) => ({
+        url: `/admin/orders/${id}/status`,
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: unwrapApiResponse<AdminOrderDetail>,
+      invalidatesTags: ["Order"],
+    }),
+    confirmPayment: builder.mutation<AdminOrderDetail, string>({
+      query: (id) => ({
+        url: `/admin/orders/${id}/confirm-payment`,
+        method: "POST",
+      }),
+      transformResponse: unwrapApiResponse<AdminOrderDetail>,
+      invalidatesTags: ["Order"],
+    }),
   }),
 });
 
-export const { useListOrdersQuery } = orderApi;
+export const {
+  useListOrdersQuery,
+  useGetOrderDetailQuery,
+  useUpdateOrderStatusMutation,
+  useConfirmPaymentMutation,
+} = orderApi;

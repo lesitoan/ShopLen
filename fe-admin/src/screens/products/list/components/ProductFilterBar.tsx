@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import debounce from "debounce";
 import { Search, Filter, Layers, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import {
@@ -21,6 +22,17 @@ export function ProductFilterBar({
   onFilterChange,
   onResetFilter,
 }: ProductFilterBarProps) {
+  const [searchTerm, setSearchTerm] = useState(filters.search);
+
+  useEffect(() => {
+    setSearchTerm(filters.search);
+  }, [filters.search]);
+
+  const debouncedSearch = useMemo(
+    () => debounce((val: string) => onFilterChange({ search: val }), 1000),
+    [onFilterChange]
+  );
+
   const categoryOptions: MultiSelectOption[] = MOCK_CATEGORIES.map((cat) => ({
     key: cat.id,
     label: cat.name,
@@ -40,10 +52,20 @@ export function ProductFilterBar({
             <Input
               type="text"
               placeholder="Tìm theo tên/mã sản phẩm..."
-              value={filters.search}
-              onChange={(e) => onFilterChange({ search: e.target.value })}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
               leftIcon={<Search className="w-4 h-4 text-text-muted" />}
-              onClear={filters.search ? () => onFilterChange({ search: "" }) : undefined}
+              onClear={
+                searchTerm
+                  ? () => {
+                      setSearchTerm("");
+                      onFilterChange({ search: "" });
+                    }
+                  : undefined
+              }
               className="h-[38px]"
             />
           </div>
@@ -75,7 +97,7 @@ export function ProductFilterBar({
           <button
             type="button"
             onClick={onResetFilter}
-            className="h-[38px] px-3 rounded-md bg-surface-muted hover:bg-surface-hover text-text-secondary hover:text-text-primary border border-border transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 ml-auto"
+            className="h-[38px] px-3 rounded-md bg-surface-muted hover:bg-surface-hover text-text-secondary hover:text-text-primary border border-border transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 ml-auto cursor-pointer"
             title="Đặt lại bộ lọc"
           >
             <RotateCcw className="w-3.5 h-3.5" />

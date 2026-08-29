@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import debounce from "debounce";
 import { Search, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import type { CategoryFilterState } from "../constants";
@@ -18,26 +19,14 @@ export function CategoryFilterBar({
 }: CategoryFilterBarProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search);
 
-  // Sync local search state with filters.search when filters change (e.g. reset filter)
   useEffect(() => {
     setSearchTerm(filters.search);
   }, [filters.search]);
 
-  // Debounce search by 1 second (1000ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchTerm !== filters.search) {
-        onFilterChange({ search: searchTerm });
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, filters.search, onFilterChange]);
-
-  const handleClearSearch = () => {
-    setSearchTerm("");
-    onFilterChange({ search: "" });
-  };
+  const debouncedSearch = useMemo(
+    () => debounce((val: string) => onFilterChange({ search: val }), 1000),
+    [onFilterChange]
+  );
 
   return (
     <div className="bg-surface p-3 rounded-xl border border-border">
@@ -47,8 +36,18 @@ export function CategoryFilterBar({
             <Input
               placeholder="Tìm theo tên/mã danh mục..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClear={searchTerm ? handleClearSearch : undefined}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
+              onClear={
+                searchTerm
+                  ? () => {
+                      setSearchTerm("");
+                      onFilterChange({ search: "" });
+                    }
+                  : undefined
+              }
               leftIcon={<Search className="w-4 h-4 text-text-muted" />}
               className="h-[38px]"
             />

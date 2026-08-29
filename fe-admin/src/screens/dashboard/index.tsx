@@ -8,10 +8,8 @@ import { RevenueChart } from "./components/RevenueChart";
 import { RecentOrdersTable } from "./components/RecentOrdersTable";
 import { TopSellingProducts } from "./components/TopSellingProducts";
 import { LowStockWarning } from "./components/LowStockWarning";
-import {
-  MOCK_TOP_PRODUCTS,
-  MOCK_LOW_STOCK_PRODUCTS,
-} from "./constants";
+import { toast } from "react-toastify";
+
 
 export default function DashboardScreen() {
   return (
@@ -33,6 +31,7 @@ export default function DashboardScreen() {
             variant="primary"
             size="md"
             leftIcon={<Download className="w-3.5 h-3.5" />}
+            onClick={() => toast.info('Tính năng này sẽ được cập nhật trong thời gian sớm nhất')}
           >
             Xuất báo cáo
           </Button>
@@ -49,8 +48,8 @@ export default function DashboardScreen() {
         </div>
 
         <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-          <TopSellingProducts products={MOCK_TOP_PRODUCTS} />
-          <LowStockWarning products={MOCK_LOW_STOCK_PRODUCTS} />
+          <TopSellingProducts />
+          <LowStockWarning />
         </div>
       </div>
     </div>

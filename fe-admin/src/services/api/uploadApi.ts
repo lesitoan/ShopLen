@@ -24,7 +24,24 @@ export const uploadApi = baseApi.injectEndpoints({
       },
       transformResponse: unwrapApiResponse<UploadImageResponse>,
     }),
+    uploadManyImages: builder.mutation<
+      UploadImageResponse[],
+      { files: File[]; target: UploadTarget }
+    >({
+      query: ({ files, target }) => {
+        const formData = new FormData();
+        files.forEach((file) => {
+          formData.append("images", file);
+        });
+        return {
+          url: `/admin/upload/images/many?target=${target}`,
+          method: "POST",
+          body: formData,
+        };
+      },
+      transformResponse: unwrapApiResponse<UploadImageResponse[]>,
+    }),
   }),
 });
 
-export const { useUploadImageMutation } = uploadApi;
+export const { useUploadImageMutation, useUploadManyImagesMutation } = uploadApi;

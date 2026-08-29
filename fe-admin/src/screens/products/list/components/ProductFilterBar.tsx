@@ -9,7 +9,8 @@ import {
   MultiSelectOption,
 } from "@/components/ui/MultiSelectDropdown";
 import type { ProductStatus } from "@/types/product.type";
-import { ProductFilterState, MOCK_CATEGORIES } from "../constants";
+import { useListCategoriesQuery } from "@/services/api/categoryApi";
+import { ProductFilterState } from "../constants";
 
 interface ProductFilterBarProps {
   filters: ProductFilterState;
@@ -24,6 +25,9 @@ export function ProductFilterBar({
 }: ProductFilterBarProps) {
   const [searchTerm, setSearchTerm] = useState(filters.search);
 
+  const { data: categoriesData, isLoading: isCategoriesLoading } =
+    useListCategoriesQuery({ limit: 100 });
+
   useEffect(() => {
     setSearchTerm(filters.search);
   }, [filters.search]);
@@ -33,10 +37,13 @@ export function ProductFilterBar({
     [onFilterChange]
   );
 
-  const categoryOptions: MultiSelectOption[] = MOCK_CATEGORIES.map((cat) => ({
-    key: cat.id,
-    label: cat.name,
-  }));
+  const categoryOptions: MultiSelectOption[] = useMemo(() => {
+    const categories = categoriesData?.items || [];
+    return categories.map((cat) => ({
+      key: cat.id,
+      label: cat.name,
+    }));
+  }, [categoriesData]);
 
   const statusOptions: MultiSelectOption[] = [
     { key: "ACTIVE", label: "Đang bán" },
@@ -71,7 +78,7 @@ export function ProductFilterBar({
           </div>
 
           <MultiSelectDropdown
-            label="Danh mục"
+            label={isCategoriesLoading ? "Đang tải..." : "Danh mục"}
             triggerIcon={<Layers className="w-3.5 h-3.5 text-primary" />}
             variant="surface"
             options={categoryOptions}

@@ -3,10 +3,14 @@
 import React, { useState, useMemo } from "react";
 import { Plus } from "lucide-react";
 import { useTableFilters } from "@/hooks/useTableFilters";
-import { useListProductsQuery } from "@/services/api/productApi";
+import {
+  useListProductsQuery,
+  useCreateProductMutation,
+} from "@/services/api/productApi";
 import type {
   AdminProductListItem,
   AdminProductListQueryDto,
+  CreateAdminProductDto,
   ProductStatus,
 } from "@/types/product.type";
 import { DEFAULT_PRODUCT_FILTERS } from "./constants";
@@ -20,6 +24,8 @@ export function ProductsListScreen() {
   const { filters, setFilter, setFilters, resetFilters } = useTableFilters(
     DEFAULT_PRODUCT_FILTERS
   );
+
+  const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
 
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] =
@@ -56,15 +62,27 @@ export function ProductsListScreen() {
     setFilters(updated);
   };
 
-  const handleSaveProduct = (
-    _productData: Omit<AdminProductListItem, "id" | "createdAt">
-  ) => {
-    toast.info("Tính năng tạo/sửa sản phẩm đang được kết nối API", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    setIsAddDrawerOpen(false);
-    setEditingProduct(null);
+  const handleSaveProduct = async (productData: CreateAdminProductDto) => {
+    try {
+      if (editingProduct) {
+        toast.info("Tính năng chỉnh sửa sản phẩm sẽ được cập nhật tiếp theo.", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+        setIsAddDrawerOpen(false);
+        setEditingProduct(null);
+      } else {
+        await createProduct(productData).unwrap();
+        toast.success("Tạo sản phẩm mới thành công!");
+        setIsAddDrawerOpen(false);
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Có lỗi xảy ra khi tạo sản phẩm."
+      );
+    }
   };
 
   const handleUpdateStock = (_productId: string, _newStock: number) => {
@@ -107,7 +125,6 @@ export function ProductsListScreen() {
 
   return (
     <div className="space-y-5">
-      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-text-highlight tracking-tight">
@@ -130,14 +147,12 @@ export function ProductsListScreen() {
         </button>
       </div>
 
-      {/* Filter Bar */}
       <ProductFilterBar
         filters={filters}
         onFilterChange={handleFilterChange}
         onResetFilter={resetFilters}
       />
 
-      {/* Product Table */}
       <ProductTable
         products={products}
         totalItems={totalItems}
@@ -155,15 +170,15 @@ export function ProductsListScreen() {
         onEditProduct={(product) => setEditingProduct(product)}
       />
 
-      {/* Shared Product Drawer Form for Add & Edit */}
       <ProductDrawerForm
         isOpen={isAddDrawerOpen || Boolean(editingProduct)}
         initialData={editingProduct ? (editingProduct as any) : null}
-        onSave={handleSaveProduct as any}
+        onSave={handleSaveProduct}
         onClose={() => {
           setIsAddDrawerOpen(false);
           setEditingProduct(null);
         }}
+        isLoading={isCreating}
       />
 
       {/* Confirm Modals */}

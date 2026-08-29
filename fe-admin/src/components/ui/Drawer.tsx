@@ -51,12 +51,27 @@ export function Drawer({
         children,
         footer,
       });
+    }
+  }, [isOpen, title, description, children, footer]);
+  useEffect(() => {
+    if (isOpen) {
       setMounted(true);
 
-      // Default to 1/3 window width (min 380px, max 85% of screen)
       if (typeof window !== "undefined") {
-        const initialThirdWidth = Math.max(400, Math.floor(window.innerWidth / 3));
-        setDrawerWidth(initialThirdWidth);
+        const windowWidth = window.innerWidth;
+        let initialWidth = Math.max(400, Math.floor(windowWidth / 3));
+        if (size === "half") {
+          initialWidth = Math.max(520, Math.floor(windowWidth * 0.5));
+        } else if (size === "sm") {
+          initialWidth = Math.min(420, Math.floor(windowWidth * 0.9));
+        } else if (size === "md") {
+          initialWidth = Math.min(540, Math.floor(windowWidth * 0.9));
+        } else if (size === "lg") {
+          initialWidth = Math.min(680, Math.floor(windowWidth * 0.9));
+        } else if (size === "full") {
+          initialWidth = Math.floor(windowWidth * 0.95);
+        }
+        setDrawerWidth((prev) => prev ?? initialWidth);
       }
 
       const timer = setTimeout(() => setAnimateIn(true), 10);
@@ -71,7 +86,7 @@ export function Drawer({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, title, description, children, footer]);
+  }, [isOpen, size]);
 
   // ESC Key listener
   useEffect(() => {
@@ -126,10 +141,10 @@ export function Drawer({
 
   if (!mounted) return null;
 
-  const currentTitle = activeContent.title;
-  const currentDescription = activeContent.description;
-  const currentChildren = activeContent.children;
-  const currentFooter = activeContent.footer;
+  const currentTitle = isOpen ? title : activeContent.title;
+  const currentDescription = isOpen ? description : activeContent.description;
+  const currentChildren = isOpen ? children : activeContent.children;
+  const currentFooter = isOpen ? footer : activeContent.footer;
 
   const positionClasses = {
     right: {

@@ -51,3 +51,30 @@ export type AdminProductListQueryDto = {
   statuses?: ProductStatus[];
   sort?: AdminProductSortOption;
 };
+
+export type ProductHighlightType = "HOT_PRODUCT" | "TODAY_DEAL" | "HOT_TIKTOK";
+
+export type CreateProductImageInput = {
+  url: string;
+  publicId?: string | null;
+  altText?: string | null;
+  displayOrder?: number;
+  isThumbnail?: boolean;
+};
+
+export type CreateAdminProductDto = {
+  name: string;
+  slug: string;
+  categoryId: string;
+  originalPrice: number;
+  salePrice?: number | null;
+  stockQuantity: number;
+  status: ProductStatus;
+  highlightType?: ProductHighlightType | null;
+  shortDescription?: string | null;
+  descriptionHtml?: string | null;
+  careInstructionHtml?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  images: CreateProductImageInput[] | { url: string; isThumbnail?: boolean }[];
+};

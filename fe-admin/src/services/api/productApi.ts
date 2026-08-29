@@ -1,7 +1,9 @@
 import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
 import type {
+  AdminProductListItem,
   AdminProductListQueryDto,
   AdminProductListResponse,
+  CreateAdminProductDto,
 } from "@/types/product.type";
 
 export const productApi = baseApi.injectEndpoints({
@@ -17,7 +19,19 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<AdminProductListResponse>,
       providesTags: ["Product"],
     }),
+    createProduct: builder.mutation<
+      AdminProductListItem,
+      CreateAdminProductDto
+    >({
+      query: (body) => ({
+        url: "/admin/products",
+        method: "POST",
+        body,
+      }),
+      transformResponse: unwrapApiResponse<AdminProductListItem>,
+      invalidatesTags: ["Product"],
+    }),
   }),
 });
 
-export const { useListProductsQuery } = productApi;
+export const { useListProductsQuery, useCreateProductMutation } = productApi;

@@ -4,7 +4,11 @@ import { uploadController } from "@/controllers/admin/uploadController.js";
 import { adminUploadImageQueryDto } from "@/dto/admin/uploadDto.js";
 import { adminAuthMiddleware } from "@/middlewares/adminAuthMiddleware.js";
 import { requireAdmin, roleMiddleware } from "@/middlewares/roleMiddleware.js";
-import { adminImageUploadMiddleware } from "@/middlewares/uploadMiddleware.js";
+import {
+  adminImageUploadMiddleware,
+  adminManyImagesUploadMiddleware,
+  MAX_ADMIN_IMAGE_FILES,
+} from "@/middlewares/uploadMiddleware.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
 
@@ -18,4 +22,11 @@ uploadRoutes.post(
   validateMiddleware(adminUploadImageQueryDto),
   adminImageUploadMiddleware.single("image"),
   asyncHandler(uploadController.uploadImage),
+);
+uploadRoutes.post(
+  "/images/many",
+  roleMiddleware(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF_CONTENT),
+  validateMiddleware(adminUploadImageQueryDto),
+  adminManyImagesUploadMiddleware.array("images", MAX_ADMIN_IMAGE_FILES),
+  asyncHandler(uploadController.uploadManyImages),
 );

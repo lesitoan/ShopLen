@@ -15,4 +15,11 @@ export type AdminUploadImageParams = {
   adminUser?: AdminSession;
 };
 
+export type AdminUploadManyImagesParams = {
+  files?: Express.Multer.File[];
+  target: AdminUploadImageTarget;
+  adminUser?: AdminSession;
+};
+
 export type AdminUploadImageResponse = UploadedImage;
+export type AdminUploadManyImagesResponse = UploadedImage[];

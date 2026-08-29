@@ -1,0 +1,76 @@
+import type {
+  AdminOrderDetail,
+  AdminOrderDetailRecord,
+} from "@/types/adminOrder.type.js";
+
+function toIsoString(date: Date | null) {
+  return date ? date.toISOString() : null;
+}
+
+export function toAdminOrderDetail(
+  order: AdminOrderDetailRecord,
+): AdminOrderDetail {
+  return {
+    id: order.id,
+    orderCode: order.orderCode,
+    customerId: order.customerId,
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    customerEmail: order.customerEmail,
+    shippingAddress: order.shippingAddress,
+    shippingProvince: order.shippingProvince,
+    shippingDistrict: order.shippingDistrict,
+    shippingWard: order.shippingWard,
+    customerNote: order.customerNote,
+    adminNotes: order.adminNotes,
+    subtotal: order.subtotal,
+    shippingFee: order.shippingFee,
+    discountAmount: order.discountAmount,
+    pointsDiscount: order.pointsDiscount,
+    totalAmount: order.totalAmount,
+    usedPoints: order.usedPoints,
+    earnedPoints: order.earnedPoints,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    expiresAt: order.expiresAt.toISOString(),
+    paidAt: toIsoString(order.paidAt),
+    cancelledAt: toIsoString(order.cancelledAt),
+    cancelReason: order.cancelReason,
+    cancellationRequestedAt: toIsoString(order.cancellationRequestedAt),
+    cancellationRequestedFrom: order.cancellationRequestedFrom,
+    cancellationRequestReason: order.cancellationRequestReason,
+    shippingUnit: order.shippingUnit,
+    trackingCode: order.trackingCode,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    customer: order.customer,
+    items: order.items.map((item) => ({
+      id: item.id,
+      productId: item.productId,
+      unitPrice: item.unitPrice,
+      quantity: item.quantity,
+      totalPrice: item.totalPrice,
+      productSnapshot: item.productSnapshot,
+      createdAt: item.createdAt.toISOString(),
+    })),
+    payments: order.payments.map((payment) => ({
+      id: payment.id,
+      provider: payment.provider,
+      method: payment.method,
+      bankName: payment.bankName,
+      bankBin: payment.bankBin,
+      accountNo: payment.accountNo,
+      accountName: payment.accountName,
+      amount: payment.amount,
+      transferContent: payment.transferContent,
+      qrImageUrl: payment.qrImageUrl,
+      transactionRef: payment.transactionRef,
+      isMatched: payment.isMatched,
+      status: payment.status,
+      paidAt: toIsoString(payment.paidAt),
+      createdAt: payment.createdAt.toISOString(),
+      updatedAt: payment.updatedAt.toISOString(),
+    })),
+  };
+}

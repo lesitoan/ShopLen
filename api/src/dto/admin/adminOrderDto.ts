@@ -44,6 +44,29 @@ export const adminOrderListQueryDto = z.object({
     ),
 });
 
+export const adminOrderParamsDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+});
+
+export const updateAdminOrderStatusDto = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+  body: z.object({
+    orderStatus: orderStatusDto,
+    cancelReason: z.string().trim().min(1).max(1000).optional(),
+    adminNotes: z.string().trim().max(1000).optional(),
+    shippingUnit: z.string().trim().min(1).max(120).optional(),
+    trackingCode: z.string().trim().min(1).max(120).optional(),
+  }),
+});
+
 export type AdminOrderListQueryDto = z.infer<
   typeof adminOrderListQueryDto
 >["query"];
+
+export type UpdateAdminOrderStatusDto = z.infer<
+  typeof updateAdminOrderStatusDto
+>["body"];

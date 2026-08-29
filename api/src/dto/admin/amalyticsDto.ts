@@ -32,6 +32,40 @@ export const dashboardRevenueQueryDto = z.object({
     ),
 });
 
+export const topSellingProductsQueryDto = z.object({
+  query: z
+    .object({
+      limit: z.coerce.number().int().min(1).max(50).default(5),
+      startDate: z.string().date().optional(),
+      endDate: z.string().date().optional(),
+    })
+    .refine(
+      (value) =>
+        !value.startDate ||
+        !value.endDate ||
+        value.startDate <= value.endDate,
+      {
+        message: "startDate phải nhỏ hơn hoặc bằng endDate.",
+        path: ["endDate"],
+      },
+    ),
+});
+
+export const lowStockProductsQueryDto = z.object({
+  query: z.object({
+    threshold: z.coerce.number().int().min(0).max(999).default(5),
+    limit: z.coerce.number().int().min(1).max(50).default(5),
+  }),
+});
+
 export type DashboardRevenueQueryDto = z.infer<
   typeof dashboardRevenueQueryDto
+>["query"];
+
+export type TopSellingProductsQueryDto = z.infer<
+  typeof topSellingProductsQueryDto
+>["query"];
+
+export type LowStockProductsQueryDto = z.infer<
+  typeof lowStockProductsQueryDto
 >["query"];

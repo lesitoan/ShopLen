@@ -1,4 +1,5 @@
 import type { PaginationMeta } from "@/types/api.type";
+import type { AdminOrderListItem } from "@/types/order.type";
 
 export type CustomerStatus = "ACTIVE" | "LOCKED";
 
@@ -28,6 +29,10 @@ export type AdminCustomerListItem = {
 export type AdminCustomerListResponse = {
   items: AdminCustomerListItem[];
   pagination: PaginationMeta;
+};
+
+export type AdminCustomerDetail = AdminCustomerListItem & {
+  orders: AdminOrderListItem[];
 };
 
 export type AdminCustomerListQueryDto = {

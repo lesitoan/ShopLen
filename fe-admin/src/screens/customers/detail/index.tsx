@@ -2,87 +2,96 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import { Modal } from "@/components/ui/Modal";
-import { MOCK_CUSTOMERS_DATA, CustomerListItem } from "../list/constants";
+import { Loading } from "@/components/ui/Loading";
 import {
-  MOCK_CUSTOMER_ORDERS,
-  MOCK_CUSTOMER_POINTS_HISTORY,
-  MOCK_CUSTOMER_ADMIN_NOTES,
-  CustomerAdminNoteItem,
-} from "./constants";
+  useGetCustomerDetailQuery,
+  useUpdateCustomerStatusMutation,
+} from "@/services/api/customerApi";
+import type { CustomerStatus } from "@/types/customer.type";
 import { CustomerDetailHeader } from "./components/CustomerDetailHeader";
 import { CustomerProfileCard } from "./components/CustomerProfileCard";
 import { CustomerTabsPanel } from "./components/CustomerTabsPanel";
-import { AddPointsModal } from "./components/AddPointsModal";
 
 interface CustomerDetailScreenProps {
   customerId: string;
 }
 
 export function CustomerDetailScreen({ customerId }: CustomerDetailScreenProps) {
-  const [customer, setCustomer] = useState<CustomerListItem | undefined>(() => {
-    return MOCK_CUSTOMERS_DATA.find((c) => c.id === customerId) || MOCK_CUSTOMERS_DATA[0];
-  });
+  const {
+    data: customer,
+    isLoading,
+    isError,
+  } = useGetCustomerDetailQuery(customerId);
 
-  const [isAddPointsModalOpen, setIsAddPointsModalOpen] = useState(false);
-  const [pointsAmount, setPointsAmount] = useState<number>(50);
-  const [pointsNote, setPointsNote] = useState<string>("Tặng điểm sự kiện sinh nhật khách hàng");
+  const [updateCustomerStatus, { isLoading: isUpdatingStatus }] =
+    useUpdateCustomerStatusMutation();
 
   const [isToggleLockModalOpen, setIsToggleLockModalOpen] = useState(false);
 
-  const [notesList, setNotesList] = useState<CustomerAdminNoteItem[]>(MOCK_CUSTOMER_ADMIN_NOTES);
-  const [newNoteText, setNewNoteText] = useState("");
+  const handleAddPoints = () => {
+    toast.info("Tính năng đang phát triển");
+  };
 
-  if (!customer) {
+  const handleConfirmToggleLockStatus = async () => {
+    if (!customer) return;
+    const nextStatus: CustomerStatus =
+      customer.status === "ACTIVE" ? "LOCKED" : "ACTIVE";
+
+    try {
+      await updateCustomerStatus({
+        id: customer.id,
+        body: { status: nextStatus },
+      }).unwrap();
+
+      toast.success(
+        nextStatus === "ACTIVE"
+          ? "Mở khóa tài khoản khách hàng thành công."
+          : "Đã tạm khóa tài khoản khách hàng."
+      );
+      setIsToggleLockModalOpen(false);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Không thể cập nhật trạng thái khách hàng."
+      );
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="p-8 text-center text-text-muted">
-        Không tìm thấy thông tin khách hàng.{" "}
-        <Link href="/customers" className="text-primary hover:underline font-semibold">
-          Quay lại danh sách
-        </Link>
+      <div className="py-20 flex flex-col items-center justify-center gap-3">
+        <Loading size="lg" />
+        <p className="text-xs text-text-muted">Đang tải thông tin khách hàng...</p>
       </div>
     );
   }
 
-  const handleConfirmAddPoints = () => {
-    setCustomer((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        rewardPoints: (prev.rewardPoints ?? 0) + pointsAmount,
-      };
-    });
-    setIsAddPointsModalOpen(false);
-  };
+  if (!customer || isError) {
+    return (
+      <div className="p-8 text-center text-text-muted space-y-3">
+        <p>Không tìm thấy thông tin khách hàng.</p>
+        <div>
+          <Link
+            href="/customers"
+            className="text-primary hover:underline font-semibold text-xs"
+          >
+            Quay lại danh sách khách hàng
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-  const handleConfirmToggleLockStatus = () => {
-    setCustomer((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        status: prev.status === "ACTIVE" ? "LOCKED" : "ACTIVE",
-      };
-    });
-    setIsToggleLockModalOpen(false);
-  };
-
-  const handleAddNote = () => {
-    if (!newNoteText.trim()) return;
-    const newNote: CustomerAdminNoteItem = {
-      id: `note_${Date.now()}`,
-      author: "Quản trị viên",
-      createdAt: new Date().toLocaleString("vi-VN"),
-      content: newNoteText.trim(),
-    };
-    setNotesList((prev) => [newNote, ...prev]);
-    setNewNoteText("");
-  };
+  const displayName = customer.fullName || customer.name || "Khách hàng";
 
   return (
     <div className="space-y-6">
       <CustomerDetailHeader
         customer={customer}
-        onOpenAddPointsModal={() => setIsAddPointsModalOpen(true)}
+        onAddPoints={handleAddPoints}
         onOpenToggleLockModal={() => setIsToggleLockModalOpen(true)}
       />
 
@@ -91,30 +100,19 @@ export function CustomerDetailScreen({ customerId }: CustomerDetailScreenProps) 
 
         <div className="lg:col-span-2">
           <CustomerTabsPanel
-            orders={MOCK_CUSTOMER_ORDERS}
-            pointsHistory={MOCK_CUSTOMER_POINTS_HISTORY}
-            notes={notesList}
-            newNoteText={newNoteText}
-            onNoteTextChange={setNewNoteText}
-            onAddNote={handleAddNote}
+            orders={customer.orders || []}
+            pointsHistory={[]}
           />
         </div>
       </div>
 
-      <AddPointsModal
-        isOpen={isAddPointsModalOpen}
-        onClose={() => setIsAddPointsModalOpen(false)}
-        onConfirm={handleConfirmAddPoints}
-        pointsAmount={pointsAmount}
-        onPointsAmountChange={setPointsAmount}
-        pointsNote={pointsNote}
-        onPointsNoteChange={setPointsNote}
-      />
-
       <Modal
         isOpen={isToggleLockModalOpen}
-        onClose={() => setIsToggleLockModalOpen(false)}
+        onClose={() => {
+          if (!isUpdatingStatus) setIsToggleLockModalOpen(false);
+        }}
         onConfirm={handleConfirmToggleLockStatus}
+        isLoading={isUpdatingStatus}
         type={customer.status === "ACTIVE" ? "DANGER" : "CONFIRM"}
         title={
           customer.status === "ACTIVE"
@@ -123,8 +121,8 @@ export function CustomerDetailScreen({ customerId }: CustomerDetailScreenProps) 
         }
         description={
           customer.status === "ACTIVE"
-            ? `Bạn có chắc chắn muốn tạm khóa tài khoản của khách hàng "${customer.name}" (${customer.code}) không? Khách hàng sẽ không thể đăng nhập hoặc đặt mua trên website.`
-            : `Bạn có chắc chắn muốn mở khóa tài khoản cho khách hàng "${customer.name}" không?`
+            ? `Bạn có chắc chắn muốn tạm khóa tài khoản của khách hàng "${displayName}" (${customer.code}) không? Khách hàng sẽ không thể đăng nhập hoặc đặt mua trên website.`
+            : `Bạn có chắc chắn muốn mở khóa tài khoản cho khách hàng "${displayName}" không?`
         }
         confirmText={
           customer.status === "ACTIVE" ? "Khóa tài khoản" : "Mở khóa tài khoản"

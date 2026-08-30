@@ -1,5 +1,6 @@
 import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
 import type {
+  AdminCustomerDetail,
   AdminCustomerListItem,
   AdminCustomerListQueryDto,
   AdminCustomerListResponse,
@@ -19,6 +20,13 @@ export const customerApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<AdminCustomerListResponse>,
       providesTags: ["Customer"],
     }),
+    getCustomerDetail: builder.query<AdminCustomerDetail, string>({
+      query: (id) => ({
+        url: `/admin/customers/${id}`,
+      }),
+      transformResponse: unwrapApiResponse<AdminCustomerDetail>,
+      providesTags: (_result, _error, id) => [{ type: "Customer", id }],
+    }),
     updateCustomerStatus: builder.mutation<
       AdminCustomerListItem,
       { id: string; body: UpdateAdminCustomerStatusDto }
@@ -36,5 +44,6 @@ export const customerApi = baseApi.injectEndpoints({
 
 export const {
   useListCustomersQuery,
+  useGetCustomerDetailQuery,
   useUpdateCustomerStatusMutation,
 } = customerApi;

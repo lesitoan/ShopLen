@@ -5,19 +5,21 @@ import Link from "next/link";
 import { ArrowLeft, Lock, Unlock, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { CustomerListItem } from "../../list/constants";
+import type { AdminCustomerListItem } from "@/types/customer.type";
 
 interface CustomerDetailHeaderProps {
-  customer: CustomerListItem;
-  onOpenAddPointsModal: () => void;
+  customer: AdminCustomerListItem & { name?: string };
+  onAddPoints: () => void;
   onOpenToggleLockModal: () => void;
 }
 
 export function CustomerDetailHeader({
   customer,
-  onOpenAddPointsModal,
+  onAddPoints,
   onOpenToggleLockModal,
 }: CustomerDetailHeaderProps) {
+  const displayName = customer.fullName || customer.name || "Khách hàng";
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center gap-3">
@@ -30,8 +32,11 @@ export function CustomerDetailHeader({
         </Link>
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-text-highlight tracking-tight" title={customer.name}>
-              {customer.name}
+            <h1
+              className="text-xl font-bold text-text-highlight tracking-tight"
+              title={displayName}
+            >
+              {displayName}
             </h1>
             <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
               {customer.code}
@@ -57,7 +62,7 @@ export function CustomerDetailHeader({
           variant="outline"
           size="sm"
           leftIcon={<PlusCircle className="w-4 h-4" />}
-          onClick={onOpenAddPointsModal}
+          onClick={onAddPoints}
         >
           Cộng điểm thưởng
         </Button>
@@ -65,7 +70,13 @@ export function CustomerDetailHeader({
         <Button
           variant={customer.status === "ACTIVE" ? "danger" : "primary"}
           size="sm"
-          leftIcon={customer.status === "ACTIVE" ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+          leftIcon={
+            customer.status === "ACTIVE" ? (
+              <Lock className="w-4 h-4" />
+            ) : (
+              <Unlock className="w-4 h-4" />
+            )
+          }
           onClick={onOpenToggleLockModal}
         >
           {customer.status === "ACTIVE" ? "Khóa tài khoản" : "Mở khóa tài khoản"}

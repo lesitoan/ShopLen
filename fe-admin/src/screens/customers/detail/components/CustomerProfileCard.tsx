@@ -2,20 +2,22 @@
 
 import React from "react";
 import Image from "next/image";
-import { User, Phone, Mail, MapPin, Calendar, CreditCard, ShoppingBag, Award } from "lucide-react";
-import { CustomerListItem } from "../../list/constants";
+import { User, Phone, Mail, MapPin, Calendar } from "lucide-react";
+import type { AdminCustomerListItem } from "@/types/customer.type";
 
 interface CustomerProfileCardProps {
-  customer: CustomerListItem;
+  customer: AdminCustomerListItem & { name?: string; joinedAt?: string };
 }
 
 export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(val);
-  };
+  const displayName = customer.fullName || customer.name || "Khách hàng";
+  const joinedDate = customer.createdAt
+    ? new Date(customer.createdAt).toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+    : customer.joinedAt || "—";
 
   return (
     <div className="space-y-6">
@@ -25,7 +27,7 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
             {customer.avatar ? (
               <Image
                 src={customer.avatar}
-                alt={customer.name}
+                alt={displayName}
                 fill
                 unoptimized
                 className="object-cover"
@@ -35,8 +37,11 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="font-bold text-text-highlight text-base truncate" title={customer.name}>
-              {customer.name}
+            <div
+              className="font-bold text-text-highlight text-base truncate"
+              title={displayName}
+            >
+              {displayName}
             </div>
             <div className="text-xs text-text-muted font-mono mt-0.5">
               {customer.code}
@@ -47,7 +52,9 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
         <div className="pt-4 border-t border-border space-y-3 text-xs">
           <div className="flex items-center gap-2.5 text-text-secondary">
             <Phone className="w-4 h-4 text-text-muted shrink-0" />
-            <span className="font-mono text-text-primary">{customer.phone}</span>
+            <span className="font-mono text-text-primary">
+              {customer.phone || "Chưa cập nhật SĐT"}
+            </span>
           </div>
           <div className="flex items-center gap-2.5 text-text-secondary">
             <Mail className="w-4 h-4 text-text-muted shrink-0" />
@@ -57,37 +64,11 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
           </div>
           <div className="flex items-start gap-2.5 text-text-secondary">
             <MapPin className="w-4 h-4 text-text-muted shrink-0 mt-0.5" />
-            <span>123 Nguyễn Văn Linh, Phường Tân Phong, Quận 7, TP. Hồ Chí Minh</span>
+            <span>Chưa có địa chỉ mặc định</span>
           </div>
           <div className="flex items-center gap-2.5 text-text-secondary">
             <Calendar className="w-4 h-4 text-text-muted shrink-0" />
-            <span>Ngày tham gia: {customer.joinedAt}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-surface p-3.5 rounded-xl border border-border text-center space-y-1">
-          <CreditCard className="w-4 h-4 text-primary mx-auto" />
-          <div className="text-[10px] text-text-muted">Tổng chi tiêu</div>
-          <div className="text-xs font-bold text-text-highlight">
-            {formatCurrency(customer.totalSpent ?? 0)}
-          </div>
-        </div>
-
-        <div className="bg-surface p-3.5 rounded-xl border border-border text-center space-y-1">
-          <ShoppingBag className="w-4 h-4 text-status-info mx-auto" />
-          <div className="text-[10px] text-text-muted">Đơn hoàn thành</div>
-          <div className="text-xs font-bold text-text-highlight">
-            {customer.totalOrders ?? 0} đơn
-          </div>
-        </div>
-
-        <div className="bg-surface p-3.5 rounded-xl border border-border text-center space-y-1">
-          <Award className="w-4 h-4 text-status-warning mx-auto" />
-          <div className="text-[10px] text-text-muted">Tích điểm</div>
-          <div className="text-xs font-bold text-primary">
-            {customer.rewardPoints ?? 0} đ
+            <span>Ngày tham gia: {joinedDate}</span>
           </div>
         </div>
       </div>

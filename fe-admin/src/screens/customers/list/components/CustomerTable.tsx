@@ -7,13 +7,17 @@ import { Eye, User } from "lucide-react";
 import { DataTable, Column } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Switch } from "@/components/ui/Switch";
-import { CustomerListItem, CustomerStatus } from "../constants";
+import type {
+  AdminCustomerListItem,
+  CustomerStatus,
+} from "@/types/customer.type";
 
 interface CustomerTableProps {
-  customers: CustomerListItem[];
+  customers: AdminCustomerListItem[];
   totalItems: number;
   page: number;
   pageSize: number;
+  isLoading?: boolean;
   onPageChange: (page: number) => void;
   onToggleStatus: (customerId: string, currentStatus: CustomerStatus) => void;
 }
@@ -23,83 +27,112 @@ export function CustomerTable({
   totalItems,
   page,
   pageSize,
+  isLoading = false,
   onPageChange,
   onToggleStatus,
 }: CustomerTableProps) {
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(val);
-  };
-
-  const columns: Column<CustomerListItem>[] = [
+  const columns: Column<AdminCustomerListItem>[] = [
     {
       key: "customerInfo",
       header: "Khách hàng",
       align: "left",
-      width: "35%",
-      render: (customer) => (
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-full bg-surface-muted border border-border overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-xs">
-            {customer.avatar ? (
-              <Image
-                src={customer.avatar}
-                alt={customer.name}
-                fill
-                unoptimized
-                className="object-cover"
-              />
-            ) : (
-              <User className="w-5 h-5 text-text-muted" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <Link
-              href={`/customers/${customer.id}`}
-              className="font-bold text-text-primary text-xs tracking-tight hover:text-primary transition-colors block truncate"
-            >
-              {customer.name}
-            </Link>
-            <div className="flex items-center gap-2 text-[11px] text-text-muted mt-0.5">
-              <span className="font-mono text-primary font-semibold">{customer.code}</span>
-              <span>• {customer.phone}</span>
-              <span className="truncate hidden sm:inline">• {customer.email}</span>
+      width: "25%",
+      render: (customer) => {
+        const displayName = customer.fullName || customer.name || "Khách hàng";
+        return (
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 rounded-full bg-surface-muted border border-border overflow-hidden shrink-0 flex items-center justify-center font-bold text-primary text-xs">
+              {customer.avatar ? (
+                <Image
+                  src={customer.avatar}
+                  alt={displayName}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              ) : (
+                <User className="w-5 h-5 text-text-muted" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/customers/${customer.id}`}
+                title={displayName}
+                className="font-bold text-text-primary text-xs tracking-tight hover:text-primary transition-colors block truncate"
+              >
+                {displayName}
+              </Link>
+              <div className="text-[11px] font-mono text-primary font-semibold mt-0.5">
+                {customer.code}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      key: "totalSpent",
-      header: "Tổng chi tiêu",
+      key: "email",
+      header: "Email",
       align: "left",
-      width: "18%",
+      width: "20%",
       render: (customer) => (
-        <div className="font-bold text-xs text-text-highlight">
-          {formatCurrency(customer.totalSpent)}
-        </div>
-      ),
-    },
-    {
-      key: "totalOrders",
-      header: "Đơn hàng",
-      align: "left",
-      width: "14%",
-      render: (customer) => (
-        <span className="text-xs font-semibold text-text-primary">
-          {customer.totalOrders} đơn
+        <span
+          className="text-xs text-text-secondary truncate block"
+          title={customer.email}
+        >
+          {customer.email}
         </span>
       ),
     },
     {
-      key: "rewardPoints",
-      header: "Tích điểm",
+      key: "phone",
+      header: "Số điện thoại",
       align: "left",
-      width: "15%",
+      width: "14%",
+      render: (customer) =>
+        customer.phone ? (
+          <span className="text-xs font-mono text-text-primary">
+            {customer.phone}
+          </span>
+        ) : (
+          <span className="text-xs text-text-muted italic">Chưa cập nhật</span>
+        ),
+    },
+    {
+      key: "loginSource",
+      header: "Nguồn login",
+      align: "left",
+      width: "14%",
+      render: (customer) => {
+        const sources: string[] = [];
+        if (customer.isManualLogin) sources.push("MANUAL");
+        if (customer.isGoogleLogin) sources.push("GOOGLE");
+
+        if (sources.length === 0) {
+          return <span className="text-xs text-text-muted italic">—</span>;
+        }
+
+        return (
+          <span className="text-xs font-mono font-medium text-text-secondary">
+            {sources.join(", ")}
+          </span>
+        );
+      },
+    },
+    {
+      key: "createdAt",
+      header: "Ngày tham gia",
+      align: "left",
+      width: "12%",
       render: (customer) => (
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
-          {customer.rewardPoints} đ
+        <span className="text-xs text-text-secondary">
+          {customer.createdAt
+            ? new Date(customer.createdAt).toLocaleDateString("vi-VN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "—"}
         </span>
       ),
     },
@@ -107,7 +140,7 @@ export function CustomerTable({
       key: "status",
       header: "Trạng thái",
       align: "left",
-      width: "13%",
+      width: "10%",
       render: (customer) =>
         customer.status === "ACTIVE" ? (
           <Badge variant="success" dot>
@@ -121,7 +154,7 @@ export function CustomerTable({
     },
     {
       key: "actions",
-      header: "Chi tiết",
+      header: "Hành động",
       align: "right",
       width: "5%",
       render: (customer) => (
@@ -149,6 +182,7 @@ export function CustomerTable({
       <DataTable
         columns={columns}
         data={customers}
+        isLoading={isLoading}
         keyExtractor={(customer) => customer.id}
         pagination={{
           currentPage: page,

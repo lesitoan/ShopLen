@@ -71,7 +71,7 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
           <CreditCard className="w-4 h-4 text-primary mx-auto" />
           <div className="text-[10px] text-text-muted">Tổng chi tiêu</div>
           <div className="text-xs font-bold text-text-highlight">
-            {formatCurrency(customer.totalSpent)}
+            {formatCurrency(customer.totalSpent ?? 0)}
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
           <ShoppingBag className="w-4 h-4 text-status-info mx-auto" />
           <div className="text-[10px] text-text-muted">Đơn hoàn thành</div>
           <div className="text-xs font-bold text-text-highlight">
-            {customer.totalOrders} đơn
+            {customer.totalOrders ?? 0} đơn
           </div>
         </div>
 
@@ -87,7 +87,7 @@ export function CustomerProfileCard({ customer }: CustomerProfileCardProps) {
           <Award className="w-4 h-4 text-status-warning mx-auto" />
           <div className="text-[10px] text-text-muted">Tích điểm</div>
           <div className="text-xs font-bold text-primary">
-            {customer.rewardPoints} đ
+            {customer.rewardPoints ?? 0} đ
           </div>
         </div>
       </div>

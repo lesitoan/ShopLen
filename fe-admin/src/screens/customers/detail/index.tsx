@@ -49,7 +49,7 @@ export function CustomerDetailScreen({ customerId }: CustomerDetailScreenProps) 
       if (!prev) return prev;
       return {
         ...prev,
-        rewardPoints: prev.rewardPoints + pointsAmount,
+        rewardPoints: (prev.rewardPoints ?? 0) + pointsAmount,
       };
     });
     setIsAddPointsModalOpen(false);

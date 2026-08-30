@@ -20,6 +20,7 @@ export function useTableFilters<TFilters extends Record<string, any>>(
   const searchParams = useSearchParams();
 
   const filters: TFilters = useMemo(() => {
+    if (!defaultFilters) return {} as TFilters;
     const result = { ...defaultFilters };
 
     Object.keys(defaultFilters).forEach((key) => {

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const adminUploadImageQueryDto = z.object({
   query: z.object({
-    target: z.enum(["CATEGORY", "PRODUCT", "BLOG"]),
+    target: z.enum(["CATEGORY", "PRODUCT", "BLOG", "USER_AVATAR"]),
   }),
 });
 

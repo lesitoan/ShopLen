@@ -2,7 +2,11 @@ import type { UserRole } from "@prisma/client";
 import type { AdminSession } from "@/types/adminAuth.type.js";
 import type { UploadedImage } from "@/types/cloudinary.type.js";
 
-export type AdminUploadImageTarget = "CATEGORY" | "PRODUCT" | "BLOG";
+export type AdminUploadImageTarget =
+  | "CATEGORY"
+  | "PRODUCT"
+  | "BLOG"
+  | "USER_AVATAR";
 
 export type AdminUploadImageConfig = {
   folderName: string;

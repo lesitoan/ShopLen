@@ -26,6 +26,10 @@ const ADMIN_UPLOAD_IMAGE_CONFIG: Record<
     folderName: "blog",
     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF_CONTENT],
   },
+  USER_AVATAR: {
+    folderName: "users/avatars",
+    allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+  },
 };
 
 export const uploadService = {

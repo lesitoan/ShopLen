@@ -14,9 +14,6 @@ export function StaffHeader({ onOpenPermissionMatrix, onAddStaff }: StaffHeaderP
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-primary/10 text-primary">
-            <Users className="w-5 h-5" />
-          </div>
           <h1 className="text-xl font-bold text-text-highlight tracking-tight">
             Quản Lý Nhân Viên &amp; Phân Quyền
           </h1>

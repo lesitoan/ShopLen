@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import debounce from "debounce";
 import {
   Search,
-  X,
   Users,
   ShieldCheck,
   ShieldAlert,
@@ -12,24 +12,42 @@ import {
   CircleDot,
   CheckCircle2,
   Lock,
+  RotateCcw,
 } from "lucide-react";
+import { Input } from "@/components/ui/Input";
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/DropdownMenu";
 import {
   StaffFilterState,
   StaffRoleFilter,
   StaffStatusFilter,
-  MOCK_ROLES,
 } from "../constants";
 
 interface StaffFilterBarProps {
   filters: StaffFilterState;
   onFilterChange: (newFilters: Partial<StaffFilterState>) => void;
+  onResetFilter?: () => void;
 }
 
 export function StaffFilterBar({
   filters,
   onFilterChange,
+  onResetFilter,
 }: StaffFilterBarProps) {
+  const currentSearch = filters.search ?? filters.searchQuery ?? "";
+  const currentRole = filters.role ?? filters.roleFilter ?? "ALL";
+  const currentStatus = filters.status ?? filters.statusFilter ?? "ALL";
+
+  const [searchTerm, setSearchTerm] = useState(currentSearch);
+
+  useEffect(() => {
+    setSearchTerm(currentSearch);
+  }, [currentSearch]);
+
+  const debouncedSearch = useMemo(
+    () => debounce((val: string) => onFilterChange({ search: val }), 500),
+    [onFilterChange]
+  );
+
   const roleLabels: Record<StaffRoleFilter, string> = {
     ALL: "Tất cả vai trò",
     SUPER_ADMIN: "Super Admin",
@@ -59,45 +77,59 @@ export function StaffFilterBar({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-3 bg-surface p-4 rounded-xl border border-border">
-      <div className="relative flex-1 min-w-[240px] max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-        <input
-          type="text"
-          value={filters.searchQuery}
-          onChange={(e) => onFilterChange({ searchQuery: e.target.value, page: 1 })}
-          placeholder="Tìm theo tên, mã NV, email, SĐT..."
-          className="w-full h-[38px] bg-surface-muted text-text-primary placeholder:text-text-muted text-xs rounded-md border border-border pl-9 pr-8 outline-none focus:border-primary transition-colors"
-        />
-        {filters.searchQuery && (
+    <div className="bg-surface p-4 rounded-xl border border-border space-y-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-1 flex-wrap items-center gap-3">
+          <div className="w-full sm:w-80">
+            <Input
+              placeholder="Tìm theo tên, email..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
+              onClear={() => {
+                setSearchTerm("");
+                onFilterChange({ search: "" });
+              }}
+              leftIcon={<Search className="w-4 h-4 text-text-muted" />}
+              className="h-[38px]"
+            />
+          </div>
+
+          <DropdownMenu
+            variant="surface"
+            triggerIcon={<Users className="w-3.5 h-3.5 text-primary" />}
+            label={roleLabels[currentRole]}
+            selectedKey={currentRole}
+            items={roleItems}
+            onSelect={(key) => onFilterChange({ role: key as StaffRoleFilter })}
+            width="w-48"
+          />
+
+          <DropdownMenu
+            variant="surface"
+            triggerIcon={<CircleDot className="w-3.5 h-3.5 text-primary" />}
+            label={statusLabels[currentStatus]}
+            selectedKey={currentStatus}
+            items={statusItems}
+            onSelect={(key) => onFilterChange({ status: key as StaffStatusFilter })}
+            width="w-48"
+          />
+        </div>
+
+        {onResetFilter && (
           <button
             type="button"
-            onClick={() => onFilterChange({ searchQuery: "", page: 1 })}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-0.5 rounded"
-            title="Xóa tìm kiếm"
+            onClick={onResetFilter}
+            className="h-[38px] px-3 rounded-md bg-surface-muted hover:bg-surface-hover text-text-secondary hover:text-text-primary border border-border transition-colors flex items-center gap-1.5 text-xs font-medium shrink-0 ml-auto cursor-pointer"
+            title="Đặt lại bộ lọc"
           >
-            <X className="w-3.5 h-3.5" />
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Đặt lại</span>
           </button>
         )}
       </div>
-
-      <DropdownMenu
-        variant="surface"
-        triggerIcon={<Users className="w-3.5 h-3.5" />}
-        label={roleLabels[filters.roleFilter]}
-        selectedKey={filters.roleFilter}
-        items={roleItems}
-        onSelect={(key) => onFilterChange({ roleFilter: key as StaffRoleFilter, page: 1 })}
-      />
-
-      <DropdownMenu
-        variant="surface"
-        triggerIcon={<CircleDot className="w-3.5 h-3.5" />}
-        label={statusLabels[filters.statusFilter]}
-        selectedKey={filters.statusFilter}
-        items={statusItems}
-        onSelect={(key) => onFilterChange({ statusFilter: key as StaffStatusFilter, page: 1 })}
-      />
     </div>
   );
 }

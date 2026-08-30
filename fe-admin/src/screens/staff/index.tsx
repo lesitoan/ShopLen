@@ -1,115 +1,149 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-
+import { toast } from "react-toastify";
 import { Modal } from "@/components/ui/Modal";
+import { useTableFilters } from "@/hooks/useTableFilters";
 import {
-  MOCK_STAFF_DATA,
-  StaffListItem,
-  StaffFilterState,
-} from "./constants";
+  useListStaffQuery,
+  useCreateStaffMutation,
+  useUpdateStaffMutation,
+  useDeleteStaffMutation,
+} from "@/services/api/staffApi";
+import type {
+  AdminUserItem,
+  AdminUserListQueryDto,
+} from "@/types/staff.type";
+import { DEFAULT_STAFF_FILTERS } from "./constants";
 import { StaffHeader } from "./components/StaffHeader";
 import { StaffFilterBar } from "./components/StaffFilterBar";
 import { StaffTable } from "./components/StaffTable";
 import { StaffDrawerForm } from "./components/StaffDrawerForm";
 import { PermissionMatrixModal } from "./components/PermissionMatrixModal";
+import { UpdatePasswordModal } from "./components/UpdatePasswordModal";
 
 export function StaffListScreen() {
-  const [staffList, setStaffList] = useState<StaffListItem[]>(MOCK_STAFF_DATA);
-
-  const [filters, setFilters] = useState<StaffFilterState>({
-    searchQuery: "",
-    roleFilter: "ALL",
-    statusFilter: "ALL",
-    page: 1,
-    pageSize: 10,
-  });
+  const { filters, setFilter, setFilters, resetFilters } = useTableFilters(
+    DEFAULT_STAFF_FILTERS
+  );
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingStaff, setEditingStaff] = useState<StaffListItem | null>(null);
-
+  const [editingStaff, setEditingStaff] = useState<AdminUserItem | null>(null);
   const [isPermissionMatrixOpen, setIsPermissionMatrixOpen] = useState(false);
 
-  const [deletingStaff, setDeletingStaff] = useState<StaffListItem | null>(null);
-  const [togglingStaff, setTogglingStaff] = useState<StaffListItem | null>(null);
+  const [deletingStaff, setDeletingStaff] = useState<AdminUserItem | null>(null);
+  const [togglingStaff, setTogglingStaff] = useState<AdminUserItem | null>(null);
+  const [passwordUpdatingStaff, setPasswordUpdatingStaff] =
+    useState<AdminUserItem | null>(null);
 
-  const handleFilterChange = (newFilters: Partial<StaffFilterState>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
+  const queryDto: AdminUserListQueryDto = useMemo(() => {
+    return {
+      page: filters.page,
+      limit: filters.limit,
+      search: (filters.search || "").trim() || undefined,
+      role: filters.role === "ALL" ? undefined : filters.role,
+      status: filters.status === "ALL" ? undefined : filters.status,
+    };
+  }, [filters]);
 
-  const filteredStaff = useMemo(() => {
-    return staffList.filter((item) => {
-      const matchesSearch =
-        !filters.searchQuery ||
-        item.name.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        item.code.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        item.email.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        item.phone.includes(filters.searchQuery);
+  const { data, isLoading, isFetching } = useListStaffQuery(queryDto);
 
-      const matchesRole =
-        filters.roleFilter === "ALL" || item.role === filters.roleFilter;
+  const [createStaff, { isLoading: isCreating }] = useCreateStaffMutation();
+  const [updateStaff, { isLoading: isUpdating }] = useUpdateStaffMutation();
+  const [deleteStaff, { isLoading: isDeleting }] = useDeleteStaffMutation();
 
-      const matchesStatus =
-        filters.statusFilter === "ALL" || item.status === filters.statusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [staffList, filters]);
+  const staffList = data?.items || [];
+  const totalCount = data?.pagination.total || 0;
 
   const handleOpenCreateDrawer = () => {
     setEditingStaff(null);
     setIsDrawerOpen(true);
   };
 
-  const handleOpenEditDrawer = (staff: StaffListItem) => {
+  const handleOpenEditDrawer = (staff: AdminUserItem) => {
     setEditingStaff(staff);
     setIsDrawerOpen(true);
   };
 
-  const handleSaveStaff = (staffData: Partial<StaffListItem>) => {
-    if (editingStaff) {
-      setStaffList((prev) =>
-        prev.map((item) =>
-          item.id === editingStaff.id
-            ? { ...item, ...staffData }
-            : item
-        )
+  const handleSaveStaff = async (staffData: Partial<AdminUserItem>) => {
+    try {
+      if (editingStaff) {
+        await updateStaff({
+          id: editingStaff.id,
+          body: {
+            fullName: staffData.fullName || staffData.name,
+            phone: staffData.phone ? staffData.phone.trim() : null,
+            role:
+              staffData.role !== "SUPER_ADMIN"
+                ? (staffData.role as "ADMIN" | "STAFF_ORDER" | "STAFF_CONTENT")
+                : undefined,
+            status: staffData.status,
+            avatar: staffData.avatar,
+          },
+        }).unwrap();
+        toast.success("Cập nhật thông tin nhân viên thành công.");
+      } else {
+        await createStaff({
+          fullName: staffData.fullName || staffData.name || "",
+          email: staffData.email || "",
+          phone: staffData.phone ? staffData.phone.trim() : null,
+          pw: staffData.pw || "Password@123",
+          pwConfirm: staffData.pwConfirm || staffData.pw || "Password@123",
+          role: (staffData.role && staffData.role !== "SUPER_ADMIN"
+            ? staffData.role
+            : "STAFF_ORDER") as "ADMIN" | "STAFF_ORDER" | "STAFF_CONTENT",
+          avatar: staffData.avatar,
+        }).unwrap();
+        toast.success("Tạo nhân viên mới thành công.");
+      }
+      setIsDrawerOpen(false);
+      setEditingStaff(null);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Có lỗi xảy ra khi lưu nhân viên."
       );
-    } else {
-      const newStaff: StaffListItem = {
-        id: `staff_${Date.now()}`,
-        code: `NV-00${staffList.length + 1}`,
-        name: staffData.name || "",
-        email: staffData.email || "",
-        phone: staffData.phone || "",
-        role: staffData.role || "STAFF_ORDER",
-        roleName: staffData.roleName || "CTV check đơn",
-        status: staffData.status || "ACTIVE",
-        avatar: staffData.avatar,
-        lastLoginAt: "Chưa đăng nhập",
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      setStaffList((prev) => [newStaff, ...prev]);
     }
-    setIsDrawerOpen(false);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deletingStaff) return;
-    setStaffList((prev) => prev.filter((item) => item.id !== deletingStaff.id));
-    setDeletingStaff(null);
+    try {
+      await deleteStaff(deletingStaff.id).unwrap();
+      toast.success("Xóa tài khoản nhân viên thành công.");
+      setDeletingStaff(null);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Không thể xóa nhân viên này."
+      );
+    }
   };
 
-  const handleConfirmToggleStatus = () => {
+  const handleConfirmToggleStatus = async () => {
     if (!togglingStaff) return;
-    setStaffList((prev) =>
-      prev.map((item) =>
-        item.id === togglingStaff.id
-          ? { ...item, status: item.status === "ACTIVE" ? "LOCKED" : "ACTIVE" }
-          : item
-      )
-    );
-    setTogglingStaff(null);
+    try {
+      const nextStatus =
+        togglingStaff.status === "ACTIVE" ? "LOCKED" : "ACTIVE";
+      await updateStaff({
+        id: togglingStaff.id,
+        body: { status: nextStatus },
+      }).unwrap();
+      toast.success(
+        nextStatus === "ACTIVE"
+          ? "Mở khóa tài khoản nhân viên thành công."
+          : "Đã tạm khóa tài khoản nhân viên."
+      );
+      setTogglingStaff(null);
+    } catch (error: any) {
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Không thể cập nhật trạng thái nhân viên."
+      );
+    }
   };
 
   return (
@@ -121,13 +155,20 @@ export function StaffListScreen() {
 
       <StaffFilterBar
         filters={filters}
-        onFilterChange={handleFilterChange}
+        onFilterChange={setFilters}
+        onResetFilter={resetFilters}
       />
 
       <StaffTable
-        data={filteredStaff}
+        data={staffList}
+        totalItems={totalCount}
+        page={filters.page}
+        pageSize={filters.limit}
+        isLoading={isLoading || isFetching}
+        onPageChange={(page) => setFilter("page", page)}
         onEdit={handleOpenEditDrawer}
         onDelete={(staff) => setDeletingStaff(staff)}
+        onUpdatePassword={(staff) => setPasswordUpdatingStaff(staff)}
         onToggleStatus={(id) => {
           const target = staffList.find((s) => s.id === id);
           if (target) setTogglingStaff(target);
@@ -137,9 +178,29 @@ export function StaffListScreen() {
 
       <StaffDrawerForm
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setEditingStaff(null);
+        }}
         onSubmit={handleSaveStaff}
-        editingStaff={editingStaff}
+        editingStaff={
+          editingStaff
+            ? {
+                ...editingStaff,
+                name: editingStaff.fullName || editingStaff.name || "",
+                roleName: "",
+                phone: editingStaff.phone || "",
+                avatar: editingStaff.avatar || undefined,
+                lastLoginAt: editingStaff.lastLoginAt || "",
+              }
+            : null
+        }
+      />
+
+      <UpdatePasswordModal
+        isOpen={!!passwordUpdatingStaff}
+        staff={passwordUpdatingStaff}
+        onClose={() => setPasswordUpdatingStaff(null)}
       />
 
       <PermissionMatrixModal
@@ -149,11 +210,16 @@ export function StaffListScreen() {
 
       <Modal
         isOpen={!!deletingStaff}
-        onClose={() => setDeletingStaff(null)}
+        onClose={() => {
+          if (!isDeleting) setDeletingStaff(null);
+        }}
         onConfirm={handleConfirmDelete}
+        isLoading={isDeleting}
         type="DANGER"
         title="Xóa tài khoản nhân viên"
-        description={`Bạn có chắc chắn muốn xóa tài khoản nhân viên "${deletingStaff?.name}" (${deletingStaff?.code}) không? Thao tác này không thể hoàn tác.`}
+        description={`Bạn có chắc chắn muốn xóa tài khoản nhân viên "${
+          deletingStaff?.fullName || deletingStaff?.name
+        }" (${deletingStaff?.code}) không? Thao tác này không thể hoàn tác.`}
         confirmText="Xóa nhân viên"
         cancelText="Bỏ qua"
         size="sm"
@@ -161,8 +227,11 @@ export function StaffListScreen() {
 
       <Modal
         isOpen={!!togglingStaff}
-        onClose={() => setTogglingStaff(null)}
+        onClose={() => {
+          if (!isUpdating) setTogglingStaff(null);
+        }}
         onConfirm={handleConfirmToggleStatus}
+        isLoading={isUpdating}
         type={togglingStaff?.status === "ACTIVE" ? "DANGER" : "CONFIRM"}
         title={
           togglingStaff?.status === "ACTIVE"
@@ -171,8 +240,12 @@ export function StaffListScreen() {
         }
         description={
           togglingStaff?.status === "ACTIVE"
-            ? `Bạn có chắc chắn muốn tạm khóa tài khoản của nhân viên "${togglingStaff?.name}" không? Nhân viên sẽ bị ngắt phiên đăng nhập.`
-            : `Mở khóa tài khoản cho nhân viên "${togglingStaff?.name}" truy cập hệ thống?`
+            ? `Bạn có chắc chắn muốn tạm khóa tài khoản của nhân viên "${
+                togglingStaff?.fullName || togglingStaff?.name
+              }" không? Nhân viên sẽ bị ngắt phiên đăng nhập.`
+            : `Mở khóa tài khoản cho nhân viên "${
+                togglingStaff?.fullName || togglingStaff?.name
+              }" truy cập hệ thống?`
         }
         confirmText={
           togglingStaff?.status === "ACTIVE" ? "Tạm khóa" : "Mở khóa"

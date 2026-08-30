@@ -8,23 +8,45 @@ export interface StaffListItem {
   id: string;
   code: string;
   name: string;
+  fullName?: string;
   email: string;
-  phone: string;
-  avatar?: string;
+  phone?: string | null;
+  avatar?: string | null;
   role: StaffRole;
   roleName: string;
   status: StaffStatus;
   lastLoginAt: string;
   createdAt: string;
+  pw?: string;
+  pwConfirm?: string;
 }
 
 export interface StaffFilterState {
-  searchQuery: string;
-  roleFilter: StaffRoleFilter;
-  statusFilter: StaffStatusFilter;
   page: number;
-  pageSize: number;
+  limit: number;
+  search: string;
+  role: StaffRoleFilter;
+  status: StaffStatusFilter;
+  searchQuery?: string;
+  roleFilter?: StaffRoleFilter;
+  statusFilter?: StaffStatusFilter;
+  pageSize?: number;
 }
+
+export const DEFAULT_STAFF_FILTERS: StaffFilterState = {
+  page: 1,
+  limit: 10,
+  search: "",
+  role: "ALL",
+  status: "ALL",
+};
+
+export const ROLE_NAME_MAP: Record<StaffRole, string> = {
+  SUPER_ADMIN: "Super Admin",
+  ADMIN: "Admin",
+  STAFF_ORDER: "CTV check đơn",
+  STAFF_CONTENT: "CTV đăng bài",
+};
 
 export interface RolePermissionGroup {
   groupName: string;
@@ -95,56 +117,3 @@ export const MOCK_PERMISSION_MATRIX: RolePermissionGroup[] = [
   },
 ];
 
-export const MOCK_STAFF_DATA: StaffListItem[] = [
-  {
-    id: "staff_01",
-    code: "NV-001",
-    name: "Kiều Như Ý",
-    email: "nhuy.kieu@tiemlennhakieu.vn",
-    phone: "0909123456",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    role: "SUPER_ADMIN",
-    roleName: "Super Admin",
-    status: "ACTIVE",
-    lastLoginAt: "Vừa xong",
-    createdAt: "2023-01-01",
-  },
-  {
-    id: "staff_02",
-    code: "NV-002",
-    name: "Trần Anh Tuấn",
-    email: "anhtuan.tran@tiemlennhakieu.vn",
-    phone: "0912345678",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    role: "ADMIN",
-    roleName: "Admin",
-    status: "ACTIVE",
-    lastLoginAt: "10 phút trước",
-    createdAt: "2023-06-15",
-  },
-  {
-    id: "staff_03",
-    code: "NV-003",
-    name: "Nguyễn Thu Hà",
-    email: "thuha.nguyen@tiemlennhakieu.vn",
-    phone: "0987654321",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    role: "STAFF_ORDER",
-    roleName: "CTV check đơn",
-    status: "ACTIVE",
-    lastLoginAt: "2 giờ trước",
-    createdAt: "2023-09-01",
-  },
-  {
-    id: "staff_04",
-    code: "NV-004",
-    name: "Phạm Hoàng Nam",
-    email: "hoangnam.pham@tiemlennhakieu.vn",
-    phone: "0978123987",
-    role: "STAFF_CONTENT",
-    roleName: "CTV đăng bài",
-    status: "ACTIVE",
-    lastLoginAt: "Hôm qua 15:30",
-    createdAt: "2023-11-20",
-  },
-];

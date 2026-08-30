@@ -1,6 +1,6 @@
 import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
 
-export type UploadTarget = "CATEGORY" | "PRODUCT" | "BLOG";
+export type UploadTarget = "CATEGORY" | "PRODUCT" | "BLOG" | "USER_AVATAR";
 
 export type UploadImageResponse = {
   url: string;

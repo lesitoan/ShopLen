@@ -142,6 +142,11 @@ export function LoginForm() {
         >
           {isLoggingIn ? "Đang xác thực..." : "Đăng nhập ngay"}
         </Button>
+
+        <div className="pt-2 text-center text-xs text-text-muted space-y-1">
+          <p>Tài khoản test: <span className="font-mono text-text-secondary">admin@gmail.com</span></p>
+          <p>Mật khẩu: <span className="font-mono text-text-secondary">11111111</span></p>
+        </div>
       </form>
     </Card>
   );

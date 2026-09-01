@@ -14,9 +14,6 @@ export function LoginScreen() {
         <div className="w-full max-w-md space-y-6 relative z-10">
           <LoginForm />
 
-          <p className="text-center text-[11px] text-text-muted">
-            Tiệm Len Nhà Kiều Portal &copy; 2026. Tất cả các quyền được bảo lưu.
-          </p>
         </div>
       </div>
     </AuthGuard>

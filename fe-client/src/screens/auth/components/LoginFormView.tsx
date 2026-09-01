@@ -189,6 +189,11 @@ export default function LoginFormView({
         >
           Đăng nhập
         </Button>
+
+        <div className="pt-2 text-center text-[12.5px] text-text-secondary space-y-0.5">
+          <p>Tài khoản test: <span className="font-mono font-medium text-text-primary">demo@gmail.com</span></p>
+          <p>Mật khẩu: <span className="font-mono font-medium text-text-primary">11111111</span></p>
+        </div>
       </form>
     </div>
   );

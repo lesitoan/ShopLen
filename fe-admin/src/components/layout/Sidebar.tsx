@@ -44,15 +44,6 @@ export default function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
               className="flex items-center gap-2.5 overflow-hidden"
               title="Tiệm Len Nhà Kiều"
             >
-              <div className="w-8 h-8 rounded-lg overflow-hidden border border-primary/30 flex items-center justify-center shrink-0">
-                <Image
-                  src="/images/logo.png"
-                  alt="Tiệm Len Nhà Kiều Logo"
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-cover"
-                />
-              </div>
               <div className="flex flex-col min-w-0">
                 <span className="font-bold text-sm text-text-highlight truncate tracking-tight">
                   Tiệm Len Nhà Kiều

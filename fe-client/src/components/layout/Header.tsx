@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
+import { useLogoutMutation } from "@/services/api/authApi";
+import { clearAuthTokens } from "@/services/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuthState } from "@/store/slices/authSlice";
 import { baseApi } from "@/services/api/baseApi";
@@ -18,7 +19,8 @@ export default function Header() {
   const customer = useAppSelector((state) => state.auth.customer);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const isLoggedIn = isMounted && Boolean(customer || hasAuthTokens());
+  const isLoggedIn = isMounted && Boolean(customer);
+  const [logout] = useLogoutMutation();
 
   const {
     isOpen: isLogoutModalOpen,
@@ -50,13 +52,17 @@ export default function Header() {
     document.body.style.overflow = "";
   }, [pathname]);
 
-  const handleConfirmLogout = () => {
-    clearAuthTokens();
-    dispatch(clearAuthState());
-    dispatch(baseApi.util.resetApiState());
-    setIsMobileMenuOpen(false);
-    closeLogoutModal();
-    router.push("/");
+  const handleConfirmLogout = async () => {
+    try {
+      await logout().unwrap();
+    } finally {
+      clearAuthTokens();
+      dispatch(clearAuthState());
+      dispatch(baseApi.util.resetApiState());
+      setIsMobileMenuOpen(false);
+      closeLogoutModal();
+      router.push("/");
+    }
   };
 
   return (

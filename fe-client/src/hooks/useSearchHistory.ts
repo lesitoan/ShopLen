@@ -27,7 +27,6 @@ export function useSearchHistory() {
         }
       }
     } catch (error) {
-      console.error("Failed to load recent searches from localStorage", error);
     }
   }, []);
 
@@ -37,7 +36,6 @@ export function useSearchHistory() {
     try {
       localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(trimmed));
     } catch (error) {
-      console.error("Failed to save recent searches to localStorage", error);
     }
   }, []);
 
@@ -53,7 +51,6 @@ export function useSearchHistory() {
       try {
         localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
       } catch (error) {
-        console.error("Failed to save recent searches to localStorage", error);
       }
       return updated;
     });
@@ -92,7 +89,6 @@ export function useSearchHistory() {
         try {
           localStorage.setItem(RECENT_SEARCHES_STORAGE_KEY, JSON.stringify(updated));
         } catch (error) {
-          console.error("Failed to save recent searches to localStorage", error);
         }
         return updated;
       });

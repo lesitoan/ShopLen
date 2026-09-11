@@ -12,7 +12,8 @@ import Modal from "@/components/ui/Modal";
 import useModal from "@/hooks/useModal";
 import { ProfileTab } from "./types";
 import { MOCK_ORDERS, TAB_SLUG_MAP, SLUG_TO_TAB_MAP } from "./constants";
-import { clearAuthTokens, hasAuthTokens } from "@/services/authStorage";
+import { useLogoutMutation } from "@/services/api/authApi";
+import { clearAuthTokens } from "@/services/authStorage";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { clearAuthState } from "@/store/slices/authSlice";
 import UserProfileSkeleton from "@/components/skeletons/userProfile/UserProfileSkeleton";
@@ -22,7 +23,8 @@ export default function UserProfileScreen() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const customer = useAppSelector((state) => state.auth.customer);
-  const isAuthenticated = hasAuthTokens();
+  const isInitialized = useAppSelector((state) => state.auth.isInitialized);
+  const [logout] = useLogoutMutation();
 
   const {
     isOpen: isLogoutModalOpen,
@@ -41,10 +43,10 @@ export default function UserProfileScreen() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (!isAuthenticated) {
+    if (isInitialized && !customer) {
       router.push("/dang-nhap");
     }
-  }, [router, isAuthenticated]);
+  }, [router, isInitialized, customer]);
 
   useEffect(() => {
     if (tabParam && SLUG_TO_TAB_MAP[tabParam]) {
@@ -62,14 +64,18 @@ export default function UserProfileScreen() {
     }
   };
 
-  const handleConfirmLogout = () => {
-    clearAuthTokens();
-    dispatch(clearAuthState());
-    closeLogoutModal();
-    router.push("/");
+  const handleConfirmLogout = async () => {
+    try {
+      await logout().unwrap();
+    } finally {
+      clearAuthTokens();
+      dispatch(clearAuthState());
+      closeLogoutModal();
+      router.push("/");
+    }
   };
 
-  if (!isMounted || !customer) {
+  if (!isMounted || !isInitialized || !customer) {
     return <UserProfileSkeleton />;
   }
 

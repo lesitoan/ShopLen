@@ -51,7 +51,6 @@ export default function CartScreen() {
           }
         })
         .catch((err) => {
-          console.error("Failed to sync cart on CartScreen:", err);
         });
     }
   }, []);

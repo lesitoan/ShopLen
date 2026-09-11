@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { ToastContainer, type ToastPosition } from "react-toastify";
 import { useLazyGetMeQuery } from "@/services/api/authApi";
-import { hasAuthTokens } from "@/services/authStorage";
-import { setCustomerProfile } from "@/store/slices/authSlice";
+import { clearLegacyAuthCookies } from "@/services/authStorage";
+import { setCustomerProfile, setInitialized } from "@/store/slices/authSlice";
 import { hydrateCart } from "@/store/slices/cartSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { store } from "@/store";
@@ -58,17 +58,16 @@ function AppHydrator() {
 
   useEffect(() => {
     dispatch(hydrateCart());
-
-    if (!hasAuthTokens()) {
-      return;
-    }
+    clearLegacyAuthCookies();
 
     getMe()
       .unwrap()
       .then((customer) => {
         dispatch(setCustomerProfile(customer));
       })
-      .catch(() => undefined);
+      .catch(() => {
+        dispatch(setInitialized(true));
+      });
   }, [dispatch, getMe]);
 
   return null;

@@ -44,7 +44,6 @@ const loadCartFromStorage = (): CartItem[] => {
       };
     });
   } catch (error) {
-    console.error("Failed to load cart from localStorage", error);
     return [];
   }
 };
@@ -61,7 +60,6 @@ const saveCartToStorage = (items: CartItem[]) => {
     }));
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(minimalItems));
   } catch (error) {
-    console.error("Failed to save cart to localStorage", error);
   }
 };
 
@@ -297,4 +295,3 @@ export const {
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
-

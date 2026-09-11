@@ -5,14 +5,9 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
-import {
-  clearAuthTokens,
-  getAccessToken,
-  getRefreshToken,
-  saveAuthTokens,
-} from "@/services/authStorage";
 import { clearAuthState } from "@/store/slices/authSlice";
 import type { ApiResponse } from "@/types/api.type";
+import { getAccessToken, saveAuthTokens } from "@/services/authStorage";
 import type { AuthTokens } from "@/types/auth.type";
 
 const API_BASE_URL =
@@ -28,21 +23,21 @@ export function unwrapApiResponse<TData>(response: ApiResponse<TData>) {
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
+  credentials: "include",
   prepareHeaders: (headers) => {
-    const token = getAccessToken();
-
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      headers.set("Authorization", `Bearer ${accessToken}`);
     }
-
     return headers;
   },
 });
 
 const logoutClientSession = (api: Parameters<typeof rawBaseQuery>[1]) => {
-  clearAuthTokens();
   api.dispatch(clearAuthState());
 };
+
+let refreshPromise: Promise<boolean> | null = null;
 
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
@@ -55,33 +50,38 @@ const baseQueryWithReauth: BaseQueryFn<
     return result;
   }
 
-  const refreshToken = getRefreshToken();
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const refreshResult = await rawBaseQuery(
+        {
+          url: "/auth/refresh",
+          method: "POST",
+          body: {},
+        },
+        api,
+        extraOptions,
+      );
 
-  if (!refreshToken) {
-    logoutClientSession(api);
-    return result;
+      if (refreshResult.error || !refreshResult.data) {
+        return false;
+      }
+      try {
+        saveAuthTokens(
+          unwrapApiResponse<AuthTokens>(
+            refreshResult.data as ApiResponse<AuthTokens>,
+          ),
+        );
+        return true;
+      } catch {
+        return false;
+      }
+    })().finally(() => {
+      refreshPromise = null;
+    });
   }
 
-  const refreshResult = await rawBaseQuery(
-    {
-      url: "/auth/refresh",
-      method: "POST",
-      body: { refreshToken },
-    },
-    api,
-    extraOptions,
-  );
-
-  if (refreshResult.data) {
-    try {
-      const tokens = unwrapApiResponse<AuthTokens>(
-        refreshResult.data as ApiResponse<AuthTokens>,
-      );
-      saveAuthTokens(tokens);
-      result = await rawBaseQuery(args, api, extraOptions);
-    } catch {
-      logoutClientSession(api);
-    }
+  if (await refreshPromise) {
+    result = await rawBaseQuery(args, api, extraOptions);
   } else {
     logoutClientSession(api);
   }

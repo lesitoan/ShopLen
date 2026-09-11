@@ -45,6 +45,15 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["Customer"],
     }),
 
+    logout: builder.mutation<{ loggedOut: boolean }, void>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+        body: {},
+      }),
+      transformResponse: unwrapApiResponse<{ loggedOut: boolean }>,
+    }),
+
     forgotPassword: builder.mutation<{ devOtp?: string }, ForgotPasswordRequest>(
       {
         query: (body) => ({
@@ -85,6 +94,7 @@ export const {
   useLazyGetMeQuery,
   useLoginMutation,
   useLoginWithGoogleMutation,
+  useLogoutMutation,
   useRegisterMutation,
   useResetPasswordMutation,
   useVerifyPasswordOtpMutation,

@@ -65,7 +65,6 @@ export default function PaymentPendingView({
             return;
           }
         } catch (e) {
-          console.warn("Canvas export fallback:", e);
         }
         openFallbackLink();
       };
@@ -74,7 +73,6 @@ export default function PaymentPendingView({
         openFallbackLink();
       };
     } catch (error) {
-      console.warn("QR download fallback:", error);
       openFallbackLink();
     }
   };

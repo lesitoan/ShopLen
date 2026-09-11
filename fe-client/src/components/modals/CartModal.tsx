@@ -63,7 +63,6 @@ export default function CartModal({
           }
         })
         .catch((err) => {
-          console.error("Failed to sync cart products with API:", err);
         });
     }
   }, [isOpen]);

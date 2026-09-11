@@ -81,7 +81,6 @@ export default function CheckoutScreen() {
           }
         })
         .catch((err) => {
-          console.error("Failed to sync cart on CheckoutScreen:", err);
         });
     }
   }, [mounted]);
@@ -231,7 +230,6 @@ export default function CheckoutScreen() {
       const targetOrderId = createdOrder.id || createdOrder.orderCode;
       router.push(`/thanh-toan/qr/${targetOrderId}`);
     } catch (error) {
-      console.error("Failed to process order creation:", error);
       toast.error(getApiErrorMessage(error, "Không thể tạo đơn hàng. Vui lòng thử lại."));
       setIsSubmitting(false);
     }

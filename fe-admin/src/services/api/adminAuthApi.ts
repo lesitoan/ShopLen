@@ -2,8 +2,6 @@ import { baseApi, unwrapApiResponse } from "@/services/api/baseApi";
 import type {
   AdminAuthTokens,
   AdminLoginRequest,
-  AdminLogoutRequest,
-  AdminRefreshTokenRequest,
   AdminSession,
 } from "@/types/auth.type";
 
@@ -24,26 +22,23 @@ export const adminAuthApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
-    adminRefresh: builder.mutation<
-      AdminAuthTokens,
-      AdminRefreshTokenRequest
-    >({
-      query: (body) => ({
+    adminRefresh: builder.mutation<AdminAuthTokens, void>({
+      query: () => ({
         url: "/admin/auth/refresh",
         method: "POST",
-        body,
+        body: {},
       }),
       transformResponse: unwrapApiResponse<AdminAuthTokens>,
     }),
 
     adminLogout: builder.mutation<
       { loggedOut: boolean },
-      AdminLogoutRequest | void
+      void
     >({
-      query: (body) => ({
+      query: () => ({
         url: "/admin/auth/logout",
         method: "POST",
-        body: body ?? {},
+        body: {},
       }),
       transformResponse: unwrapApiResponse<{ loggedOut: boolean }>,
     }),

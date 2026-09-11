@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { ToastContainer, type ToastPosition } from "react-toastify";
 import { store } from "@/store";
 import { useLazyGetMeQuery } from "@/services/api/adminAuthApi";
-import { hasAuthTokens } from "@/services/authStorage";
+import { clearLegacyAuthCookies } from "@/services/authStorage";
 import { setAdminProfile, setInitialized } from "@/store/slices/authSlice";
 import { useAppDispatch } from "@/store/hooks";
 
@@ -50,10 +50,7 @@ function AppHydrator() {
   const [getMe] = useLazyGetMeQuery();
 
   useEffect(() => {
-    if (!hasAuthTokens()) {
-      dispatch(setInitialized(true));
-      return;
-    }
+    clearLegacyAuthCookies();
 
     getMe()
       .unwrap()

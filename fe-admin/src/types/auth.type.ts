@@ -12,18 +12,9 @@ export type AdminSession = {
 
 export type AdminAuthTokens = {
   accessToken: string;
-  refreshToken: string;
 };
 
 export type AdminLoginRequest = {
   email: string;
   password: string;
-};
-
-export type AdminRefreshTokenRequest = {
-  refreshToken: string;
-};
-
-export type AdminLogoutRequest = {
-  refreshToken?: string;
 };

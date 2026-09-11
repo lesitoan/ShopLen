@@ -46,8 +46,8 @@ export function LoginForm() {
         email: data.account,
         password: data.password,
       }).unwrap();
-
       saveAuthTokens(tokens);
+
 
       const admin = await getMe().unwrap();
       dispatch(setAdminProfile(admin));

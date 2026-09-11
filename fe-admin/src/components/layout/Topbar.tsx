@@ -9,7 +9,7 @@ import { Bell, User, LogOut, ShieldCheck, CheckCircle, ShoppingBag } from "lucid
 import { BREADCRUMB_ROUTE_MAP } from "./constants";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { useAdminLogoutMutation } from "@/services/api/adminAuthApi";
-import { clearAuthTokens, getRefreshToken } from "@/services/authStorage";
+import { clearAuthTokens } from "@/services/authStorage";
 import { clearAuthState } from "@/store/slices/authSlice";
 
 export interface TopbarProps {
@@ -25,9 +25,8 @@ export default function Topbar({ isCollapsed }: TopbarProps) {
   const [unreadCount, setUnreadCount] = useState(2);
 
   const handleLogout = async () => {
-    const refreshToken = getRefreshToken();
     try {
-      await adminLogout(refreshToken ? { refreshToken } : undefined).unwrap();
+      await adminLogout().unwrap();
     } catch {
       // Ignore logout backend errors and clear client session
     } finally {

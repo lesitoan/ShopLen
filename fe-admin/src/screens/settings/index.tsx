@@ -42,7 +42,6 @@ export function SettingsScreen() {
           }
         }
       } catch (err) {
-        console.error("Lỗi khi tải cấu hình hệ thống:", err);
       }
     }
     loadSettings();

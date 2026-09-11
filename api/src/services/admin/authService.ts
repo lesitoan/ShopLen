@@ -1,10 +1,14 @@
+import { randomUUID } from "node:crypto";
 import type { User } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
+import { env } from "@/config/envValidation.js";
+import type { AdminLoginRequestDto } from "@/dto/admin/authDto.js";
 import type {
-  AdminLoginRequestDto,
-  AdminRefreshTokenRequestDto,
-} from "@/dto/admin/authDto.js";
-import type { AdminAuthData, AdminSession } from "@/types/adminAuth.type.js";
+  AdminAuthData,
+  AdminLogoutInput,
+  AdminRefreshTokenInput,
+  AdminSession,
+} from "@/types/adminAuth.type.js";
 import { AppError } from "@/utils/appError.js";
 import { comparePassword } from "@/utils/hashPassword.js";
 import {
@@ -12,6 +16,7 @@ import {
   signAdminRefreshToken,
   verifyAdminRefreshToken,
 } from "@/utils/jwtToken.js";
+import { refreshSessionService } from "@/services/refreshSessionService.js";
 
 export function toAdminSession(user: User): AdminSession {
   return {
@@ -25,7 +30,25 @@ export function toAdminSession(user: User): AdminSession {
   };
 }
 
-function createAdminAuthData(user: User): AdminAuthData {
+async function createAdminAuthData(user: User): Promise<AdminAuthData> {
+  const jti = randomUUID();
+  const refreshToken = signAdminRefreshToken({
+    sub: user.id,
+    tokenType: "ADMIN_REFRESH",
+    jti,
+  });
+  const refreshPayload = verifyAdminRefreshToken(refreshToken);
+
+  await refreshSessionService.create(
+    {
+      accountId: user.id,
+      actorType: "ADMIN",
+      jti,
+    },
+    refreshPayload.exp - Math.floor(Date.now() / 1000),
+    env.MAX_ADMIN_SESSIONS,
+  );
+
   return {
     accessToken: signAdminAccessToken({
       sub: user.id,
@@ -33,10 +56,7 @@ function createAdminAuthData(user: User): AdminAuthData {
       email: user.email,
       role: user.role,
     }),
-    refreshToken: signAdminRefreshToken({
-      sub: user.id,
-      tokenType: "ADMIN_REFRESH",
-    }),
+    refreshToken,
   };
 }
 
@@ -96,7 +116,7 @@ export const adminAuthService = {
     return toAdminSession(user);
   },
 
-  async refresh(payload: AdminRefreshTokenRequestDto) {
+  async refresh(payload: AdminRefreshTokenInput) {
     const refreshPayload = verifyAdminRefreshToken(payload.refreshToken);
     const user = await prisma.user.findUnique({
       where: { id: refreshPayload.sub },
@@ -111,10 +131,28 @@ export const adminAuthService = {
     }
 
     ensureAdminActive(user);
+    await refreshSessionService.consume({
+      accountId: user.id,
+      actorType: "ADMIN",
+      jti: refreshPayload.jti,
+    });
     return createAdminAuthData(user);
   },
 
-  async logout() {
+  async logout(payload: AdminLogoutInput) {
+    if (payload.refreshToken) {
+      try {
+        const refreshPayload = verifyAdminRefreshToken(payload.refreshToken);
+        await refreshSessionService.revoke({
+          accountId: refreshPayload.sub,
+          actorType: "ADMIN",
+          jti: refreshPayload.jti,
+        });
+      } catch {
+        // Logout is intentionally idempotent for expired or already-revoked sessions.
+      }
+    }
+
     return { loggedOut: true };
   },
 };

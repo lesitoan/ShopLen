@@ -21,6 +21,14 @@ export type AuthData = {
   refreshToken: string;
 };
 
+export type RefreshTokenInput = {
+  refreshToken: string;
+};
+
+export type LogoutInput = {
+  refreshToken?: string | null;
+};
+
 export type CustomerAccessTokenPayload = {
   sub: string;
   tokenType: "CUSTOMER";
@@ -30,6 +38,8 @@ export type CustomerAccessTokenPayload = {
 export type CustomerRefreshTokenPayload = {
   sub: string;
   tokenType: "CUSTOMER_REFRESH";
+  jti: string;
+  exp: number;
 };
 
 export type GoogleProfile = {

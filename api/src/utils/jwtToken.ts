@@ -46,7 +46,9 @@ export function signCustomerAccessToken(payload: CustomerAccessTokenPayload) {
   } as SignOptions);
 }
 
-export function signCustomerRefreshToken(payload: CustomerRefreshTokenPayload) {
+export function signCustomerRefreshToken(
+  payload: Omit<CustomerRefreshTokenPayload, "exp">,
+) {
   return jwt.sign(payload, getRefreshSecret(), {
     expiresIn: env.JWT_REFRESH_EXPIRES_IN,
   } as SignOptions);
@@ -58,7 +60,9 @@ export function signAdminAccessToken(payload: AdminAccessTokenPayload) {
   } as SignOptions);
 }
 
-export function signAdminRefreshToken(payload: AdminRefreshTokenPayload) {
+export function signAdminRefreshToken(
+  payload: Omit<AdminRefreshTokenPayload, "exp">,
+) {
   return jwt.sign(payload, getRefreshSecret(), {
     expiresIn: env.JWT_REFRESH_EXPIRES_IN,
   } as SignOptions);
@@ -107,7 +111,9 @@ export function verifyCustomerRefreshToken(token: string) {
   if (
     typeof payload !== "object" ||
     payload.tokenType !== "CUSTOMER_REFRESH" ||
-    typeof payload.sub !== "string"
+    typeof payload.sub !== "string" ||
+    typeof payload.jti !== "string" ||
+    typeof payload.exp !== "number"
   ) {
     throw new AppError("Refresh token không hợp lệ.", 401, "REFRESH_TOKEN_INVALID");
   }
@@ -159,7 +165,9 @@ export function verifyAdminRefreshToken(token: string) {
   if (
     typeof payload !== "object" ||
     payload.tokenType !== "ADMIN_REFRESH" ||
-    typeof payload.sub !== "string"
+    typeof payload.sub !== "string" ||
+    typeof payload.jti !== "string" ||
+    typeof payload.exp !== "number"
   ) {
     throw new AppError("Refresh token không hợp lệ.", 401, "REFRESH_TOKEN_INVALID");
   }

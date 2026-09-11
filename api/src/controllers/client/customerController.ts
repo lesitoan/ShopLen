@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { customerService } from "@/services/client/customerService.js";
+import { clearRefreshTokenCookie } from "@/utils/authCookie.js";
 import { sendSuccess } from "@/utils/httpResponse.js";
 
 function getCustomerId(request: Request) {
@@ -33,6 +34,7 @@ export const customerController = {
       getCustomerId(request),
       request.body,
     );
+    clearRefreshTokenCookie(response, "CUSTOMER");
     return sendSuccess(response, null, "Cập nhật mật khẩu thành công.");
   },
 };

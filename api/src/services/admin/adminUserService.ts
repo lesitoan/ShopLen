@@ -15,6 +15,7 @@ import type {
 } from "@/types/adminUser.type.js";
 import { AppError } from "@/utils/appError.js";
 import { hashPassword } from "@/utils/hashPassword.js";
+import { refreshSessionService } from "@/services/refreshSessionService.js";
 
 export const adminUserService = {
   async listUsers(query: AdminUserListQueryDto): Promise<AdminUserListResponse> {
@@ -240,6 +241,8 @@ export const adminUserService = {
         id: true,
       },
     });
+
+    await refreshSessionService.revokeAll("ADMIN", userId);
 
     return { updated: true };
   },

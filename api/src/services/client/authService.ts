@@ -3,11 +3,11 @@ import type { Customer } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
 import { env } from "@/config/envValidation.js";
+import { v4 as uuidv4 } from "uuid";
 import type {
   ForgotPasswordRequestDto,
   GoogleLoginRequestDto,
   LoginRequestDto,
-  RefreshTokenRequestDto,
   RegisterRequestDto,
   ResetPasswordRequestDto,
   VerifyPasswordOtpRequestDto,
@@ -15,7 +15,12 @@ import type {
 import { enqueueNotification } from "@/queues/notificationQueue.js";
 import { emailService } from "@/services/emailService.js";
 import { passwordResetOtpService } from "@/services/client/passwordResetOtpService.js";
-import type { AuthData, CustomerSession } from "@/types/clientAuth.type.js";
+import type {
+  AuthData,
+  CustomerSession,
+  LogoutInput,
+  RefreshTokenInput,
+} from "@/types/clientAuth.type.js";
 import { NOTIFICATION_JOB_NAMES } from "@/types/notification.type.js";
 import { AppError } from "@/utils/appError.js";
 import { verifyGoogleIdToken } from "@/utils/googleAuth.js";
@@ -25,82 +30,16 @@ import {
   signCustomerRefreshToken,
   verifyCustomerRefreshToken,
 } from "@/utils/jwtToken.js";
-
-const PASSWORD_OTP_EXPIRES_MINUTES = 10;
-const PASSWORD_OTP_MAX_ATTEMPTS = 5;
-
-export function toCustomerSession(customer: Customer): CustomerSession {
-  return {
-    id: customer.id,
-    code: customer.code,
-    fullName: customer.fullName,
-    email: customer.email,
-    emailVerified: customer.emailVerified,
-    phone: customer.phone,
-    gender: customer.gender,
-    birthday: customer.birthday?.toISOString().slice(0, 10) ?? null,
-    avatar: customer.avatar,
-    status: customer.status,
-    isManualLogin: customer.isManualLogin,
-    isGoogleLogin: customer.isGoogleLogin,
-    rewardPoints: customer.rewardPoints,
-    totalSpent: customer.totalSpent,
-    totalOrders: customer.totalOrders,
-  };
-}
-
-function createAuthData(customer: Customer): AuthData {
-  return {
-    accessToken: signCustomerAccessToken({
-      sub: customer.id,
-      tokenType: "CUSTOMER",
-      email: customer.email,
-    }),
-    refreshToken: signCustomerRefreshToken({
-      sub: customer.id,
-      tokenType: "CUSTOMER_REFRESH",
-    }),
-  };
-}
-
-function getDefaultFullName(email: string) {
-  return email.split("@")[0] || "Khách hàng";
-}
-
-function generateCustomerCode() {
-  return `CUS${Date.now()}${randomInt(100, 999)}`;
-}
-
-function generateOtpCode() {
-  return String(randomInt(0, 1_000_000)).padStart(6, "0");
-}
-
-function isDevMode() {
-  return env.NODE_ENV === "development" || env.NODE_ENV === "test";
-}
-
-async function assertOtpValid(email: string, otpCode: string, markVerified: boolean) {
-  return passwordResetOtpService.assertValid({
-    email,
-    otpCode,
-    maxAttempts: PASSWORD_OTP_MAX_ATTEMPTS,
-    markVerified,
-  });
-}
-
-function ensureCustomerActive(customer: Customer) {
-  if (customer.status !== "ACTIVE") {
-    throw new AppError("Tài khoản đã bị khóa.", 403, "CUSTOMER_LOCKED");
-  }
-}
+import { logger } from "@/config/logger.js";
+import { refreshSessionService } from "@/services/refreshSessionService.js";
 
 export const authService = {
   async register(payload: RegisterRequestDto) {
     try {
       const customer = await prisma.customer.create({
         data: {
-          code: generateCustomerCode(),
-          fullName: getDefaultFullName(payload.email),
+          code: uuidv4().substring(0, 8),
+          fullName: payload.email.split("@")[0] || "Khách hàng",
           email: payload.email,
           passwordHash: await hashPassword(payload.password),
           emailVerified: false,
@@ -153,7 +92,7 @@ export const authService = {
       );
     }
 
-    ensureCustomerActive(customer);
+    isUserActive(customer);
 
     if (!customer.isManualLogin || !customer.passwordHash) {
       throw new AppError(
@@ -176,12 +115,11 @@ export const authService = {
       );
     }
 
-    const updatedCustomer = await prisma.customer.update({
-      where: { id: customer.id },
-      data: { lastLoginAt: new Date() },
-    });
+    prisma.customer
+      .update({ where: { id: customer.id }, data: { lastLoginAt: new Date() } })
+      .catch((err) => logger.error("Failed to update lastLoginAt", err));
 
-    return createAuthData(updatedCustomer);
+    return createAuthData(customer);
   },
 
   async loginWithGoogle(payload: GoogleLoginRequestDto) {
@@ -195,48 +133,47 @@ export const authService = {
       );
     }
 
-    const customerByGoogleId = await prisma.customer.findUnique({
-      where: { googleAccountId: googleProfile.sub },
+    const existingCustomer = await prisma.customer.findFirst({
+      where: {
+        OR: [
+          { googleAccountId: googleProfile.sub },
+          { email: googleProfile.email },
+        ],
+      },
     });
 
-    if (customerByGoogleId) {
-      ensureCustomerActive(customerByGoogleId);
-      const updatedCustomer = await prisma.customer.update({
-        where: { id: customerByGoogleId.id },
-        data: {
-          lastLoginAt: new Date(),
-          avatar: customerByGoogleId.avatar ?? googleProfile.avatar,
-        },
-      });
+    if (existingCustomer) {
+      isUserActive(existingCustomer);
 
-      return createAuthData(updatedCustomer);
-    }
+      const isNewGoogleLink = existingCustomer.googleAccountId !== googleProfile.sub;
+      const now = new Date();
+      const avatar = existingCustomer.avatar ?? googleProfile.avatar;
 
-    const customerByEmail = await prisma.customer.findUnique({
-      where: { email: googleProfile.email },
-    });
-
-    if (customerByEmail) {
-      ensureCustomerActive(customerByEmail);
-      const updatedCustomer = await prisma.customer.update({
-        where: { id: customerByEmail.id },
-        data: {
+      const updateData = {
+        lastLoginAt: now,
+        avatar,
+        ...(isNewGoogleLink && {
           isGoogleLogin: true,
           googleAccountId: googleProfile.sub,
           emailVerified: true,
-          avatar: customerByEmail.avatar ?? googleProfile.avatar,
-          lastLoginAt: new Date(),
-        },
-      });
+        }),
+      };
 
-      return createAuthData(updatedCustomer);
+      // fire-and-forget: không chặn response
+      prisma.customer
+        .update({ where: { id: existingCustomer.id }, data: updateData })
+        .catch((err) =>
+          logger.error("Failed to update customer on Google login", err),
+        );
+
+      return createAuthData(existingCustomer);
     }
 
     const customer = await prisma.customer.create({
       data: {
-        code: generateCustomerCode(),
+        code: uuidv4().substring(0, 8),
         fullName:
-          googleProfile.fullName?.trim() || getDefaultFullName(googleProfile.email),
+          googleProfile.fullName?.trim() || googleProfile.email.split("@")[0],
         email: googleProfile.email,
         passwordHash: null,
         emailVerified: true,
@@ -275,11 +212,11 @@ export const authService = {
       throw new AppError("Bạn cần đăng nhập để tiếp tục.", 401, "UNAUTHORIZED");
     }
 
-    ensureCustomerActive(customer);
+    isUserActive(customer);
     return toCustomerSession(customer);
   },
 
-  async refresh(payload: RefreshTokenRequestDto) {
+  async refresh(payload: RefreshTokenInput) {
     const refreshPayload = verifyCustomerRefreshToken(payload.refreshToken);
     const customer = await prisma.customer.findUnique({
       where: { id: refreshPayload.sub },
@@ -293,22 +230,30 @@ export const authService = {
       );
     }
 
-    ensureCustomerActive(customer);
+    isUserActive(customer);
+    await refreshSessionService.consume({
+      accountId: customer.id,
+      actorType: "CUSTOMER",
+      jti: refreshPayload.jti,
+    });
 
-    return {
-      accessToken: signCustomerAccessToken({
-        sub: customer.id,
-        tokenType: "CUSTOMER",
-        email: customer.email,
-      }),
-      refreshToken: signCustomerRefreshToken({
-        sub: customer.id,
-        tokenType: "CUSTOMER_REFRESH",
-      }),
-    };
+    return createAuthData(customer);
   },
 
-  async logout() {
+  async logout(payload: LogoutInput) {
+    if (payload.refreshToken) {
+      try {
+        const refreshPayload = verifyCustomerRefreshToken(payload.refreshToken);
+        await refreshSessionService.revoke({
+          accountId: refreshPayload.sub,
+          actorType: "CUSTOMER",
+          jti: refreshPayload.jti,
+        });
+      } catch {
+        // Logout is intentionally idempotent for expired or already-revoked sessions.
+      }
+    }
+
     return { loggedOut: true };
   },
 
@@ -321,19 +266,19 @@ export const authService = {
       return {};
     }
 
-    const otpCode = generateOtpCode();
+    const otpCode = String(randomInt(0, 1_000_000)).padStart(6, "0");
 
     await passwordResetOtpService.create({
       customerId: customer.id,
       email: payload.email,
       otpCode,
-      ttlSeconds: PASSWORD_OTP_EXPIRES_MINUTES * 60,
+      ttlSeconds: env.PASSWORD_OTP_EXPIRES_MINUTES * 60,
     });
 
     await emailService.sendPasswordResetOtpEmail({
       to: customer.email,
       otpCode,
-      expiresInMinutes: PASSWORD_OTP_EXPIRES_MINUTES,
+      expiresInMinutes: env.PASSWORD_OTP_EXPIRES_MINUTES,
     });
 
     if (isDevMode()) {
@@ -366,8 +311,78 @@ export const authService = {
       },
     });
 
+    await refreshSessionService.revokeAll("CUSTOMER", customer.id);
+
     await passwordResetOtpService.consume(payload.email);
 
     return { reset: true };
   },
 };
+
+export function toCustomerSession(customer: Customer): CustomerSession {
+  return {
+    id: customer.id,
+    code: customer.code,
+    fullName: customer.fullName,
+    email: customer.email,
+    emailVerified: customer.emailVerified,
+    phone: customer.phone,
+    gender: customer.gender,
+    birthday: customer.birthday?.toISOString().slice(0, 10) ?? null,
+    avatar: customer.avatar,
+    status: customer.status,
+    isManualLogin: customer.isManualLogin,
+    isGoogleLogin: customer.isGoogleLogin,
+    rewardPoints: customer.rewardPoints,
+    totalSpent: customer.totalSpent,
+    totalOrders: customer.totalOrders,
+  };
+}
+
+async function createAuthData(customer: Customer): Promise<AuthData> {
+  const jti = uuidv4();
+  const refreshToken = signCustomerRefreshToken({
+    sub: customer.id,
+    tokenType: "CUSTOMER_REFRESH",
+    jti,
+  });
+  const refreshPayload = verifyCustomerRefreshToken(refreshToken);
+
+  await refreshSessionService.create(
+    {
+      accountId: customer.id,
+      actorType: "CUSTOMER",
+      jti,
+    },
+    refreshPayload.exp - Math.floor(Date.now() / 1000),
+    env.MAX_CUSTOMER_SESSIONS,
+  );
+
+  return {
+    accessToken: signCustomerAccessToken({
+      sub: customer.id,
+      tokenType: "CUSTOMER",
+      email: customer.email,
+    }),
+    refreshToken,
+  };
+}
+
+function isDevMode() {
+  return env.NODE_ENV === "development" || env.NODE_ENV === "test";
+}
+
+async function assertOtpValid(email: string, otpCode: string, markVerified: boolean) {
+  return passwordResetOtpService.assertValid({
+    email,
+    otpCode,
+    maxAttempts: env.PASSWORD_OTP_MAX_ATTEMPTS,
+    markVerified,
+  });
+}
+
+function isUserActive(customer: Customer) {
+  if (customer.status !== "ACTIVE") {
+    throw new AppError("Tài khoản đã bị khóa.", 403, "CUSTOMER_LOCKED");
+  }
+}

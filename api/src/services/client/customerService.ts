@@ -7,6 +7,7 @@ import { cloudinaryService } from "@/services/cloudinaryService.js";
 import { toCustomerSession } from "@/services/client/authService.js";
 import { AppError } from "@/utils/appError.js";
 import { comparePassword, hashPassword } from "@/utils/hashPassword.js";
+import { refreshSessionService } from "@/services/refreshSessionService.js";
 
 export const customerService = {
   async getMe(customerId: string) {
@@ -109,5 +110,7 @@ export const customerService = {
         isManualLogin: true,
       },
     });
+
+    await refreshSessionService.revokeAll("CUSTOMER", customer.id);
   },
 };

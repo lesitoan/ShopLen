@@ -10,15 +10,11 @@ export const adminLoginDto = z.object({
 });
 
 export const adminRefreshTokenDto = z.object({
-  body: z.object({
-    refreshToken: z.string().min(1),
-  }),
+  body: z.object({}).default({}),
 });
 
 export const adminLogoutDto = z.object({
-  body: z.object({
-    refreshToken: z.string().min(1).optional(),
-  }),
+  body: z.object({}).default({}),
 });
 
 export type AdminLoginRequestDto = z.infer<typeof adminLoginDto>["body"];

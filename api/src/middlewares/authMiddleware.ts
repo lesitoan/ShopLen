@@ -10,9 +10,7 @@ export function authMiddleware(
   response: Response,
   next: NextFunction,
 ) {
-  const authorizationHeader = request.headers.authorization;
-
-  if (!authorizationHeader) {
+  if (!request.headers.authorization?.startsWith("Bearer ")) {
     response.status(401).json({ success: false, message: MESSAGES.UNAUTHORIZED });
     return;
   }

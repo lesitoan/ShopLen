@@ -15,6 +15,14 @@ export type AdminAuthData = {
   refreshToken: string;
 };
 
+export type AdminRefreshTokenInput = {
+  refreshToken: string;
+};
+
+export type AdminLogoutInput = {
+  refreshToken?: string | null;
+};
+
 export type AdminAccessTokenPayload = {
   sub: string;
   tokenType: "ADMIN";
@@ -25,4 +33,6 @@ export type AdminAccessTokenPayload = {
 export type AdminRefreshTokenPayload = {
   sub: string;
   tokenType: "ADMIN_REFRESH";
+  jti: string;
+  exp: number;
 };

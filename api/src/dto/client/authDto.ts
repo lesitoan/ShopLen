@@ -31,15 +31,11 @@ export const googleLoginDto = z.object({
 });
 
 export const refreshTokenDto = z.object({
-  body: z.object({
-    refreshToken: z.string().min(1),
-  }),
+  body: z.object({}).default({}),
 });
 
 export const logoutDto = z.object({
-  body: z.object({
-    refreshToken: z.string().min(1).optional(),
-  }),
+  body: z.object({}).default({}),
 });
 
 export const forgotPasswordDto = z.object({

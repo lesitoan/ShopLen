@@ -8,11 +8,16 @@ import {
 import { adminAuthMiddleware } from "@/middlewares/adminAuthMiddleware.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
+import {
+  loginRateLimitMiddleware,
+  refreshRateLimitMiddleware,
+} from "@/middlewares/authRateLimitMiddleware.js";
 
 export const adminAuthRoutes = Router();
 
 adminAuthRoutes.post(
   "/login",
+  loginRateLimitMiddleware,
   validateMiddleware(adminLoginDto),
   asyncHandler(adminAuthController.login),
 );
@@ -23,6 +28,7 @@ adminAuthRoutes.get(
 );
 adminAuthRoutes.post(
   "/refresh",
+  refreshRateLimitMiddleware,
   validateMiddleware(adminRefreshTokenDto),
   asyncHandler(adminAuthController.refresh),
 );

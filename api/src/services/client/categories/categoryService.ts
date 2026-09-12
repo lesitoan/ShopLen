@@ -1,8 +1,9 @@
 import { prisma } from "@/config/prismaClient.js";
+import { getCachedCategories } from "@/services/client/categories/categoryCacheService.js";
 
 export const categoryService = {
   async listCategories() {
-    return prisma.category.findMany({
+    return getCachedCategories(() => prisma.category.findMany({
       where: { status: "ACTIVE" },
       orderBy: [
         { displayOrder: "asc" },
@@ -17,6 +18,6 @@ export const categoryService = {
         image: true,
         displayOrder: true,
       },
-    });
+    }));
   },
 };

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { BlogPostListQueryDto } from "@/dto/client/blogDto.js";
-import { blogService } from "@/services/client/blogService.js";
+import { blogService } from "@/services/client/blogs/blogService.js";
 import { sendSuccess } from "@/utils/httpResponse.js";
 
 export const blogController = {
@@ -10,8 +10,12 @@ export const blogController = {
   },
 
   async listPosts(request: Request, response: Response) {
+    const query = request.query as unknown as BlogPostListQueryDto;
+    if (query.home && query.page === 1 && query.limit === 4 && !query.tag && !query.search) {
+      response.set("Cache-Control", "public, max-age=300, s-maxage=86400, stale-while-revalidate=86400");
+    }
     const posts = await blogService.listPosts(
-      request.query as unknown as BlogPostListQueryDto,
+      query,
     );
     return sendSuccess(response, posts);
   },

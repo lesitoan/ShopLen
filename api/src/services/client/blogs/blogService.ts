@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
+import { getCachedHomeBlogPosts } from "@/services/client/blogs/blogCacheService.js";
 import type { BlogPostListQueryDto } from "@/dto/client/blogDto.js";
 
 type BlogPostListItem = Awaited<ReturnType<typeof findBlogPosts>>[number];
@@ -182,21 +183,27 @@ export const blogService = {
     const skip = (page - 1) * limit;
     const where = buildPostWhere(query);
 
-    const [totalItems, posts] = await prisma.$transaction([
-      prisma.blogPost.count({ where }),
-      findBlogPosts({ where, skip, take: limit }),
-    ]);
-    const totalPages = Math.ceil(totalItems / limit);
+    const loadPosts = async () => {
+      const [totalItems, posts] = await prisma.$transaction([
+        prisma.blogPost.count({ where }),
+        findBlogPosts({ where, skip, take: limit }),
+      ]);
 
-    return {
-      items: posts.map(formatPostListItem),
-      pagination: {
-        page,
-        limit,
-        totalItems,
-        totalPages,
-      },
+      return {
+        items: posts.map(formatPostListItem),
+        pagination: {
+          page,
+          limit,
+          totalItems,
+          totalPages: Math.ceil(totalItems / limit),
+        },
+      };
     };
+
+    const isHomeCacheRequest =
+      query.home && page === 1 && limit === 4 && !query.tag && !query.search;
+
+    return isHomeCacheRequest ? getCachedHomeBlogPosts(loadPosts) : loadPosts();
   },
 
   async getFeaturedPost() {

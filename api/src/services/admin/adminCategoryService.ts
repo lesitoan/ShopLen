@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { v7 as uuidv7 } from "uuid";
 import { prisma } from "@/config/prismaClient.js";
+import { invalidateCategoryCache } from "@/services/client/categories/categoryCacheService.js";
 import type {
   AdminCategoryListQueryDto,
   CreateAdminCategoryDto,
@@ -115,6 +116,7 @@ export const adminCategoryService = {
           image: payload.image,
         },
       });
+      await invalidateCategoryCache();
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -141,6 +143,7 @@ export const adminCategoryService = {
           image: payload.image,
         },
       });
+      await invalidateCategoryCache();
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -187,5 +190,6 @@ export const adminCategoryService = {
     }
 
     await prisma.category.delete({ where: { id } });
+    await invalidateCategoryCache();
   },
 };

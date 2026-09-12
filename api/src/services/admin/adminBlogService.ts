@@ -1,5 +1,6 @@
 import { Prisma, BlogPostStatus } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
+import { invalidateHomeBlogPostsCache } from "@/services/client/blogs/blogCacheService.js";
 import type {
   AdminBlogPostListQueryDto,
   CreateAdminBlogPostDto,
@@ -51,7 +52,7 @@ export const adminBlogService = {
 
     const code = `TAG-${Date.now().toString().slice(-6)}`;
 
-    return prisma.blogTag.create({
+    const tag = await prisma.blogTag.create({
       data: {
         code,
         name: body.name,
@@ -59,6 +60,8 @@ export const adminBlogService = {
         status: "ACTIVE",
       },
     });
+    await invalidateHomeBlogPostsCache();
+    return tag;
   },
 
   async updateTag(id: string, body: { name?: string; slug?: string }) {
@@ -72,13 +75,15 @@ export const adminBlogService = {
       ? body.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-")
       : undefined;
 
-    return prisma.blogTag.update({
+    const tag = await prisma.blogTag.update({
       where: { id },
       data: {
         ...(body.name ? { name: body.name } : {}),
         ...(slug ? { slug } : {}),
       },
     });
+    await invalidateHomeBlogPostsCache();
+    return tag;
   },
 
   async deleteTag(id: string) {
@@ -95,7 +100,9 @@ export const adminBlogService = {
         400
       );
     }
-    return prisma.blogTag.delete({ where: { id } });
+    const tag = await prisma.blogTag.delete({ where: { id } });
+    await invalidateHomeBlogPostsCache();
+    return tag;
   },
 
   async listPosts(query: AdminBlogPostListQueryDto) {
@@ -334,6 +341,7 @@ export const adminBlogService = {
       },
     });
 
+    await invalidateHomeBlogPostsCache();
     return this.getPostDetail(post.id);
   },
 
@@ -394,6 +402,7 @@ export const adminBlogService = {
       });
     }
 
+    await invalidateHomeBlogPostsCache();
     return this.getPostDetail(id);
   },
 
@@ -405,7 +414,7 @@ export const adminBlogService = {
       throw new AppError("Không tìm thấy bài viết.", 404);
     }
 
-    return prisma.blogPost.update({
+    const post = await prisma.blogPost.update({
       where: { id },
       data: {
         status,
@@ -414,6 +423,8 @@ export const adminBlogService = {
           : {}),
       },
     });
+    await invalidateHomeBlogPostsCache();
+    return post;
   },
 
   async deletePost(id: string) {
@@ -428,5 +439,6 @@ export const adminBlogService = {
       where: { id },
       data: { deletedAt: new Date() },
     });
+    await invalidateHomeBlogPostsCache();
   },
 };

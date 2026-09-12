@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { v7 as uuidv7 } from "uuid";
 import { prisma } from "@/config/prismaClient.js";
+import { invalidateHomeProductCache } from "@/services/client/products/productHomeCacheService.js";
 import type {
   AdminProductListQueryDto,
   CreateAdminProductDto,
@@ -131,7 +132,9 @@ export const adminProductService = {
         select: adminProductListItemSelect,
       });
 
-      return toAdminProductListItem(product);
+      const result = toAdminProductListItem(product);
+      await invalidateHomeProductCache();
+      return result;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -263,7 +266,9 @@ export const adminProductService = {
         });
       });
 
-      return toAdminProductDetail(product);
+      const result = toAdminProductDetail(product);
+      await invalidateHomeProductCache();
+      return result;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -297,6 +302,7 @@ export const adminProductService = {
       where: { id },
       data: { deletedAt: new Date() },
     });
+    await invalidateHomeProductCache();
   },
 };
 

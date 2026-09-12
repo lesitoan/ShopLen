@@ -1,6 +1,8 @@
 import { Prisma, ProductOptionType } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
 import type { ProductListQueryDto } from "@/dto/client/productDto.js";
+import type { HomeProductSectionsQueryDto } from "@/dto/client/productDto.js";
+import { getCachedHomeProductSections } from "@/services/client/products/productHomeCacheService.js";
 import type { ProductSort } from "@/types/product.type.js";
 import { AppError } from "@/utils/appError.js";
 
@@ -254,7 +256,41 @@ function findProductBySlug(slug: string) {
   });
 }
 
+
 export const productService = {
+  async listHomeProductSections(query: HomeProductSectionsQueryDto) {
+    const HOME_SECTION_CACHE_SIZE = 12;
+    const types = [...new Set(query.types)];
+    const sections = await getCachedHomeProductSections(
+      types,
+      async (type) => {
+        const products = await findProducts({
+          where: {
+            status: "ACTIVE",
+            deletedAt: null,
+            ...(type === "BEST_SELLING" ? {} : { highlightType: type }),
+          },
+          orderBy:
+            type === "BEST_SELLING"
+              ? getOrderBy("BEST_SELLING")
+              : getOrderBy("NEWEST"),
+          skip: 0,
+          take: HOME_SECTION_CACHE_SIZE,
+        });
+
+        return products.map(formatProductListItem);
+      },
+    );
+
+    return {
+      sections: Object.fromEntries(
+        types.map((type, index) => [
+          type,
+          { items: sections[index].slice(0, query.limit) },
+        ]),
+      ),
+    };
+  },
   async listProducts(query: ProductListQueryDto) {
     const page = query.page;
     const limit = query.limit;

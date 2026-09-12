@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { HOME_PRODUCT_SECTION_TYPES } from "@/types/product.type.js";
 
 function parseListQueryValue(value: unknown) {
   if (value === undefined) {
@@ -68,4 +69,18 @@ export const productSlugParamDto = z.object({
 
 export type ProductListQueryDto = z.infer<
   typeof productListQueryDto
+>["query"];
+
+export const homeProductSectionsQueryDto = z.object({
+  query: z.object({
+    types: z.preprocess(
+      parseListQueryValue,
+      z.array(z.enum(HOME_PRODUCT_SECTION_TYPES)).min(1).max(4),
+    ),
+    limit: z.coerce.number().int().min(1).max(12).default(6),
+  }),
+});
+
+export type HomeProductSectionsQueryDto = z.infer<
+  typeof homeProductSectionsQueryDto
 >["query"];

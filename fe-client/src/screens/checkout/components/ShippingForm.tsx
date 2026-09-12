@@ -125,7 +125,7 @@ export default function ShippingForm({
                 <Plus size={12} />
               </div>
               <span className="text-[13px] font-semibold">
-                Sử dụng địa chỉ giao hàng khác...
+                Sử dụng địa chỉ khác...
               </span>
             </div>
           </div>
@@ -262,8 +262,8 @@ export default function ShippingForm({
           </div>
           <textarea
             {...register("note")}
-            rows={3}
-            placeholder="Ghi chú thêm về đơn hàng (ví dụ: giao giờ hành chính, đóng gói quà sinh nhật...)"
+            rows={2}
+            placeholder="Ghi chú thêm cho đơn hàng (tùy chọn)..."
             className="w-full text-text-primary text-[14px] bg-surface border border-border rounded-md py-2.5 pl-9 pr-3 outline-none placeholder-text-secondary focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all duration-200 resize-none"
           />
         </div>

@@ -49,9 +49,13 @@ export default function OrderReviewItems({ items }: OrderReviewItemsProps) {
               <h3 className="text-[13px] font-bold text-text-primary truncate">
                 {item.name}
               </h3>
-              <p className="text-[11.5px] text-text-secondary mt-0.5">
-                Phân loại: {item.color}
-              </p>
+              {item.color &&
+                item.color !== "Mặc định" &&
+                item.color.toUpperCase() !== "DEFAULT" && (
+                  <p className="text-[11.5px] text-text-secondary mt-0.5">
+                    Phân loại: {item.color}
+                  </p>
+                )}
             </div>
 
             <span className="text-[13.5px] font-bold text-secondary shrink-0">

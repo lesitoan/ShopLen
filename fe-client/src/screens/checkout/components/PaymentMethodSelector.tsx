@@ -10,28 +10,23 @@ export default function PaymentMethodSelector() {
         <span>Phương thức thanh toán</span>
       </h2>
 
-      <div className="border border-primary bg-primary-light/40 rounded-xl p-4 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 w-5 h-5 rounded-full border-2 border-primary bg-primary flex items-center justify-center shrink-0">
-              <div className="w-2 h-2 rounded-full bg-surface" />
-            </div>
-
-            <div>
-              <h3 className="text-[14px] font-bold text-text-primary flex items-center gap-2">
-                <span>{SINGLE_PAYMENT_METHOD.name}</span>
-                <span className="text-[10px] font-bold bg-primary text-surface px-2 py-0.5 rounded-full uppercase">
-                  Khuyên dùng
-                </span>
-              </h3>
-              <p className="text-[12.5px] text-text-secondary mt-1">
-                {SINGLE_PAYMENT_METHOD.subtitle}
-              </p>
-            </div>
+      <div className="border border-primary bg-primary-light/40 rounded-xl p-3.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-primary bg-primary flex items-center justify-center shrink-0">
+            <div className="w-2 h-2 rounded-full bg-surface" />
           </div>
 
-          <CheckCircle2 size={20} className="text-primary shrink-0" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[14px] font-bold text-text-primary">
+              {SINGLE_PAYMENT_METHOD.name}
+            </span>
+            <span className="text-[10px] font-bold bg-primary text-surface px-2 py-0.5 rounded-full uppercase">
+              Khuyên dùng
+            </span>
+          </div>
         </div>
+
+        <CheckCircle2 size={20} className="text-primary shrink-0" />
       </div>
     </div>
   );

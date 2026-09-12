@@ -85,14 +85,14 @@ export default function CheckoutSummary({
             name="confirmTerms"
             control={control}
             rules={{
-              required: "Vui lòng xác nhận thông tin đơn hàng trước khi tiến hành thanh toán",
+              required: "Vui lòng xác nhận thông tin đơn hàng trước khi bấm đặt hàng",
             }}
             render={({ field }) => (
               <Checkbox
                 id="confirmTermsDesktop"
                 checked={field.value}
                 onChange={(e) => field.onChange(e.target.checked)}
-                label="Tôi xác nhận thông tin nhận hàng đã chính xác và đồng ý thanh toán trước 100% qua QR."
+                label="Tôi xác nhận thông tin và đồng ý thanh toán qua mã QR."
               />
             )}
           />

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FieldErrors } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import CheckoutBreadcrumbs from "./components/CheckoutBreadcrumbs";
@@ -235,6 +235,24 @@ export default function CheckoutScreen() {
     }
   };
 
+  const onInvalid = (fieldErrors: FieldErrors<CheckoutFormData>) => {
+    if (fieldErrors.confirmTerms) {
+      toast.error(
+        fieldErrors.confirmTerms.message ||
+          "Vui lòng xác nhận thông tin đơn hàng trước khi bấm đặt hàng"
+      );
+      return;
+    }
+    if (
+      fieldErrors.fullName ||
+      fieldErrors.phone ||
+      fieldErrors.address ||
+      fieldErrors.province
+    ) {
+      toast.error("Vui lòng kiểm tra và điền đầy đủ thông tin nhận hàng");
+    }
+  };
+
   if (!mounted || isAuthLoading || isSyncing || isAddressesLoading) {
     return <CheckoutSkeleton />;
   }
@@ -282,7 +300,7 @@ export default function CheckoutScreen() {
           </h1>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-7 flex flex-col gap-6">
               <ShippingForm

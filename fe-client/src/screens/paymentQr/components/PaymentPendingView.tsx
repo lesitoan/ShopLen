@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Clock, QrCode, ShieldCheck, ArrowLeft, Check, Copy, Download } from "lucide-react";
 import Button from "@/components/ui/Button";
+import LoadingDots from "@/components/ui/LoadingDots";
 import type { PaymentQrResponseData } from "@/types/payment.type";
 
 interface PaymentPendingViewProps {
@@ -15,6 +16,7 @@ export default function PaymentPendingView({
   timeLeft,
 }: PaymentPendingViewProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isQrLoading, setIsQrLoading] = useState(true);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -81,7 +83,6 @@ export default function PaymentPendingView({
     <main className="flex-1 py-8 md:py-10 text-left">
       <div className="max-w-3xl mx-auto px-0 md:px-6 w-full">
         <div className="bg-surface border-0 md:border border-border rounded-none md:rounded-xl px-4 py-8 md:p-8 my-6 md:my-0 flex flex-col items-center text-center shadow-none md:shadow-sm">
-          {/* HEADER & ĐẾM NGƯỢC */}
           <div className="inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 px-3.5 py-1.5 rounded-full text-[13px] font-bold mb-4 select-none">
             <Clock size={16} className="animate-pulse text-amber-600 dark:text-amber-400 shrink-0" />
             <span>Đang chờ thanh toán — Hết hạn sau: {formatTime(timeLeft)}</span>
@@ -95,15 +96,26 @@ export default function PaymentPendingView({
             Mở ứng dụng ngân hàng hoặc ví điện tử bất kỳ của bạn để quét mã QR VietQR tự động bên dưới. Hệ thống sẽ tự động xác nhận ngay sau khi nhận được tiền.
           </p>
 
-          {/* MÃ QR VIETQR & NÚT TẢI XUỐNG */}
           <div className="flex flex-col items-center gap-3 mb-6">
-            <div className="relative w-64 h-64 bg-surface border-2 border-primary/40 rounded-2xl p-4 flex items-center justify-center shadow-sm">
+            <div className="relative w-64 h-64 bg-surface border-2 border-primary/40 rounded-2xl p-4 flex items-center justify-center shadow-sm overflow-hidden">
+              {isQrLoading && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface/90 backdrop-blur-[2px] z-10">
+                  <LoadingDots size="md" color="bg-primary" />
+                  <p className="text-[12px] font-medium text-text-secondary">
+                    Đang tải mã QR...
+                  </p>
+                </div>
+              )}
               <Image
                 src={qrData.qrImageUrl}
                 alt={`Mã QR VietQR cho đơn hàng ${qrData.orderCode}`}
                 fill
                 sizes="256px"
-                className="object-contain p-4 rounded-2xl"
+                className={`object-contain p-4 rounded-2xl transition-opacity duration-300 ${
+                  isQrLoading ? "opacity-0" : "opacity-100"
+                }`}
+                onLoad={() => setIsQrLoading(false)}
+                priority
               />
             </div>
             <Button

@@ -13,7 +13,8 @@ interface PaymentQrScreenProps {
 }
 
 export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
-  const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+  const [timeLeft, setTimeLeft] = useState<number>(5 * 60);
+  const [shouldPoll, setShouldPoll] = useState(true);
 
   const {
     data: qrData,
@@ -21,7 +22,8 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
     isError,
     refetch,
   } = useGetPaymentQrQuery(orderId, {
-    pollingInterval: 4000,
+    pollingInterval: shouldPoll ? 4000 : 0,
+    skipPollingIfUnfocused: true,
     skip: !orderId,
   });
 
@@ -40,9 +42,9 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
       if (qrData.expiresAt) {
         expiresTimeMs = new Date(qrData.expiresAt).getTime();
       } else if (qrData.createdAt) {
-        expiresTimeMs = new Date(qrData.createdAt).getTime() + 15 * 60 * 1000;
+        expiresTimeMs = new Date(qrData.createdAt).getTime() + 5 * 60 * 1000;
       } else {
-        expiresTimeMs = Date.now() + 15 * 60 * 1000;
+        expiresTimeMs = Date.now() + 5 * 60 * 1000;
       }
 
       const diffSeconds = Math.floor((expiresTimeMs - Date.now()) / 1000);
@@ -53,14 +55,20 @@ export default function PaymentQrScreen({ orderId }: PaymentQrScreenProps) {
   }, [qrData?.createdAt, qrData?.expiresAt]);
 
   useEffect(() => {
+    if (isPaid || isExpired) {
+      setShouldPoll(false);
+    }
+  }, [isExpired, isPaid]);
+
+  useEffect(() => {
     if (isPaid || isExpired) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, isPaid, isExpired]);
+  }, [isPaid, isExpired]);
 
-  if (isLoading) {
+  if (isLoading || (!qrData && !isError) || (!qrData?.qrImageUrl && !isError)) {
     return <PaymentLoadingView />;
   }
 

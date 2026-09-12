@@ -28,8 +28,6 @@ import type {
 import { AppError } from "@/utils/appError.js";
 import { generateOrderCode } from "@/utils/generateOrderCode.js";
 
-const ORDER_PAYMENT_HOLD_MINUTES = 30;
-
 function parseOptionValues(values: unknown): ProductOptionValue[] {
   if (!Array.isArray(values)) {
     return [];
@@ -85,7 +83,7 @@ function groupItems(items: CreateOrderItemDto[]) {
 }
 
 function buildExpiresAt() {
-  return new Date(Date.now() + ORDER_PAYMENT_HOLD_MINUTES * 60 * 1000);
+  return new Date(Date.now() + env.ORDER_PAYMENT_HOLD_MINUTES * 60 * 1000);
 }
 
 function normalizeOptionalText(value?: string) {
@@ -298,7 +296,10 @@ export const orderService = {
           }
         }
 
-        for (const [productId, quantity] of productQuantities) {
+        for (const [productId, quantity] of [...productQuantities.entries()].sort(
+          ([firstProductId], [secondProductId]) =>
+            firstProductId.localeCompare(secondProductId),
+        )) {
           const product = productById.get(productId);
 
           if (!product || product.stockQuantity < quantity) {
@@ -334,7 +335,10 @@ export const orderService = {
         const orderCode = generateOrderCode();
         const expiresAt = buildExpiresAt();
 
-        for (const [productId, quantity] of productQuantities) {
+        for (const [productId, quantity] of [...productQuantities.entries()].sort(
+          ([firstProductId], [secondProductId]) =>
+            firstProductId.localeCompare(secondProductId),
+        )) {
           const updateResult = await tx.product.updateMany({
             where: {
               id: productId,

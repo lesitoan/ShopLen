@@ -56,6 +56,7 @@ const envSchema = z.object({
   BANK_ACCOUNT_NAME: z.string().optional(),
   BANK_CODE: z.string().optional(),
   VIETQR_TEMPLATE: z.string().default("compact"),
+  ORDER_PAYMENT_HOLD_MINUTES: z.coerce.number().int().min(1).default(5),
   SEPAY_WEBHOOK_SECRET: z.string().optional(),
   SEPAY_WEBHOOK_AUTH_TYPE: z.enum(["HMAC", "NONE"]).default("HMAC"),
 });

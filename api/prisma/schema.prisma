@@ -386,6 +386,7 @@ model Order {
   @@index([orderStatus, createdAt(sort: Desc)], map: "orders_order_status_created_at_idx")
   @@index([paymentStatus, createdAt(sort: Desc)], map: "orders_payment_status_created_at_idx")
   @@index([expiresAt], map: "orders_expires_at_idx")
+  @@index([orderStatus, expiresAt], map: "orders_order_status_expires_at_idx")
   @@map("orders")
 }
 

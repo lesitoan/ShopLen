@@ -280,6 +280,7 @@ export const paymentService = {
               id: true,
               orderStatus: true,
               paymentStatus: true,
+              expiresAt: true,
             },
           },
         },
@@ -308,8 +309,29 @@ export const paymentService = {
         return null;
       }
 
-      await tx.payment.update({
-        where: { id: payment.id },
+      const updatedOrder = await tx.order.updateMany({
+        where: {
+          id: payment.orderId,
+          orderStatus: OrderStatus.PENDING_PAYMENT,
+          paymentStatus: PaymentStatus.PENDING,
+          expiresAt: { gt: new Date() },
+        },
+        data: {
+          paymentStatus: PaymentStatus.PAID,
+          orderStatus: OrderStatus.PAID,
+          paidAt,
+        },
+      });
+
+      if (updatedOrder.count !== 1) {
+        return null;
+      }
+
+      await tx.payment.updateMany({
+        where: {
+          id: payment.id,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.MISMATCHED] },
+        },
         data: {
           provider: PaymentProvider.SEPAY,
           transactionRef,
@@ -320,27 +342,11 @@ export const paymentService = {
         },
       });
 
-      if (
-        payment.order.paymentStatus !== PaymentStatus.PAID &&
-        payment.order.orderStatus === OrderStatus.PENDING_PAYMENT
-      ) {
-        await tx.order.update({
-          where: { id: payment.orderId },
-          data: {
-            paymentStatus: PaymentStatus.PAID,
-            orderStatus: OrderStatus.PAID,
-            paidAt,
-          },
-        });
-
-        return {
-          orderId: payment.orderId,
-          orderCode: payment.transferContent,
-          paidAt: paidAt.toISOString(),
-        };
-      }
-
-      return null;
+      return {
+        orderId: payment.orderId,
+        orderCode: payment.transferContent,
+        paidAt: paidAt.toISOString(),
+      };
     });
 
     if (!paidOrderNotification) {

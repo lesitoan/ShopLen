@@ -4,9 +4,18 @@ import type {
   ProductListParams,
   ProductListResponse,
   ProductDetail,
+  HomeProductSectionType,
+  HomeProductsResponse,
 } from "@/types/product.type";
 
-export type { ProductItem, ProductListParams, ProductListResponse, ProductDetail };
+export type {
+  ProductItem,
+  ProductListParams,
+  ProductListResponse,
+  ProductDetail,
+  HomeProductSectionType,
+  HomeProductsResponse,
+};
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,7 +32,22 @@ export const productApi = baseApi.injectEndpoints({
       transformResponse: unwrapApiResponse<ProductDetail>,
       providesTags: (result, error, slug) => [{ type: "Product", id: slug }],
     }),
+    getHomeProducts: builder.query<
+      HomeProductsResponse,
+      { types: HomeProductSectionType[]; limit?: number }
+    >({
+      query: (params) => ({
+        url: "/products/home",
+        params,
+      }),
+      transformResponse: unwrapApiResponse<HomeProductsResponse>,
+      providesTags: ["Product"],
+    }),
   }),
 });
 
-export const { useGetProductsQuery, useGetProductDetailBySlugQuery } = productApi;
+export const {
+  useGetProductsQuery,
+  useGetProductDetailBySlugQuery,
+  useGetHomeProductsQuery,
+} = productApi;

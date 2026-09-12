@@ -100,3 +100,13 @@ export interface ProductListResponse {
     totalPages: number;
   };
 }
+
+export type HomeProductSectionType =
+  | "BEST_SELLING"
+  | "TODAY_DEAL"
+  | "HOT_PRODUCT"
+  | "HOT_TIKTOK";
+
+export interface HomeProductsResponse {
+  sections: Partial<Record<HomeProductSectionType, { items: ProductItem[] }>>;
+}

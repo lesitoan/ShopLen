@@ -15,8 +15,7 @@ import ProductCard from "@/components/product/ProductCard";
 import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductGridSkeleton from "@/components/skeletons/product/ProductGridSkeleton";
-import { useGetProductsQuery, ProductItem } from "@/services/api/productApi";
-import type { ProductListParams } from "@/types/product.type";
+import type { ProductItem } from "@/types/product.type";
 
 export type ProductSectionType = "BEST_SELLING" | "TODAY_DEAL" | "HOT_PRODUCT";
 
@@ -27,6 +26,10 @@ interface ProductSectionProps {
   ctaText: string;
   ctaLink: string;
   promoBgImage?: string;
+  products: ProductItem[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
 }
 
 export default function ProductSection({
@@ -36,21 +39,12 @@ export default function ProductSection({
   ctaText,
   ctaLink,
   promoBgImage,
+  products,
+  isLoading,
+  isError,
+  onRetry,
 }: ProductSectionProps) {
   const swiperRef = useRef<SwiperClass | null>(null);
-
-  // Xây dựng query params dựa trên type
-  const queryParams: ProductListParams = {
-    limit: 6,
-    ...(type === "BEST_SELLING"
-      ? { sort: "BEST_SELLING" }
-      : type === "TODAY_DEAL"
-      ? { highlightType: "TODAY_DEAL" }
-      : { highlightType: "HOT_PRODUCT" }),
-  };
-
-  const { data: response, isLoading, isError, refetch } = useGetProductsQuery(queryParams);
-  const products = response?.items || [];
 
   const getBadgeType = (p: ProductItem) => {
     if (p.highlightType === "TODAY_DEAL" || type === "TODAY_DEAL") return "sale" as const;
@@ -128,7 +122,7 @@ export default function ProductSection({
               <EmptyState
                 title="Không có sản phẩm nào"
                 actionLabel="Tải lại"
-                onAction={() => refetch()}
+                onAction={onRetry}
               />
             </div>
           ) : (

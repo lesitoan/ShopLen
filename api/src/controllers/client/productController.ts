@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type {
   HomeProductSectionsQueryDto,
   ProductListQueryDto,
+  ProductRecommendationsBodyDto,
 } from "@/dto/client/productDto.js";
 import { productService } from "@/services/client/products/productService.js";
 import { sendSuccess } from "@/utils/httpResponse.js";
@@ -19,6 +20,11 @@ export const productController = {
       request.query as unknown as ProductListQueryDto,
     );
     return sendSuccess(response, products);
+  },
+  async listProductRecommendations(request: Request, response: Response) {
+    const payload = request.body as ProductRecommendationsBodyDto;
+    const items = await productService.listProductRecommendations(payload);
+    return sendSuccess(response, { items });
   },
   async getProductDetailBySlug(request: Request, response: Response) {
     const product = await productService.getProductDetailBySlug(

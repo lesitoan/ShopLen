@@ -4,6 +4,7 @@ import {
   productListQueryDto,
   productSlugParamDto,
   homeProductSectionsQueryDto,
+  productRecommendationsBodyDto,
 } from "@/dto/client/productDto.js";
 import { validateMiddleware } from "@/middlewares/validateMiddleware.js";
 import { asyncHandler } from "@/utils/asyncHandler.js";
@@ -19,6 +20,11 @@ productRoutes.get(
   "/",
   validateMiddleware(productListQueryDto),
   asyncHandler(productController.listProducts),
+);
+productRoutes.post(
+  "/recommendations",
+  validateMiddleware(productRecommendationsBodyDto),
+  asyncHandler(productController.listProductRecommendations),
 );
 productRoutes.get(
   "/:slug",

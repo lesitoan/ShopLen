@@ -1,8 +1,12 @@
 import { Prisma, ProductOptionType } from "@prisma/client";
 import { prisma } from "@/config/prismaClient.js";
-import type { ProductListQueryDto } from "@/dto/client/productDto.js";
+import type {
+  ProductListQueryDto,
+  ProductRecommendationsBodyDto,
+} from "@/dto/client/productDto.js";
 import type { HomeProductSectionsQueryDto } from "@/dto/client/productDto.js";
 import { getCachedHomeProductSections } from "@/services/client/products/productHomeCacheService.js";
+import { productRecommendationService } from "@/services/client/products/productRecommendationService.js";
 import type { ProductSort } from "@/types/product.type.js";
 import { AppError } from "@/utils/appError.js";
 
@@ -319,6 +323,13 @@ export const productService = {
     };
   },
 
+  async listProductRecommendations(payload: ProductRecommendationsBodyDto) {
+    return productRecommendationService.recommendByProductIds(
+      payload.productIds,
+      payload.limit,
+    );
+  },
+
   async getProductDetailBySlug(slug: string) {
     const product = await findProductBySlug(slug);
 
@@ -330,6 +341,14 @@ export const productService = {
       );
     }
 
-    return formatProductDetail(product);
+    const relatedProducts = await productRecommendationService.recommendByProductIds(
+      [product.id],
+      4,
+    );
+
+    return {
+      ...formatProductDetail(product),
+      relatedProducts,
+    };
   },
 };

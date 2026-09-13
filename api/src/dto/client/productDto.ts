@@ -84,3 +84,14 @@ export const homeProductSectionsQueryDto = z.object({
 export type HomeProductSectionsQueryDto = z.infer<
   typeof homeProductSectionsQueryDto
 >["query"];
+
+export const productRecommendationsBodyDto = z.object({
+  body: z.object({
+    productIds: z.array(z.string().uuid()).max(10).default([]),
+    limit: z.coerce.number().int().min(1).max(12).default(4),
+  }),
+});
+
+export type ProductRecommendationsBodyDto = z.infer<
+  typeof productRecommendationsBodyDto
+>["body"];

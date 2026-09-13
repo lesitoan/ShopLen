@@ -6,6 +6,8 @@ import type {
   ProductDetail,
   HomeProductSectionType,
   HomeProductsResponse,
+  ProductRecommendationsRequest,
+  ProductRecommendationsResponse,
 } from "@/types/product.type";
 
 export type {
@@ -15,6 +17,8 @@ export type {
   ProductDetail,
   HomeProductSectionType,
   HomeProductsResponse,
+  ProductRecommendationsRequest,
+  ProductRecommendationsResponse,
 };
 
 export const productApi = baseApi.injectEndpoints({
@@ -31,6 +35,18 @@ export const productApi = baseApi.injectEndpoints({
       query: (slug) => `/products/${slug}`,
       transformResponse: unwrapApiResponse<ProductDetail>,
       providesTags: (result, error, slug) => [{ type: "Product", id: slug }],
+    }),
+    getProductRecommendations: builder.query<
+      ProductRecommendationsResponse,
+      ProductRecommendationsRequest
+    >({
+      query: (body) => ({
+        url: "/products/recommendations",
+        method: "POST",
+        body,
+      }),
+      transformResponse: unwrapApiResponse<ProductRecommendationsResponse>,
+      providesTags: ["Product"],
     }),
     getHomeProducts: builder.query<
       HomeProductsResponse,
@@ -49,5 +65,6 @@ export const productApi = baseApi.injectEndpoints({
 export const {
   useGetProductsQuery,
   useGetProductDetailBySlugQuery,
+  useGetProductRecommendationsQuery,
   useGetHomeProductsQuery,
 } = productApi;

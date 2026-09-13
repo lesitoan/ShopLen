@@ -8,7 +8,6 @@ import { toast } from "react-toastify";
 import Button from "@/components/ui/Button";
 import {
   useGetProductDetailBySlugQuery,
-  useGetProductsQuery,
 } from "@/services/api/productApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addToCart } from "@/store/slices/cartSlice";
@@ -38,17 +37,6 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
     isLoading,
     isError,
   } = useGetProductDetailBySlugQuery(slug);
-
-  const { data: relatedResponse } = useGetProductsQuery(
-    product?.category?.slug
-      ? { categorySlug: product.category.slug, limit: 4 }
-      : undefined
-  );
-
-  const relatedProducts = useMemo(() => {
-    if (!relatedResponse?.items) return [];
-    return relatedResponse.items.filter((p) => p.slug !== slug).slice(0, 4);
-  }, [relatedResponse, slug]);
 
   const sortedOptions = useMemo(() => {
     if (!product?.options) return [];
@@ -220,7 +208,7 @@ export default function ProductDetailScreen({ slug }: ProductDetailScreenProps) 
                 careInstructionHtml={product.careInstructionHtml}
               />
 
-              <ProductGrid products={relatedProducts} />
+              <ProductGrid products={product.relatedProducts} />
             </>
           )}
         </div>

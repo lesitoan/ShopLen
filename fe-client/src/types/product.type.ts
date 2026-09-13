@@ -54,6 +54,7 @@ export interface ProductDetail {
   highlightLabel?: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  relatedProducts: ProductItem[];
 }
 
 export interface ProductItem {
@@ -99,6 +100,15 @@ export interface ProductListResponse {
     totalItems: number;
     totalPages: number;
   };
+}
+
+export interface ProductRecommendationsRequest {
+  productIds: string[];
+  limit?: number;
+}
+
+export interface ProductRecommendationsResponse {
+  items: ProductItem[];
 }
 
 export type HomeProductSectionType =

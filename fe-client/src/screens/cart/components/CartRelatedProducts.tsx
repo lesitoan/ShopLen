@@ -2,14 +2,28 @@
 
 import React, { useMemo } from "react";
 import ProductGrid from "@/components/product/ProductGrid";
-import { useGetProductsQuery } from "@/services/api/productApi";
+import { useGetProductRecommendationsQuery } from "@/services/api/productApi";
+import { useAppSelector } from "@/store/hooks";
 
 export default function CartRelatedProducts() {
-  const { data: response } = useGetProductsQuery({ limit: 4, page: 1 });
+  const cartItems = useAppSelector((state) => state.cart.items);
+  const productIds = useMemo(
+    () =>
+      [
+        ...new Set(
+          cartItems
+            .map((item) => item.productId)
+            .filter((productId): productId is string => Boolean(productId)),
+        ),
+      ].sort(),
+    [cartItems],
+  );
+  const { data: response } = useGetProductRecommendationsQuery({
+    productIds,
+    limit: 4,
+  });
 
-  const products = useMemo(() => {
-    return response?.items || [];
-  }, [response]);
+  const products = response?.items ?? [];
 
   if (!products || products.length === 0) return null;
 

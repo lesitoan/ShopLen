@@ -74,6 +74,19 @@ npm run build
 npm run typeCheck
 ```
 
+## API deployment
+
+The storefront and admin dashboard are deployed by Vercel. The API is built by GitHub Actions and deployed to the matching Portainer stack through its API:
+
+| Git branch | Portainer stack | Image tag |
+| --- | --- | --- |
+| `develop` | `shoplen-dev` | `ghcr.io/lesitoan/shoplen-api:dev` |
+| `main` | `shoplen-v2` | `ghcr.io/lesitoan/shoplen-api:production` |
+
+Before enabling the workflow, configure the GitHub environments `Development` and `Production`. Each requires `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, and `PORTAINER_API_TOKEN`. Configure GHCR as a registry in Portainer before its stacks use the private image.
+
+The workflow preserves each stack's existing Portainer environment variables. Add or change runtime variables in the matching Portainer stack, and record required keys without secret values in `api/.env.example`.
+
 ## Documentation
 
 - [API](api/README.md)

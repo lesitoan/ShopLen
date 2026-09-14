@@ -35,7 +35,7 @@ endpointId="$(jq --raw-output '.EndpointId' <<<"${stackJson}")"
 stackEnvironment="$(jq --compact-output '.Env // []' <<<"${stackJson}")"
 stackFile="$(curl --fail --insecure --silent --show-error "${apiHeaders[@]}" "${portainerUrl}/api/stacks/${stackId}/file")"
 
-updatedStackFile="$(sed -E "0,/^([[:space:]]*image:[[:space:]]*).*/s//\\1${API_IMAGE}/" <<<"${stackFile}")"
+updatedStackFile="$(sed -E "0,/^[[:space:]]*image:[[:space:]]*/s|^([[:space:]]*image:[[:space:]]*).*|\\1${API_IMAGE}|" <<<"${stackFile}")"
 
 if [[ "${stackFile}" == "${updatedStackFile}" ]]; then
   echo "No image declaration was updated in stack ${PORTAINER_STACK_NAME}." >&2

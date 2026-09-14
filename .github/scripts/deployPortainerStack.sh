@@ -33,7 +33,8 @@ fi
 stackId="$(jq --raw-output '.Id' <<<"${stackJson}")"
 endpointId="$(jq --raw-output '.EndpointId' <<<"${stackJson}")"
 stackEnvironment="$(jq --compact-output '.Env // []' <<<"${stackJson}")"
-stackFile="$(curl --fail --insecure --silent --show-error "${apiHeaders[@]}" "${portainerUrl}/api/stacks/${stackId}/file")"
+stackFileResponse="$(curl --fail --insecure --silent --show-error "${apiHeaders[@]}" "${portainerUrl}/api/stacks/${stackId}/file")"
+stackFile="$(jq --exit-status --raw-output '.StackFileContent' <<<"${stackFileResponse}")"
 
 updatedStackFile="$(sed -E "0,/^[[:space:]]*image:[[:space:]]*/s|^([[:space:]]*image:[[:space:]]*).*|\\1${API_IMAGE}|" <<<"${stackFile}")"
 

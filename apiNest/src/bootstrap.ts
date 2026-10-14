@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
+import type { Type } from "@nestjs/common";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import helmet from "helmet";
 import { AppModule } from "@/app.module.js";
@@ -8,8 +9,8 @@ import { LoggingService } from "@/infrastructure/logging/logging.service.js";
 import { createRequestLogger } from "@/common/middlewares/requestLogger.js";
 import { ApiExceptionFilter } from "@/common/filters/apiException.filter.js";
 
-export async function createApplication() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+export async function createApplication(rootModule: Type = AppModule) {
+  const app = await NestFactory.create<NestExpressApplication>(rootModule, {
     rawBody: true,
     bufferLogs: true,
   });

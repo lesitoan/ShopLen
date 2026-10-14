@@ -11,10 +11,11 @@
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/main.js",
     "typeCheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && tsc-alias -p tsconfig.test.json && node --test distTests/tests/scaffold.test.js distTests/tests/unit/*.test.js",
-    "test:dev": "node --import tsx --test tests/scaffold.test.ts tests/unit/*.test.ts",
+    "test": "tsc -p tsconfig.test.json && tsc-alias -p tsconfig.test.json && node --test distTests/tests/scaffold.test.js distTests/tests/unit/*.test.js distTests/tests/contracts/*.test.js",
+    "test:dev": "node --import tsx --test tests/scaffold.test.ts tests/unit/*.test.ts tests/contracts/*.test.ts",
     "prisma:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "contracts:check": "node scripts/captureLegacyContracts.mjs --check"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

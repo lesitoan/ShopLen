@@ -1,0 +1,10 @@
+node_modules
+dist
+distTests
+coverage
+.env
+.env.*
+docs
+.agents
+tests
+*.log

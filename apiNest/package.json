@@ -15,7 +15,10 @@
     "test:dev": "node --import tsx --test tests/scaffold.test.ts tests/unit/*.test.ts tests/contracts/*.test.ts",
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "contracts:check": "node scripts/captureLegacyContracts.mjs --check"
+    "contracts:check": "node scripts/captureLegacyContracts.mjs --check",
+    "test:infra:up": "docker compose -f compose.test.yml up -d --wait --wait-timeout 60",
+    "test:infra": "node scripts/testInfrastructure.mjs",
+    "test:infra:down": "docker compose -f compose.test.yml down"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

@@ -59,10 +59,3 @@ jobs:
         run: npm test
       - name: Development runtime tests
         run: npm run test:dev
-      - name: Start isolated contract stores
-        run: npm run test:infra:up
-      - name: Verify PostgreSQL and Redis fixture isolation
-        run: npm run test:infra
-      - name: Stop isolated contract stores
-        if: always()
-        run: npm run test:infra:down

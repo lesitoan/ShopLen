@@ -14,6 +14,10 @@ export async function createApplication(rootModule: Type = AppModule) {
     rawBody: true,
     bufferLogs: true,
   });
+  return configureApplication(app);
+}
+
+export function configureApplication(app: NestExpressApplication) {
   const config = app.get(EnvService);
   const logging = app.get(LoggingService);
 

@@ -80,7 +80,7 @@ export function setRefreshTokenCookie(response: Response, scope: AuthCookieScope
 }
 export function clearRefreshTokenCookie(response: Response, scope: AuthCookieScope) {
     const config = getCookieConfig(scope);
-    response.clearCookie(config.name, getCookieOptions(config.path));
+    response.cookie(config.name, "", getCookieOptions(config.path));
 }
 export function getRefreshTokenCookie(request: Request, scope: AuthCookieScope) {
     return getCookieValue(request, getCookieConfig(scope).name);
@@ -98,7 +98,7 @@ export function clearAccessTokenCookie(response: Response, scope: AuthCookieScop
     const config = scope === "CUSTOMER"
         ? { name: CUSTOMER_ACCESS_TOKEN_COOKIE, path: CUSTOMER_ACCESS_COOKIE_PATH }
         : { name: ADMIN_ACCESS_TOKEN_COOKIE, path: ADMIN_ACCESS_COOKIE_PATH };
-    response.clearCookie(config.name, getCookieOptions(config.path));
+    response.cookie(config.name, "", getCookieOptions(config.path));
 }
 export function getAccessTokenCookie(request: Request, scope: AuthCookieScope) {
     const name = scope === "CUSTOMER"

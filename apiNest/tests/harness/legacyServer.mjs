@@ -14,10 +14,17 @@ const { errorHandlerMiddleware } = await load("src/middlewares/errorHandlerMiddl
 const { requestLoggerMiddleware } = await load("src/middlewares/requestLoggerMiddleware.ts");
 const { requestSchema } = await load("../apiNest/tests/fixtures/requestSchema.ts");
 const { fixtureValue } = await load("../apiNest/tests/fixtures/httpCases.ts");
+const { setRefreshTokenCookie, clearRefreshTokenCookie } = await load("src/utils/authCookie.ts");
 const app = express();
 app.use(requestLoggerMiddleware);
 app.use(express.json({ verify: (request, _response, buffer) => { request.rawBody = buffer.toString("utf8"); } }));
 app.get("/health", (_request, response) => response.json({ ok: true, service: "tiemLenApi" }));
+app.get("/api/v1/fixtures/auth-cookie", (request, response) => {
+  const scope = request.query.scope === "ADMIN" ? "ADMIN" : "CUSTOMER";
+  if (request.query.clear === "1") clearRefreshTokenCookie(response, scope);
+  else setRefreshTokenCookie(response, scope, "fixture-refresh-token");
+  response.json({ success: true });
+});
 app.get("/api/v1/fixtures/success", (request, response) => sendSuccess(response, fixtureValue(request.query.value)));
 app.post("/api/v1/fixtures/created", (_request, response) => sendCreated(response, { id: "fixture-created" }));
 app.get("/api/v1/fixtures/paginated", (_request, response) => sendPaginated(response, [], { page: 1, limit: 20, total: 0 }));

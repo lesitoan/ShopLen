@@ -7,9 +7,18 @@ import { ValidatedRequest } from "@/common/decorators/validatedRequest.decorator
 import { createdResponse, paginatedResponse, successResponse } from "@/common/responses/httpResponse.js";
 import { fixtureValue } from "../fixtures/httpCases.js";
 import { requestSchema, type RequestFixture } from "../fixtures/requestSchema.js";
+import { setRefreshTokenCookie, clearRefreshTokenCookie } from "@/modules/auth/http/authCookie.js";
 
 @Controller("fixtures")
 class FixtureController {
+  @Get("auth-cookie")
+  cookie(@Query("scope") actor: string, @Query("clear") clear: string, @Res() response: Response) {
+    const scope = actor === "ADMIN" ? "ADMIN" : "CUSTOMER";
+    if (clear === "1") clearRefreshTokenCookie(response, scope);
+    else setRefreshTokenCookie(response, scope, "fixture-refresh-token");
+    return response.json({ success: true });
+  }
+
   @Get("success")
   success(@Query("value") value?: string) { return successResponse(fixtureValue(value)); }
 

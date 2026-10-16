@@ -78,6 +78,11 @@ test("OTP hashing, attempt limit, verification and consumption preserve TTL", as
   await otp.consume(payload.email);
   assert.equal(await redis.get(key), null);
   await assert.rejects(otp.assertValid({ ...payload, otpCode: "123456" }));
+  await otp.create({ customerId: "customer-1", email: payload.email, otpCode: "123456", ttlSeconds: 60 });
+  await assert.rejects(otp.assertValid(payload));
+  await assert.rejects(otp.assertValid(payload));
+  await assert.rejects(otp.assertValid({ ...payload, otpCode: "123456" }),
+    (error: unknown) => error instanceof AppError && error.errorCode === "OTP_INVALID");
   await otp.create({ customerId: "customer-1", email: payload.email, otpCode: "123456", ttlSeconds: 1 });
   redis.time += 2_000;
   await assert.rejects(otp.assertValid(payload));

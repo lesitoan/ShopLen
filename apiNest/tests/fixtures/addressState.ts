@@ -13,7 +13,7 @@ export function createAddressState() {
         .sort((left, right) => Number(right.isDefault) - Number(left.isDefault) || right.createdAt.getTime() - left.createdAt.getTime())
         .map((item) => Object.fromEntries(Object.keys(select).map((key) => [key, Reflect.get(item, key)]))),
     create: async ({ data }: { data: Omit<CustomerAddress, "id" | "createdAt" | "updatedAt" | "districtName" | "wardName"> & Partial<CustomerAddress> }) => {
-      const item: CustomerAddress = { districtName: null, wardName: null, ...data, id: randomUUID(), createdAt: new Date(), updatedAt: new Date() };
+      const item: CustomerAddress = { ...data, districtName: data.districtName ?? null, wardName: data.wardName ?? null, id: randomUUID(), createdAt: new Date(), updatedAt: new Date() };
       addresses.set(item.id, item);
       return item;
     },

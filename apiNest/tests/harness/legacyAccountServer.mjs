@@ -1,0 +1,33 @@
+import { createRequire } from "node:module";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
+const root = process.cwd();
+const requireLegacy = createRequire(resolve(root, "package.json"));
+const load = (path) => import(pathToFileURL(resolve(root, path)).href);
+const { createAccountParityState } = await load("../apiNest/tests/fixtures/accountParityState.ts");
+const state = await createAccountParityState();
+globalThis.prisma = state.prisma;
+globalThis.redisClient = Object.assign(state.redis, { isOpen: true, on: () => {} });
+globalThis.notificationQueueConnection = { on: () => {} };
+globalThis.notificationQueue = {};
+const { cloudinaryService } = await load("src/services/cloudinaryService.ts");
+cloudinaryService.uploadImageBuffer = async () => ({ url: "https://example.test/avatar.webp", publicId: "avatars/test" });
+const { customerRoutes } = await load("src/routes/client/customerRoutes.ts");
+const { customerAddressRoutes } = await load("src/routes/client/customerAddressRoutes.ts");
+const { adminCustomerRoutes } = await load("src/routes/admin/adminCustomerRoutes.ts");
+const { adminUserRoutes } = await load("src/routes/admin/adminUserRoutes.ts");
+const { errorHandlerMiddleware } = await load("src/middlewares/errorHandlerMiddleware.ts");
+const express = requireLegacy("express");
+const app = express();
+app.use(express.json());
+app.use("/api/v1/customers", customerRoutes);
+app.use("/api/v1/addresses", customerAddressRoutes);
+app.use("/api/v1/admin/customers", adminCustomerRoutes);
+app.use("/api/v1/admin/users", adminUserRoutes);
+app.use(errorHandlerMiddleware);
+const server = app.listen(0, "127.0.0.1", () => process.send({ port: server.address().port }));
+process.on("message", (message) => {
+  if (message === "close") server.close(() => process.exit(0));
+});
+process.on("disconnect", () => server.close());

@@ -1,6 +1,6 @@
 import type { Customer, User } from "@prisma/client";
 import { Prisma } from "@prisma/client";
-import { hashPassword } from "@/modules/auth/security/hashPassword.js";
+import { hashPassword } from "../../src/modules/auth/security/hashPassword.js";
 import { MemoryRedis } from "../harness/memoryRedis.js";
 
 export async function createAuthState() {
@@ -43,7 +43,7 @@ export async function createAuthState() {
         update: async ({ where, data }: { where: { id: string }; data: Partial<Customer> }) => {
           const item = customers.get(where.id);
           if (!item) throw new Error("missing customer");
-          Object.assign(item, data);
+          Object.assign(item, Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined)));
           return item;
         },
       },
@@ -53,7 +53,7 @@ export async function createAuthState() {
         update: async ({ where, data }: { where: { id: string }; data: Partial<User> }) => {
           const item = users.get(where.id);
           if (!item) throw new Error("missing user");
-          Object.assign(item, data);
+          Object.assign(item, Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined)));
           return item;
         },
       },

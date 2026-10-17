@@ -9,6 +9,7 @@ import { RedisService } from "@/infrastructure/redis/redis.service.js";
 import { GoogleAuthService } from "@/infrastructure/google/googleAuth.service.js";
 import { EmailService } from "@/infrastructure/email/email.service.js";
 import { NotificationService } from "@/infrastructure/queues/notification.service.js";
+import { CloudinaryService } from "@/infrastructure/cloudinary/cloudinary.service.js";
 import { configureApplication } from "@/bootstrap.js";
 import { AuthRateLimitService } from "@/modules/auth/http/authRateLimit.service.js";
 import { AppError } from "@/common/errors/appError.js";
@@ -19,6 +20,7 @@ class AuthTestModule {}
 
 export async function startAuthApplication() {
   const state = await createAuthState();
+  const uploads: Array<{ file: Express.Multer.File; folder: string }> = [];
   const module = await Test.createTestingModule({ imports: [AuthTestModule] })
     .overrideProvider(PrismaService).useValue(state.prisma)
     .overrideProvider(RedisService).useValue({ getClient: async () => state.redis })
@@ -31,13 +33,17 @@ export async function startAuthApplication() {
     } })
     .overrideProvider(EmailService).useValue({ sendPasswordResetOtpEmail: async (params: { to: string; otpCode: string; expiresInMinutes: number }) => { state.emails.push(params); } })
     .overrideProvider(NotificationService).useValue({ enqueue: async (name: string, data: unknown) => { state.notifications.push({ name, data }); } })
+    .overrideProvider(CloudinaryService).useValue({ uploadImageBuffer: async (file: Express.Multer.File, folder: string) => {
+      uploads.push({ file, folder });
+      return { url: "https://example.test/avatar.webp", publicId: "avatars/test" };
+    } })
     .compile();
   const app = configureApplication(module.createNestApplication<NestExpressApplication>({ rawBody: true, bufferLogs: true }));
   await app.listen(0, "127.0.0.1");
   const url = await app.getUrl();
   const limits = app.get(AuthRateLimitService);
   return {
-    app, state, limits, url,
+    app, state, limits, url, uploads,
     resetLimits: () => { for (const limit of [limits.login, limits.recovery, limits.refresh]) limit.resetKey("127.0.0.1"); },
     close: () => app.close(),
   };

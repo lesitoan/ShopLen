@@ -7,10 +7,12 @@ import { ClientCustomerService } from "@/modules/customers/services/clientCustom
 import { AvatarUploadInterceptor } from "@/modules/customers/http/avatarUpload.interceptor.js";
 import { CustomerAddressController } from "@/modules/customers/controllers/customerAddress.controller.js";
 import { CustomerAddressService } from "@/modules/customers/services/customerAddress.service.js";
+import { AdminCustomerController } from "@/modules/customers/controllers/adminCustomer.controller.js";
+import { AdminCustomerService } from "@/modules/customers/services/adminCustomer.service.js";
 
 @Module({
   imports: [PrismaModule, CloudinaryModule, AuthModule],
-  controllers: [ClientCustomerController, CustomerAddressController],
-  providers: [ClientCustomerService, CustomerAddressService, AvatarUploadInterceptor],
+  controllers: [ClientCustomerController, CustomerAddressController, AdminCustomerController],
+  providers: [ClientCustomerService, CustomerAddressService, AdminCustomerService, AvatarUploadInterceptor],
 })
 export class CustomerModule {}

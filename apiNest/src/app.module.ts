@@ -4,6 +4,7 @@ import { HealthModule } from "@/modules/health/health.module.js";
 import { LoggingModule } from "@/infrastructure/logging/logging.module.js";
 import { AuthModule } from "@/modules/auth/auth.module.js";
 import { CustomerModule } from "@/modules/customers/customer.module.js";
+import { UserModule } from "@/modules/users/user.module.js";
 
-@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule] })
+@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule] })
 export class AppModule {}

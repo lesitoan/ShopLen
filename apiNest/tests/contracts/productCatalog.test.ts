@@ -33,6 +33,8 @@ test("public catalog preserves filters, pagination, static home route, cached se
     ] });
     assert.equal((await authRequest(server.url, "/products?minPrice=2&maxPrice=1")).response.status, 422);
     assert.equal((await authRequest(server.url, "/products?colorCodes=invalid-color")).response.status, 422);
+    const bracketed = await authRequest(server.url, "/products?categoryIds[]=00000000-0000-4000-8000-000000000999");
+    assert.deepEqual(bracketed.body.data.pagination, { page: 1, limit: 12, totalItems: 0, totalPages: 0 });
     const empty = await authRequest(server.url, "/products/empty");
     assert.equal(empty.body.data.stockQuantity, 0);
     assert.deepEqual(empty.body.data.images, []);

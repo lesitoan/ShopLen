@@ -3,6 +3,13 @@ export class MemoryRedis {
   readonly indexes = new Map<string, Map<string, number>>();
   time = Date.now();
 
+  async set(key: string, value: string, options: { EX: number; NX?: boolean }) {
+    const existing = this.values.get(key);
+    if (options.NX && existing && existing.expiresAt > this.time) return null;
+    this.values.set(key, { value, expiresAt: this.time + options.EX * 1000 });
+    return "OK";
+  }
+
   async get(key: string) {
     const item = this.values.get(key);
     if (!item || item.expiresAt <= this.time) { this.values.delete(key); return null; }

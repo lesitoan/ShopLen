@@ -8,6 +8,7 @@ import { UserModule } from "@/modules/users/user.module.js";
 import { CategoryModule } from "@/modules/categories/category.module.js";
 import { ProductModule } from "@/modules/products/product.module.js";
 import { CartModule } from "@/modules/cart/cart.module.js";
+import { BlogModule } from "@/modules/blogs/blog.module.js";
 
-@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule] })
+@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule, BlogModule] })
 export class AppModule {}

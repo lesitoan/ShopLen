@@ -8,3 +8,5 @@ coverage/
 *.tsbuildinfo
 *.log
 docs/
+!src/modules/uploads/
+!src/modules/uploads/**

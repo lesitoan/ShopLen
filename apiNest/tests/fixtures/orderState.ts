@@ -7,7 +7,7 @@ export async function createOrderState() {
   const orders = new Map<string, Row>();
   const updates: Query[] = [];
   const transactions: Array<unknown> = [];
-  const failures = { create: false };
+  const failures = { create: false, casProductId: null as string | null };
   let sequence = 800;
   const nextId = () => `00000000-0000-4000-8000-${String(sequence++).padStart(12, "0")}`;
   const seedOrder = (data: Row = {}) => {
@@ -47,7 +47,7 @@ export async function createOrderState() {
     updateMany: async (query: Query) => { let count = 0; for (const item of orders.values()) if (match(item, query.where)) { apply(item, query.data!); count++; } return { count }; },
   };
   Object.assign(state.prisma.product, {
-    updateMany: async (query: Query) => { updates.push(query); let count = 0; for (const item of state.products.values()) if (match(item, query.where)) { apply(item, query.data!); count++; } return { count }; },
+    updateMany: async (query: Query) => { updates.push(query); if (query.where!.id === failures.casProductId) return { count: 0 }; let count = 0; for (const item of state.products.values()) if (match(item, query.where)) { apply(item, query.data!); count++; } return { count }; },
     update: async (query: Query) => { const item = state.products.get(query.where!.id as string)!; apply(item, query.data!); return item; },
   });
   let tail = Promise.resolve();
@@ -63,8 +63,10 @@ export async function createOrderState() {
       const orderSnapshot = structuredClone(orders), productSnapshot = structuredClone(state.products);
       try { return await callback(prisma); }
       catch (error) {
-        orders.clear(); for (const [id, item] of orderSnapshot) orders.set(id, item);
-        state.products.clear(); for (const [id, item] of productSnapshot) state.products.set(id, item);
+        for (const id of orders.keys()) if (!orderSnapshot.has(id)) orders.delete(id);
+        for (const [id, item] of orderSnapshot) orders.set(id, Object.assign(orders.get(id) ?? {}, item));
+        for (const id of state.products.keys()) if (!productSnapshot.has(id)) state.products.delete(id);
+        for (const [id, item] of productSnapshot) state.products.set(id, Object.assign(state.products.get(id) ?? {}, item));
         throw error;
       } finally { release(); }
     },

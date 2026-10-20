@@ -34,6 +34,15 @@ test("checkout preserves grouped quantities, pricing, snapshots, transaction rol
     state.failures.create = false;
     const invalid = await authRequest(server.url, "/orders", { ...payload, items: [{ ...item, selectedOptions: [] }] }, { token });
     assert.equal(invalid.body.errorCode, "PRODUCT_OPTION_REQUIRED");
+    assert.equal((await authRequest(server.url, "/orders", { ...payload, items: [{ ...item, selectedOptions: [{ optionType: "COLOR", code: "BLUE" }] }] }, { token })).body.errorCode, "PRODUCT_OPTION_INVALID");
+    const beforeAttempts = state.updates.length;
+    const stockBefore = state.products.get(state.reference.id as string)!.stockQuantity;
+    state.failures.casProductId = state.sale.id as string;
+    const partial = await authRequest(server.url, "/orders", { ...payload, items: [item, { ...item, productId: state.reference.id }] }, { token });
+    assert.equal(partial.body.errorCode, "PRODUCT_OUT_OF_STOCK");
+    assert.equal(state.products.get(state.reference.id as string)!.stockQuantity, stockBefore);
+    assert.deepEqual(state.updates.slice(beforeAttempts).map((query) => query.where!.id), [state.reference.id, state.sale.id]);
+    state.failures.casProductId = null;
     const service = server.app.get(ClientOrderService);
     const product = state.products.get(state.reference.id as string)!;
     product.stockQuantity = 1;

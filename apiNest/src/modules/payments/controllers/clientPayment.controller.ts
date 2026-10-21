@@ -17,7 +17,8 @@ export class ClientPaymentController {
   @Post("sepay/webhook")
   @HttpCode(200)
   async webhook(@Req() request: RawBodyRequest<Request>) {
-    this.service.verifySepaySignature({ signature: request.header("x-sepay-signature"), timestamp: request.header("x-sepay-timestamp"), rawBody: request.rawBody?.toString("utf8") });
+    const rawBody = request.is("application/json") ? request.rawBody?.toString("utf8") : undefined;
+    this.service.verifySepaySignature({ signature: request.header("x-sepay-signature"), timestamp: request.header("x-sepay-timestamp"), rawBody });
     const result = sepayWebhookDto.safeParse(request.body);
     if (!result.success) throw new AppError("Payload webhook SePay không hợp lệ.", 400, "SEPAY_WEBHOOK_PAYLOAD_INVALID", result.error.message);
     await this.service.handleSepayWebhook(result.data);

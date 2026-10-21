@@ -15,3 +15,6 @@ process.env.ORDER_PAYMENT_HOLD_MINUTES = "5";
 process.env.BANK_CODE = "TEST_BANK";
 process.env.BANK_ACCOUNT_NUMBER = "0000000000";
 process.env.BANK_ACCOUNT_NAME = "TEST ACCOUNT";
+process.env.SEPAY_WEBHOOK_AUTH_TYPE = "HMAC";
+process.env.SEPAY_WEBHOOK_SECRET = "test-sepay-secret";
+process.env.VIETQR_TEMPLATE = "compact";

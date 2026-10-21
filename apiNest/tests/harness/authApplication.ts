@@ -8,6 +8,7 @@ import { PrismaService } from "@/infrastructure/prisma/prisma.service.js";
 import { RedisService } from "@/infrastructure/redis/redis.service.js";
 import { GoogleAuthService } from "@/infrastructure/google/googleAuth.service.js";
 import { EmailService } from "@/infrastructure/email/email.service.js";
+import type { SendOrderPaidEmailParams } from "@/infrastructure/email/types/email.type.js";
 import { NotificationService } from "@/infrastructure/queues/notification.service.js";
 import { CloudinaryService } from "@/infrastructure/cloudinary/cloudinary.service.js";
 import { RealtimeService } from "@/infrastructure/realtime/realtime.service.js";
@@ -23,6 +24,7 @@ export async function startAuthApplication(createState: () => Promise<AuthState>
   const state = await createState();
   const uploads: Array<{ file: Express.Multer.File; folder: string }> = [];
   const events: Array<{ orderId: string; orderStatus: string }> = [];
+  const paidEmails: SendOrderPaidEmailParams[] = [];
   const module = await Test.createTestingModule({ imports: [AuthTestModule] })
     .overrideProvider(PrismaService).useValue(state.prisma)
     .overrideProvider(RealtimeService).useValue({ emitOrderStatusChanged: (orderId: string, orderStatus: string) => { events.push({ orderId, orderStatus }); } })
@@ -34,7 +36,10 @@ export async function startAuthApplication(createState: () => Promise<AuthState>
         emailVerified: token !== "unverified", fullName: "Google Test", avatar: "https://example.test/avatar.png",
       };
     } })
-    .overrideProvider(EmailService).useValue({ sendPasswordResetOtpEmail: async (params: { to: string; otpCode: string; expiresInMinutes: number }) => { state.emails.push(params); } })
+    .overrideProvider(EmailService).useValue({
+      sendPasswordResetOtpEmail: async (params: { to: string; otpCode: string; expiresInMinutes: number }) => { state.emails.push(params); },
+      sendOrderPaidEmail: async (params: SendOrderPaidEmailParams) => { paidEmails.push(params); },
+    })
     .overrideProvider(NotificationService).useValue({ enqueue: async (name: string, data: unknown) => { state.notifications.push({ name, data }); } })
     .overrideProvider(CloudinaryService).useValue({ uploadImageBuffer: async (file: Express.Multer.File, folder: string) => {
       uploads.push({ file, folder });
@@ -46,7 +51,7 @@ export async function startAuthApplication(createState: () => Promise<AuthState>
   const url = await app.getUrl();
   const limits = app.get(AuthRateLimitService);
   return {
-    app, state, limits, url, uploads, events,
+    app, state, limits, url, uploads, events, paidEmails,
     resetLimits: () => { for (const limit of [limits.login, limits.recovery, limits.refresh]) limit.resetKey("127.0.0.1"); },
     close: () => app.close(),
   };

@@ -12,6 +12,7 @@ function matches(value: unknown, filter: unknown): boolean {
     if (key === "gt") return value != null && Number(value) > Number(expected);
     if (key === "gte") return value != null && Number(value) >= Number(expected);
     if (key === "lte") return value != null && Number(value) <= Number(expected);
+    if (key === "lt") return value != null && Number(value) < Number(expected);
     if (key === "contains") return String(value ?? "").toLowerCase().includes(String(expected).toLowerCase());
     if (key === "some") return Array.isArray(value) && value.some((item) => matches(item, expected));
     if (key === "array_contains") return Array.isArray(value) && (expected as unknown[]).every((part) => value.some((item) => matches(item, part)));

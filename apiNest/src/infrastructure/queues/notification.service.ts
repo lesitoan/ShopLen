@@ -1,8 +1,10 @@
-import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
+import { ResourceDrainService } from "@/infrastructure/lifecycle/resourceDrain.service.js";
+import { Inject, Injectable, Optional, type OnModuleDestroy } from "@nestjs/common";
 import { Queue } from "bullmq";
 import { Redis } from "ioredis";
 import { EnvService } from "@/config/env.service.js";
 import { LoggingService } from "@/infrastructure/logging/logging.service.js";
+import { queueJobOptions } from "@/infrastructure/queues/queueOptions.js";
 import type { NotificationJobData, NotificationJobName } from "@/infrastructure/queues/types/notification.type.js";
 
 @Injectable()
@@ -13,6 +15,7 @@ export class NotificationService implements OnModuleDestroy {
   constructor(
     @Inject(EnvService) private readonly config: EnvService,
     @Inject(LoggingService) private readonly logging: LoggingService,
+    @Optional() @Inject(ResourceDrainService) private readonly drain?: ResourceDrainService,
   ) {}
 
   private getQueue() {
@@ -21,11 +24,7 @@ export class NotificationService implements OnModuleDestroy {
       this.connection.on("error", (error) => this.logging.logger.error({ err: error }, "Notification queue Redis error"));
       this.queue = new Queue<NotificationJobData>("notificationQueue", {
         connection: this.connection,
-        defaultJobOptions: {
-          attempts: 3, backoff: { type: "exponential", delay: 10_000 },
-          removeOnComplete: { age: 86400, count: 500 },
-          removeOnFail: { age: 86400 * 7, count: 1000 },
-        },
+        defaultJobOptions: queueJobOptions,
       });
       this.queue.on("error", (error) => this.logging.logger.error({ err: error }, "Notification queue error"));
     }
@@ -49,6 +48,7 @@ export class NotificationService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    await this.drain?.drain();
     try { await this.queue?.close(); }
     finally { this.connection?.disconnect(); }
   }

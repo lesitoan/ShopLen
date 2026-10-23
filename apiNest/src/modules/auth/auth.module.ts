@@ -4,7 +4,9 @@ import { LoggingModule } from "@/infrastructure/logging/logging.module.js";
 import { PrismaModule } from "@/infrastructure/prisma/prisma.module.js";
 import { AuthCoreModule } from "@/modules/auth/authCore.module.js";
 import { AuthDependenciesModule } from "@/modules/auth/authDependencies.module.js";
+import { ClientAuthService } from "@/modules/auth/services/clientAuth.service.js";
 import { AdminAuthService } from "@/modules/auth/services/adminAuth.service.js";
+import { ClientAuthController } from "@/modules/auth/controllers/clientAuth.controller.js";
 import { AdminAuthController } from "@/modules/auth/controllers/adminAuth.controller.js";
 import { CustomerAuthGuard } from "@/modules/auth/guards/customerAuth.guard.js";
 import { AdminAuthGuard } from "@/modules/auth/guards/adminAuth.guard.js";
@@ -13,8 +15,8 @@ import { AuthRateLimitService } from "@/modules/auth/http/authRateLimit.service.
 
 @Module({
   imports: [EnvModule, LoggingModule, PrismaModule, AuthCoreModule, AuthDependenciesModule],
-  controllers: [AdminAuthController],
-  providers: [AdminAuthService, CustomerAuthGuard, AdminAuthGuard, RolesGuard, AuthRateLimitService],
+  controllers: [ClientAuthController, AdminAuthController],
+  providers: [ClientAuthService, AdminAuthService, CustomerAuthGuard, AdminAuthGuard, RolesGuard, AuthRateLimitService],
   exports: [CustomerAuthGuard, AdminAuthGuard, RolesGuard, AuthCoreModule],
 })
 export class AuthModule implements NestModule {

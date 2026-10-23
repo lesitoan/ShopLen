@@ -1,9 +1,11 @@
 import { spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const require = createRequire(import.meta.url);
+const prismaPackage = JSON.parse(readFileSync(resolve("node_modules/prisma/package.json"), "utf8"));
+const prismaCli = resolve("node_modules/prisma", prismaPackage.bin.prisma);
 for (const port of [55441, 55442]) {
-  const result = spawnSync(process.execPath, [require.resolve("prisma"), "migrate", "deploy"], {
+  const result = spawnSync(process.execPath, [prismaCli, "migrate", "deploy"], {
     stdio: "inherit",
     env: {
       ...process.env,

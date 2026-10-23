@@ -15,6 +15,7 @@
     "test:dev": "node --import tsx --test tests/scaffold.test.ts tests/unit/*.test.ts tests/contracts/*.test.ts",
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",
+    "lint": "eslint src tests scripts *.mjs prisma.config.ts --max-warnings=0",
     "contracts:check": "node scripts/captureLegacyContracts.mjs --check",
     "test:infra:up": "docker compose -f compose.test.yml up -d --wait --wait-timeout 60",
     "test:infra": "node scripts/testInfrastructure.mjs",
@@ -39,12 +40,15 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@types/express": "5.0.6",
     "@types/multer": "2.2.0",
     "@types/node": "20.19.43",
+    "eslint": "10.13.0",
     "prisma": "7.9.0",
     "tsc-alias": "1.9.1",
     "tsx": "4.23.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.0"
   }
 }

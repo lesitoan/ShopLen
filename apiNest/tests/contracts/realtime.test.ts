@@ -20,6 +20,10 @@ test("Socket.IO retains default path, connected payload and order status broadca
     app.get(RealtimeService).emitOrderStatusChanged("test-order", "CANCELLED");
     const event = await (await fetch(session)).text();
     assert.equal(event, '42["order:statusChanged",{"orderId":"test-order","orderStatus":"CANCELLED"}]');
+    app.get(RealtimeService).emitOrderPaid("test-order");
+    assert.equal(await (await fetch(session)).text(), '42["order:paid",{"orderId":"test-order"}]');
+    app.get(RealtimeService).emitStockUpdate("test-product", 7);
+    assert.equal(await (await fetch(session)).text(), '42["stock:update",{"productId":"test-product","stock":7}]');
     await fetch(session, { method: "POST", headers: { "content-type": "text/plain" }, body: "41" });
   } finally { await app.close(); }
 });

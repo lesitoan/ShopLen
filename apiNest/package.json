@@ -1,0 +1,41 @@
+{
+  "name": "tiem-len-nest-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "typeCheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.test.json && tsc-alias -p tsconfig.test.json && node --test distTests/tests/scaffold.test.js",
+    "test:dev": "node --import tsx --test tests/scaffold.test.ts",
+    "prisma:generate": "prisma generate",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@nestjs/common": "12.2.0",
+    "@nestjs/core": "12.2.0",
+    "@nestjs/platform-express": "12.2.0",
+    "@prisma/adapter-pg": "7.9.0",
+    "@prisma/client": "7.9.0",
+    "dotenv": "16.6.1",
+    "helmet": "7.2.0",
+    "pg": "8.22.0",
+    "redis": "6.1.0",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "20.19.43",
+    "prisma": "7.9.0",
+    "tsc-alias": "1.9.1",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3"
+  }
+}

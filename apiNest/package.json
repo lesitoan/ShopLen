@@ -11,7 +11,7 @@
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/main.js",
     "typeCheck": "tsc --noEmit",
-    "test": "tsc -p tsconfig.test.json && tsc-alias -p tsconfig.test.json && node --test distTests/tests/scaffold.test.js distTests/tests/unit/*.test.js distTests/tests/contracts/*.test.js",
+    "test": "node scripts/cleanTestOutput.mjs && tsc -p tsconfig.test.json && tsc-alias -p tsconfig.test.json && node --test distTests/tests/scaffold.test.js distTests/tests/unit/*.test.js distTests/tests/contracts/*.test.js",
     "test:dev": "node --import tsx --test tests/scaffold.test.ts tests/unit/*.test.ts tests/contracts/*.test.ts",
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",

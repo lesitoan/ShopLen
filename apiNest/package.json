@@ -16,10 +16,7 @@
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",
     "lint": "eslint src tests scripts *.mjs prisma.config.ts --max-warnings=0",
-    "contracts:check": "node scripts/captureLegacyContracts.mjs --check",
-    "test:infra:up": "docker compose -f compose.test.yml up -d --wait --wait-timeout 60",
-    "test:infra": "node scripts/testInfrastructure.mjs",
-    "test:infra:down": "docker compose -f compose.test.yml down"
+    "contracts:check": "node scripts/captureLegacyContracts.mjs --check"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

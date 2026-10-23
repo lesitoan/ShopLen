@@ -2,6 +2,7 @@ import "../harness/testEnvironment.js";
 import { test } from "node:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import assert from "node:assert/strict";
 import { createApplication } from "@/bootstrap.js";
 import { httpCases } from "../fixtures/httpCases.js";
 import { NestFixtureModule } from "../harness/nestFixture.module.js";
@@ -22,6 +23,19 @@ test("HTTP foundation matches actual Express response, validation and error help
         assertContractMatches(actual, expected);
       });
     }
+    await context.test("refresh cookie creation and clearing preserve Express 4 attributes", async () => {
+      for (const scope of ["CUSTOMER", "ADMIN"]) {
+        for (const clear of ["0", "1"]) {
+          const path = `/api/v1/fixtures/auth-cookie?scope=${scope}&clear=${clear}`;
+          const oldResponse = await fetch(`${legacy.url}${path}`);
+          const newResponse = await fetch(`${nest.url}${path}`);
+          const normalize = (header: string | null) => header?.replace(/Expires=[^;]+/, "Expires=<timestamp>");
+          assert.equal(normalize(newResponse.headers.get("set-cookie")), normalize(oldResponse.headers.get("set-cookie")));
+          await oldResponse.arrayBuffer();
+          await newResponse.arrayBuffer();
+        }
+      }
+    });
   } finally {
     await Promise.all([legacy.close(), nest.close()]);
   }

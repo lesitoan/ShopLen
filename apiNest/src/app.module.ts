@@ -7,6 +7,7 @@ import { CustomerModule } from "@/modules/customers/customer.module.js";
 import { UserModule } from "@/modules/users/user.module.js";
 import { CategoryModule } from "@/modules/categories/category.module.js";
 import { ProductModule } from "@/modules/products/product.module.js";
+import { CartModule } from "@/modules/cart/cart.module.js";
 
-@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule] })
+@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule] })
 export class AppModule {}

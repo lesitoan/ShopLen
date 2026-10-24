@@ -9,6 +9,7 @@ import { CategoryModule } from "@/modules/categories/category.module.js";
 import { ProductModule } from "@/modules/products/product.module.js";
 import { CartModule } from "@/modules/cart/cart.module.js";
 import { BlogModule } from "@/modules/blogs/blog.module.js";
+import { UploadModule } from "@/modules/uploads/upload.module.js";
 
-@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule, BlogModule] })
+@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule, BlogModule, UploadModule] })
 export class AppModule {}

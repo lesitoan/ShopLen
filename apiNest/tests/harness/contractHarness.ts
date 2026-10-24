@@ -5,10 +5,10 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { INestApplication } from "@nestjs/common";
 
-export async function startLegacyServer() {
+export async function startLegacyServer(script = "legacyServer.mjs") {
   const legacyRoot = resolve(process.cwd(), "../api");
   const requireLegacy = createRequire(resolve(legacyRoot, "package.json"));
-  const child = fork(resolve(process.cwd(), "tests/harness/legacyServer.mjs"), [], {
+  const child = fork(resolve(process.cwd(), "tests/harness", script), [], {
     cwd: legacyRoot,
     execArgv: ["--import", pathToFileURL(requireLegacy.resolve("tsx")).href],
     env: { ...process.env, TSX_TSCONFIG_PATH: resolve(legacyRoot, "tsconfig.json") },

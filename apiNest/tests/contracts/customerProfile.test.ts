@@ -20,6 +20,7 @@ test("customer profile preserves nullable dates, actor identity and password ses
     const cleared = await patch({ birthday: null, gender: null, phone: null });
     assert.equal(cleared.body.data.birthday, null);
     assert.equal(cleared.body.data.phone, null);
+    assert.equal(cleared.body.data.fullName, "Tên mới");
     const password = (body: unknown) => authRequest(server.url, "/customers/me/password", body, { token, method: "PATCH" });
     assert.equal((await password({ currentPassword: "wrong", newPassword: "changed-password", confirmPassword: "changed-password" })).body.errorCode, "INVALID_CREDENTIALS");
     assert.equal(await comparePassword("original-password", server.state.customer.passwordHash!), true);

@@ -31,6 +31,8 @@ test("addresses preserve first default, owner isolation, PATCH scope and mutatio
     const listed = await request("/addresses", "GET");
     assert.equal(listed.body.data[0].id, first.id);
     assert.equal("customerId" in listed.body.data[0], false);
+    assert.equal(listed.body.data[0].districtName, null);
+    assert.equal(listed.body.data[0].wardName, null);
     second.customerId = server.state.user.id;
     for (const method of ["PATCH", "DELETE"]) {
       const forbidden = await request(`/addresses/${second.id}`, method, method === "PATCH" ? { isDefault: true } : undefined);

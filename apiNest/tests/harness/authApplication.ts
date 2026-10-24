@@ -13,13 +13,13 @@ import { CloudinaryService } from "@/infrastructure/cloudinary/cloudinary.servic
 import { configureApplication } from "@/bootstrap.js";
 import { AuthRateLimitService } from "@/modules/auth/http/authRateLimit.service.js";
 import { AppError } from "@/common/errors/appError.js";
-import { createAuthState } from "../fixtures/authState.js";
+import { createAuthState, type AuthState } from "../fixtures/authState.js";
 
 @Module({ imports: [AppModule, AuthModule] })
 class AuthTestModule {}
 
-export async function startAuthApplication() {
-  const state = await createAuthState();
+export async function startAuthApplication(createState: () => Promise<AuthState> = createAuthState) {
+  const state = await createState();
   const uploads: Array<{ file: Express.Multer.File; folder: string }> = [];
   const module = await Test.createTestingModule({ imports: [AuthTestModule] })
     .overrideProvider(PrismaService).useValue(state.prisma)

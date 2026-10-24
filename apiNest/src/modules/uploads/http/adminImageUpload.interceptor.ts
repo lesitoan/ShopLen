@@ -12,7 +12,7 @@ class AdminImageUploadInterceptor implements NestInterceptor {
   constructor(many: boolean) {
     const parser = multer({
       storage: multer.memoryStorage(),
-      limits: { fileSize: 5 * 1024 * 1024, files: many ? 6 : 1 },
+      limits: { fileSize: 5 * 1024 * 1024 - 1, files: many ? 6 : 1 },
       fileFilter: (_request, file, callback) => {
         if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
           callback(new AppError("Ảnh chỉ hỗ trợ định dạng JPG, PNG hoặc WEBP.", 400, "ADMIN_IMAGE_FILE_TYPE_INVALID"));

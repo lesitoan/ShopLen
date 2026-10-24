@@ -7,7 +7,7 @@ import { AppError } from "@/common/errors/appError.js";
 export class AvatarUploadInterceptor implements NestInterceptor {
   private readonly upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+    limits: { fileSize: 2 * 1024 * 1024 - 1, files: 1 },
     fileFilter: (_request, file, callback) => {
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
         callback(new AppError("Avatar chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP.", 400, "AVATAR_FILE_TYPE_INVALID"));

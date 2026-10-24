@@ -53,6 +53,7 @@ test("avatar enforces multipart field, MIME and 2MB before uploading and preserv
     assert.equal((await upload("image/png", 1, "avatar", false)).response.status, 401);
     assert.equal((await upload("image/gif", 1)).body.errorCode, "AVATAR_FILE_TYPE_INVALID");
     assert.equal((await upload("image/png", 1, "image")).body.errorCode, "LIMIT_UNEXPECTED_FILE");
+    assert.equal((await upload("image/png", 2 * 1024 * 1024)).body.errorCode, "LIMIT_FILE_SIZE");
     assert.equal((await upload("image/png", 2 * 1024 * 1024 + 1)).body.errorCode, "LIMIT_FILE_SIZE");
     assert.equal((await upload("image/png", 0, "")).body.errorCode, "AVATAR_FILE_REQUIRED");
     assert.equal(server.uploads.length, 0);

@@ -21,6 +21,7 @@ export function configureApplication(app: NestExpressApplication) {
   const config = app.get(EnvService);
   const logging = app.get(LoggingService);
 
+  app.set("query parser", "extended");
   app.setGlobalPrefix("api/v1", { exclude: ["health"] });
   app.use(helmet());
   app.useLogger(logging);

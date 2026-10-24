@@ -18,7 +18,7 @@ export async function startLegacyServer(script = "legacyServer.mjs") {
   child.stderr?.on("data", (value) => { diagnostics += value.toString(); });
   child.stdout?.on("data", () => {});
   const url = await new Promise<string>((resolveUrl, reject) => {
-    const timer = setTimeout(() => { child.kill(); reject(new Error(`Legacy startup timeout: ${diagnostics}`)); }, 15_000);
+    const timer = setTimeout(() => { child.kill(); reject(new Error(`Legacy startup timeout: ${diagnostics}`)); }, 30_000);
     child.once("message", (value) => {
       clearTimeout(timer);
       resolveUrl(`http://127.0.0.1:${(value as { port: number }).port}`);

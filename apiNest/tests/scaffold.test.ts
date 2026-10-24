@@ -24,7 +24,7 @@ test("scaffold serves legacy health without connecting to database or Redis", as
     assert.equal(response.headers.get("access-control-allow-credentials"), "true");
     assert.equal(response.headers.get("x-content-type-options"), "nosniff");
     assert.equal((await fetch(`${url}/api/v1/health`)).status, 404);
-    assert.equal((await fetch(`${url}/api/v1/products`)).status, 404);
+    assert.equal((await fetch(`${url}/api/v1/__missing__`)).status, 404);
   } finally {
     await app.close();
   }

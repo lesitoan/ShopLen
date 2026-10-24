@@ -1,17 +1,17 @@
 import { Prisma, type Category } from "@prisma/client";
 import { createAuthState } from "./authState.js";
 
-export async function createCategoryState() {
+export async function createCategoryState(KnownError = Prisma.PrismaClientKnownRequestError) {
   const state = await createAuthState();
   const instant = new Date("2026-01-01T00:00:00.000Z");
   const seed: Category = { id: "00000000-0000-4000-8000-000000000100", code: "CAT_TEST", name: "Len", slug: "len", description: null, image: null, status: "ACTIVE", displayOrder: 0, createdAt: instant, updatedAt: instant };
   const categories = new Map([[seed.id, seed]]);
   const productCounts = new Map<string, number>();
   const queries: Array<{ model: string; method: string; args: Record<string, unknown> }> = [];
-  const missing = () => new Prisma.PrismaClientKnownRequestError("missing category", { code: "P2025", clientVersion: "7.9.0" });
+  const missing = () => new KnownError("missing category", { code: "P2025", clientVersion: "7.9.0" });
   const unique = (data: Partial<Category>, id?: string) => {
     if ([...categories.values()].some((item) => item.id !== id && (data.name === item.name || data.slug === item.slug))) {
-      throw new Prisma.PrismaClientKnownRequestError("duplicate category", { code: "P2002", clientVersion: "7.9.0" });
+      throw new KnownError("duplicate category", { code: "P2002", clientVersion: "7.9.0" });
     }
   };
   const category = {

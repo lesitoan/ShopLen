@@ -57,6 +57,7 @@ test("all 16 blog/upload endpoints preserve Express responses, cache headers and
     await compare("POST", "/admin/upload/images?target=INVALID", undefined, { field: "image", mime: "image/gif" });
     await compare("POST", "/admin/upload/images?target=CATEGORY", undefined, { field: "image" });
     await compare("POST", "/admin/upload/images?target=BLOG", undefined, { field: "image" });
+    await compare("POST", "/admin/upload/images?target=BLOG", undefined, { field: "avatar" });
     await compare("POST", "/admin/upload/images?target=BLOG", undefined, { field: "image", size: 5 * 1024 * 1024 });
     await compare("POST", "/admin/upload/images/many?target=BLOG", undefined, { field: "images", count: 6 });
     await compare("POST", "/admin/upload/images/many?target=BLOG", undefined, { field: "images", count: 7 });

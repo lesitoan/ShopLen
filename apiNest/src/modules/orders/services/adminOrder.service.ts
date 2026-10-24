@@ -191,23 +191,8 @@ export class AdminOrderService {
         payload.orderStatus === OrderStatus.CANCELLED &&
         currentOrder.orderStatus !== OrderStatus.CANCELLED;
 
-      if (shouldCancelOrder) {
-        for (const item of currentOrder.items) {
-          if (!item.productId) {
-            continue;
-          }
-
-          await transaction.product.update({
-            where: { id: item.productId },
-            data: {
-              stockQuantity: { increment: item.quantity },
-            },
-          });
-        }
-      }
-
-      await transaction.order.update({
-        where: { id: orderId },
+      const changed = await transaction.order.updateMany({
+        where: { id: orderId, orderStatus: currentOrder.orderStatus, paymentStatus: currentOrder.paymentStatus },
         data: {
           orderStatus: payload.orderStatus,
           ...(paidAt
@@ -237,6 +222,26 @@ export class AdminOrderService {
             : {}),
         },
       });
+
+      if (changed.count !== 1) {
+        throw new AppError("Trạng thái đơn hàng đã thay đổi. Vui lòng tải lại.", 409, "ORDER_STATUS_INVALID");
+      }
+
+      if (shouldCancelOrder) {
+        for (const item of [...currentOrder.items].sort((first, second) => (first.productId ?? "").localeCompare(second.productId ?? ""))) {
+          if (!item.productId) {
+            continue;
+          }
+
+          await transaction.product.update({
+            where: { id: item.productId },
+            data: {
+              stockQuantity: { increment: item.quantity },
+            },
+          });
+        }
+      }
+
 
       if (paidAt) {
         await transaction.payment.updateMany({

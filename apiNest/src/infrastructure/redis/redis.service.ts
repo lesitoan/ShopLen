@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
+import { ResourceDrainService } from "@/infrastructure/lifecycle/resourceDrain.service.js";
+import { Inject, Injectable, Optional, Logger, type OnModuleDestroy } from "@nestjs/common";
 import type { createClient } from "redis";
 import { AppError } from "@/common/errors/appError.js";
 import { REDIS_CLIENT } from "@/infrastructure/redis/redisTokens.js";
@@ -9,7 +10,7 @@ export class RedisService implements OnModuleDestroy {
   private connecting: Promise<ReturnType<typeof createClient>> | undefined;
   private closing = false;
 
-  constructor(@Inject(REDIS_CLIENT) private readonly client: ReturnType<typeof createClient>) {
+  constructor(@Inject(REDIS_CLIENT) private readonly client: ReturnType<typeof createClient>, @Optional() @Inject(ResourceDrainService) private readonly drain?: ResourceDrainService) {
     this.client.on("error", () => this.logger.error("Redis connection error"));
   }
 
@@ -30,6 +31,7 @@ export class RedisService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
+    await this.drain?.drain();
     this.closing = true;
     if (this.client.isReady) await this.client.close();
     else if (this.client.isOpen) this.client.destroy();

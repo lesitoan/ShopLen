@@ -16,7 +16,8 @@
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",
     "lint": "eslint src tests scripts *.mjs prisma.config.ts --max-warnings=0",
-    "contracts:check": "node scripts/captureLegacyContracts.mjs --check"
+    "contracts:check": "node scripts/captureLegacyContracts.mjs --check",
+    "start:withWorkers": "node dist/mainWithWorkers.js"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

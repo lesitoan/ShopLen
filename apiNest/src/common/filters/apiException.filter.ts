@@ -34,7 +34,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
       payload.message = error.code === "LIMIT_FILE_SIZE"
         ? "File avatar không được vượt quá 2MB." : "File upload không hợp lệ.";
       payload.errorCode = error.code;
-      if (isDev) payload.internalMessage = error.message;
+      if (isDev) payload.internalMessage = error.code === "LIMIT_UNEXPECTED_FILE" ? "Unexpected field" : error.message;
       this.logging.logger.warn(context, "File upload request failed");
     } else if (error instanceof AppError) {
       status = error.statusCode;

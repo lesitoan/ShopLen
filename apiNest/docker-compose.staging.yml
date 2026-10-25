@@ -1,0 +1,13 @@
+services:
+  apiNest:
+    image: ${API_NEST_IMAGE:?Set the immutable Nest image SHA}
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - "127.0.0.1:${API_NEST_HOST_PORT:-5002}:${PORT:-4000}"
+    command: ["node", "dist/main.js"]
+    init: true
+    stop_grace_period: 30s

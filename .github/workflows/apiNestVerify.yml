@@ -1,6 +1,7 @@
 name: Nest API verification
 
 on:
+  workflow_call:
   workflow_dispatch:
   pull_request:
     paths:

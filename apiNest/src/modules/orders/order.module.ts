@@ -7,8 +7,10 @@ import { AuthModule } from "@/modules/auth/auth.module.js";
 import { ClientOrderController } from "@/modules/orders/controllers/clientOrder.controller.js";
 import { ClientOrderService } from "@/modules/orders/services/clientOrder.service.js";
 import { OrderLookupRateLimitService } from "@/modules/orders/http/orderLookupRateLimit.service.js";
+import { AdminOrderController } from "@/modules/orders/controllers/adminOrder.controller.js";
+import { AdminOrderService } from "@/modules/orders/services/adminOrder.service.js";
 
-@Module({ imports: [EnvModule, PrismaModule, NotificationModule, RealtimeModule, AuthModule], controllers: [ClientOrderController], providers: [ClientOrderService, OrderLookupRateLimitService] })
+@Module({ imports: [EnvModule, PrismaModule, NotificationModule, RealtimeModule, AuthModule], controllers: [ClientOrderController, AdminOrderController], providers: [ClientOrderService, AdminOrderService, OrderLookupRateLimitService] })
 export class OrderModule implements NestModule {
   constructor(@Inject(OrderLookupRateLimitService) private readonly limits: OrderLookupRateLimitService) {}
   configure(consumer: MiddlewareConsumer) {

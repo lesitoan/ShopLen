@@ -10,6 +10,7 @@ import { GoogleAuthService } from "@/infrastructure/google/googleAuth.service.js
 import { EmailService } from "@/infrastructure/email/email.service.js";
 import { NotificationService } from "@/infrastructure/queues/notification.service.js";
 import { CloudinaryService } from "@/infrastructure/cloudinary/cloudinary.service.js";
+import { RealtimeService } from "@/infrastructure/realtime/realtime.service.js";
 import { configureApplication } from "@/bootstrap.js";
 import { AuthRateLimitService } from "@/modules/auth/http/authRateLimit.service.js";
 import { AppError } from "@/common/errors/appError.js";
@@ -21,8 +22,10 @@ class AuthTestModule {}
 export async function startAuthApplication(createState: () => Promise<AuthState> = createAuthState) {
   const state = await createState();
   const uploads: Array<{ file: Express.Multer.File; folder: string }> = [];
+  const events: Array<{ orderId: string; orderStatus: string }> = [];
   const module = await Test.createTestingModule({ imports: [AuthTestModule] })
     .overrideProvider(PrismaService).useValue(state.prisma)
+    .overrideProvider(RealtimeService).useValue({ emitOrderStatusChanged: (orderId: string, orderStatus: string) => { events.push({ orderId, orderStatus }); } })
     .overrideProvider(RedisService).useValue({ getClient: async () => state.redis })
     .overrideProvider(GoogleAuthService).useValue({ verify: async (token: string) => {
       if (token === "invalid") throw new AppError("Không thể xác thực Google.", 401, "GOOGLE_TOKEN_INVALID");
@@ -43,7 +46,7 @@ export async function startAuthApplication(createState: () => Promise<AuthState>
   const url = await app.getUrl();
   const limits = app.get(AuthRateLimitService);
   return {
-    app, state, limits, url, uploads,
+    app, state, limits, url, uploads, events,
     resetLimits: () => { for (const limit of [limits.login, limits.recovery, limits.refresh]) limit.resetKey("127.0.0.1"); },
     close: () => app.close(),
   };

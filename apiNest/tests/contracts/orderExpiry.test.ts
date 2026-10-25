@@ -116,7 +116,7 @@ test("expiry mutations and post-commit cache/socket/queue payloads match Express
   } finally { await legacy?.close(); await server.close(); }
 });
 
-test("legacy expiry failure window retains earlier committed cancellations before deferred side effects", async () => {
+test("expiry publishes committed cancellations even when a later order transaction fails", async () => {
   const { state, server, service, stock } = await fixture();
   const before = Number(state.sale.stockQuantity);
   state.seed.expiresAt = new Date(Date.now() - 2);
@@ -132,9 +132,9 @@ test("legacy expiry failure window retains earlier committed cancellations befor
     assert.equal(state.seed.orderStatus, "CANCELLED");
     assert.equal(second.orderStatus, "PENDING_PAYMENT");
     assert.equal(state.sale.stockQuantity, before + 2);
-    assert.equal(server.events.length, 0);
-    assert.equal(stock.length, 0);
-    assert.equal(state.notifications.length, 0);
-    assert.equal(await state.redis.get("home:products:HOT_PRODUCT"), "cached");
+    assert.equal(server.events.length, 1);
+    assert.equal(stock.length, 1);
+    assert.equal(state.notifications.length, 1);
+    assert.equal(await state.redis.get("home:products:HOT_PRODUCT"), null);
   } finally { await server.close(); }
 });

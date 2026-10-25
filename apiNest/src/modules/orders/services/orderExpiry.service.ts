@@ -19,7 +19,8 @@ export class OrderExpiryService {
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
-  private async expireOrder(orderId: string, now: Date) {    return this.prisma.$transaction(
+  private async expireOrder(orderId: string, now: Date) {
+    return this.prisma.$transaction(
       async (transaction) => {
         const order = await transaction.order.findUnique({
           where: { id: orderId },
@@ -98,42 +99,49 @@ export class OrderExpiryService {
     );
   }
 
-
   async expirePendingOrders() {
     const expiredOrders = [];
 
-    for (let batchNumber = 0; batchNumber < MAX_BATCHES_PER_RUN; batchNumber += 1) {
-      const now = new Date();
-      const orderIds = await this.prisma.order.findMany({
-        where: {
-          orderStatus: OrderStatus.PENDING_PAYMENT,
-          paymentStatus: PaymentStatus.PENDING,
-          expiresAt: { lte: now },
-        },
-        orderBy: { expiresAt: "asc" },
-        take: ORDER_EXPIRY_BATCH_SIZE,
-        select: { id: true },
-      });
+    try {
+      for (let batchNumber = 0; batchNumber < MAX_BATCHES_PER_RUN; batchNumber += 1) {
+        const now = new Date();
+        const orderIds = await this.prisma.order.findMany({
+          where: {
+            orderStatus: OrderStatus.PENDING_PAYMENT,
+            paymentStatus: PaymentStatus.PENDING,
+            expiresAt: { lte: now },
+          },
+          orderBy: { expiresAt: "asc" },
+          take: ORDER_EXPIRY_BATCH_SIZE,
+          select: { id: true },
+        });
 
-      if (orderIds.length === 0) {
-        break;
-      }
+        if (orderIds.length === 0) {
+          break;
+        }
 
-      for (const { id } of orderIds) {
-        const expiredOrder = await this.expireOrder(id, now);
+        for (const { id } of orderIds) {
+          const expiredOrder = await this.expireOrder(id, now);
 
-        if (expiredOrder) {
-          expiredOrders.push(expiredOrder);
+          if (expiredOrder) {
+            expiredOrders.push(expiredOrder);
+          }
+        }
+
+        if (orderIds.length < ORDER_EXPIRY_BATCH_SIZE) {
+          break;
         }
       }
-
-      if (orderIds.length < ORDER_EXPIRY_BATCH_SIZE) {
-        break;
-      }
+    } finally {
+      await this.publishExpiredOrders(expiredOrders);
     }
 
+    return expiredOrders.length;
+  }
+
+  private async publishExpiredOrders(expiredOrders: Array<NonNullable<Awaited<ReturnType<OrderExpiryService["expireOrder"]>>>>) {
     if (expiredOrders.length === 0) {
-      return 0;
+      return;
     }
 
     await this.cache.invalidateHomeProductCache();
@@ -164,7 +172,5 @@ export class OrderExpiryService {
         },
       );
     }
-
-    return expiredOrders.length;
   }
 }

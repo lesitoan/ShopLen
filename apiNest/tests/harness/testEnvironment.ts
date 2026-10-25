@@ -11,3 +11,7 @@ process.env.JWT_ACCESS_EXPIRES_IN = "15m";
 process.env.JWT_REFRESH_EXPIRES_IN = "30d";
 process.env.PASSWORD_OTP_EXPIRES_MINUTES = "10";
 process.env.PASSWORD_OTP_MAX_ATTEMPTS = "5";
+process.env.ORDER_PAYMENT_HOLD_MINUTES = "5";
+process.env.BANK_CODE = "TEST_BANK";
+process.env.BANK_ACCOUNT_NUMBER = "0000000000";
+process.env.BANK_ACCOUNT_NAME = "TEST ACCOUNT";

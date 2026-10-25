@@ -1,0 +1,34 @@
+import { createRequire } from "node:module";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { mock } from "node:test";
+
+mock.timers.enable({ apis: ["Date"], now: new Date("2026-10-25T07:00:00.000Z") });
+const root = process.cwd();
+const requireLegacy = createRequire(resolve(root, "package.json"));
+const load = (path) => import(pathToFileURL(resolve(root, path)).href);
+const { createOrderState } = await load("../apiNest/tests/fixtures/orderState.ts");
+const state = await createOrderState();
+state.seed.customerId = state.user.id;
+const events = [];
+globalThis.prisma = state.prisma;
+globalThis.notificationQueueConnection = { on: () => {} };
+globalThis.notificationQueue = { add: async (name, data) => { state.notifications.push({ name, data }); } };
+const { orderRoutes } = await load("src/routes/client/orderRoutes.ts");
+const { setupSocketServer } = await load("src/sockets/socketServer.ts");
+const { errorHandlerMiddleware } = await load("src/middlewares/errorHandlerMiddleware.ts");
+const express = requireLegacy("express");
+const app = express();
+app.use(express.json());
+app.get("/fixtures/effects", (_request, response) => response.json({ events, notifications: state.notifications }));
+app.use("/api/v1/orders", orderRoutes);
+app.use(errorHandlerMiddleware);
+const server = app.listen(0, "127.0.0.1", () => process.send({ port: server.address().port }));
+const io = setupSocketServer(server);
+const emit = io.emit.bind(io);
+io.emit = (name, payload) => {
+  if (name === "order:statusChanged") events.push(payload);
+  return emit(name, payload);
+};
+process.on("message", (message) => { if (message === "close") io.close(() => process.exit(0)); });
+process.on("disconnect", () => io.close());

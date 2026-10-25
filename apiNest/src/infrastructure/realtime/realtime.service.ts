@@ -22,6 +22,10 @@ export class RealtimeService implements OnApplicationBootstrap, OnModuleDestroy 
     this.server?.emit("order:paid", { orderId });
   }
 
+  emitStockUpdate(productId: string, stock: number) {
+    this.server?.emit("stock:update", { productId, stock });
+  }
+
   async onModuleDestroy() {
     const server = this.server;
     if (server) await new Promise<void>((resolve) => server.close(() => resolve()));

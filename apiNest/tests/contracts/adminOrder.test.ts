@@ -1,6 +1,7 @@
 import "../harness/testEnvironment.js";
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { AdminOrderService } from "@/modules/orders/services/adminOrder.service.js";
 import { TokenService } from "@/modules/auth/security/token.service.js";
 import { authRequest, startAuthApplication } from "../harness/authApplication.js";
 import { createPaymentState } from "../fixtures/paymentState.js";
@@ -53,5 +54,20 @@ test("admin orders retain role matrix, date filters, both confirmation aliases a
     state.user.role = "STAFF_CONTENT";
     assert.equal((await request(`/${id}/confirmPayment`, "POST")).body.errorCode, "FORBIDDEN");
     assert.equal((await request(`/${id}/status`, "PATCH", { orderStatus: "PAID" })).body.errorCode, "FORBIDDEN");
+  } finally { await server.close(); }
+});
+
+test("admin cancellation rejects stale state before restoring inventory or emitting effects", async () => {
+  const state = await createPaymentState();
+  const server = await startAuthApplication(async () => state);
+  const before = state.sale.stockQuantity;
+  state.prisma.order.updateMany = async () => ({ count: 0 });
+  try {
+    await assert.rejects(server.app.get(AdminOrderService).updateOrderStatus(state.seed.id as string, { orderStatus: "CANCELLED", cancelReason: "Test" }), { errorCode: "ORDER_STATUS_INVALID", statusCode: 409 });
+    assert.equal(state.sale.stockQuantity, before);
+    assert.equal(state.seed.orderStatus, "PENDING_PAYMENT");
+    assert.equal(state.payments()[0]!.status, "PENDING");
+    assert.equal(server.events.length, 0);
+    assert.equal(state.notifications.length, 0);
   } finally { await server.close(); }
 });

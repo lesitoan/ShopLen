@@ -10,7 +10,7 @@ import { ClientPaymentService } from "@/modules/payments/services/clientPayment.
 import { startAuthApplication } from "../harness/authApplication.js";
 import { createPaymentState } from "../fixtures/paymentState.js";
 import { startLegacyServer } from "../harness/contractHarness.js";
-import type { Row } from "../harness/queryFixture.js";
+import type { Row, Query } from "../harness/queryFixture.js";
 
 async function fixture() {
   const state = await createPaymentState();
@@ -114,4 +114,27 @@ test("expiry mutations and post-commit cache/socket/queue payloads match Express
       assert.deepEqual(actual, expected);
     }
   } finally { await legacy?.close(); await server.close(); }
+});
+
+test("legacy expiry failure window retains earlier committed cancellations before deferred side effects", async () => {
+  const { state, server, service, stock } = await fixture();
+  const before = Number(state.sale.stockQuantity);
+  state.seed.expiresAt = new Date(Date.now() - 2);
+  const second = state.seedOrder({ expiresAt: new Date(Date.now() - 1), items: structuredClone(state.seed.items), payments: [] });
+  const update = state.prisma.payment.updateMany;
+  Object.assign(state.prisma.payment, { updateMany: async (query: Query) => {
+    if (query.where?.orderId === second.id) throw new Error("second order failed");
+    return update(query);
+  } });
+  await state.redis.set("home:products:HOT_PRODUCT", "cached", { EX: 600 });
+  try {
+    await assert.rejects(service.expirePendingOrders(), /second order failed/);
+    assert.equal(state.seed.orderStatus, "CANCELLED");
+    assert.equal(second.orderStatus, "PENDING_PAYMENT");
+    assert.equal(state.sale.stockQuantity, before + 2);
+    assert.equal(server.events.length, 0);
+    assert.equal(stock.length, 0);
+    assert.equal(state.notifications.length, 0);
+    assert.equal(await state.redis.get("home:products:HOT_PRODUCT"), "cached");
+  } finally { await server.close(); }
 });

@@ -9,7 +9,7 @@ RUN npm ci
 COPY prisma ./prisma
 COPY prisma.config.ts tsconfig.json tsconfig.build.json ./
 COPY src ./src
-RUN npm run prisma:generate && npm run build && npm prune --omit=dev
+RUN npm run prisma:generate && npm run build && npm prune --omit=dev --omit=optional
 
 FROM base AS runtime
 ENV NODE_ENV=production

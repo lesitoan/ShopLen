@@ -15,6 +15,7 @@ if [[ "$ready" != true ]]; then
   exit 1
 fi
 docker exec "$containerId" node -e "fetch('http://127.0.0.1:4000/api/v1/admin/orders').then(r => process.exit(r.status === 401 ? 0 : 1)).catch(() => process.exit(1))"
+docker exec "$containerId" node -e "const fs = require('node:fs'), assert = require('node:assert/strict'); for (const name of ['prisma', '@prisma/config', '@prisma/dev', 'deepmerge-ts', 'mysql2', 'find-my-way', 'valibot', 'typescript']) assert.equal(fs.existsSync('/app/node_modules/' + name), false, name); assert.equal(require('@prisma/client/package.json').version, '7.9.0')"
 docker stop --time 30 "$containerId" >/dev/null
 exitCode="$(docker inspect --format '{{.State.ExitCode}}' "$containerId")"
 [[ "$exitCode" == 0 || "$exitCode" == 143 ]]

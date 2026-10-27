@@ -1,0 +1,12 @@
+node_modules/
+dist/
+distTests/
+coverage/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.log
+docs/
+!src/modules/uploads/
+!src/modules/uploads/**

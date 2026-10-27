@@ -23,7 +23,7 @@ Full-stack e-commerce platform for handmade crochet products. The repository con
 | --- | --- | ---: |
 | `fe-client` | Customer storefront | 3000 |
 | `fe-admin` | Operations dashboard | 3001 |
-| `api` | REST API, workers, and real-time service | 4000 |
+| `apiNest` | NestJS REST API, workers, and real-time service | 4000 |
 
 ## Highlights
 
@@ -40,28 +40,31 @@ Full-stack e-commerce platform for handmade crochet products. The repository con
 
 ```text
 fe-client ─┐
-           ├── REST API / Socket.IO ── api ── PostgreSQL
-fe-admin  ─┘                            ├── Redis / BullMQ
-                                       └── VietQR, SePay, Cloudinary,
-                                           Resend, Telegram, Google
+           ├── REST API / Socket.IO ── apiNest ── PostgreSQL
+fe-admin  ─┘                                ├── Redis / BullMQ
+                                           └── VietQR, SePay, Cloudinary,
+                                               Resend, Telegram, Google
 ```
 
 ## Local setup
 
-Requires Node.js 20.19+, PostgreSQL, and Redis.
+Use Node.js 22 to match CI and the Docker image, with PostgreSQL and Redis.
 
 ```bash
 npm install
 npm run install:apps
 ```
 
-Copy each `.env.example` file to the matching local environment file, then initialize the database:
+Copy each application's `.env.example` to its `.env`, configure PostgreSQL and Redis, then generate the Prisma client and start development:
 
 ```bash
-npm --prefix api run prisma:generate
-npm --prefix api run db:migrate
+npm --prefix apiNest run prisma:generate
 npm run dev
 ```
+
+For a new database, run `npx prisma migrate deploy` from `apiNest` to apply the existing migration history. Existing databases retain their schema and migration history; framework migration does not require a reset or a new business migration.
+
+The default backend entrypoint serves HTTP and Socket.IO without starting queue workers. To run the API with notification and order-expiry workers, build the backend and run `node dist/mainWithWorkers.js` from `apiNest` against the intended environment.
 
 ## Commands
 
@@ -76,19 +79,16 @@ npm run typeCheck
 
 ## API deployment
 
-The storefront and admin dashboard are deployed by Vercel. The API is built by GitHub Actions and deployed to the matching Portainer stack through its API:
+The storefront and admin dashboard are deployed by Vercel. The backend source is `apiNest`.
 
-| Git branch | Portainer stack | Image tag |
-| --- | --- | --- |
-| `develop` | `shoplen-dev` | `ghcr.io/lesitoan/shoplen-api:dev` |
-| `main` | `shoplen-v2` | `ghcr.io/lesitoan/shoplen-api:production` |
+- `apiNestVerify.yml` installs dependencies, generates Prisma, runs lint and type-checking, builds the backend, and runs unit tests. It supports pull requests, pushes to `main`, `develop`, `codex/**` and `toanls/**`, and manual runs. Feature branches run verification without publishing an image.
+- `apiNestImage.yml` runs on pushes to `develop` and `main`, verifies the backend, builds a Linux amd64 image, and checks container health, authentication boundaries and shutdown. Only after these checks pass, it publishes `ghcr.io/<owner>/shoplen-api-nest:<commit SHA>` plus `:dev` for `develop` or `:production` for `main`. Manual runs default to build-only; selecting `publish=true` publishes the SHA image, and updates the corresponding channel tag only when running on `develop` or `main`.
+- `apiNest/docker-compose.staging.yml` is a deployment template using an immutable image reference. It starts the HTTP entrypoint and binds to loopback port 5002 by default.
 
-Before enabling the workflow, configure the GitHub environments `Development` and `Production`. Each requires `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, and `PORTAINER_API_TOKEN`. Configure GHCR as a registry in Portainer before its stacks use the private image.
-
-The workflow preserves each stack's existing Portainer environment variables. Add or change runtime variables in the matching Portainer stack, and record required keys without secret values in `api/.env.example`.
+There is no automatic server deployment workflow. After a successful publish, redeploy the corresponding Portainer stack using `ghcr.io/<owner>/shoplen-api-nest:dev` for development or `ghcr.io/<owner>/shoplen-api-nest:production` for production, with image re-pull enabled. Preserve the stack's complete runtime environment and port mapping; run `node dist/mainWithWorkers.js` when replacing the API and its workers together. The separate preview was loaded and started manually; publishing an image does not replace running containers or change Nginx routing. Runtime secrets remain outside the image and Git, with required variable names recorded in `apiNest/.env.example`.
 
 ## Documentation
 
-- [API](api/README.md)
+- [Backend source](apiNest/)
 - [Customer storefront](fe-client/README.md)
 - [Admin dashboard](fe-admin/README.md)

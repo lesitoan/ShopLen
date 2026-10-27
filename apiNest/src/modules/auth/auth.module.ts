@@ -1,4 +1,10 @@
-import { Inject, Module, RequestMethod, type MiddlewareConsumer, type NestModule } from "@nestjs/common";
+import {
+  Inject,
+  Module,
+  RequestMethod,
+  type MiddlewareConsumer,
+  type NestModule,
+} from "@nestjs/common";
 import { EnvModule } from "@/config/env.module.js";
 import { LoggingModule } from "@/infrastructure/logging/logging.module.js";
 import { PrismaModule } from "@/infrastructure/prisma/prisma.module.js";
@@ -14,18 +20,53 @@ import { RolesGuard } from "@/modules/auth/guards/roles.guard.js";
 import { AuthRateLimitService } from "@/modules/auth/http/authRateLimit.service.js";
 
 @Module({
-  imports: [EnvModule, LoggingModule, PrismaModule, AuthCoreModule, AuthDependenciesModule],
+  imports: [
+    EnvModule,
+    LoggingModule,
+    PrismaModule,
+    AuthCoreModule,
+    AuthDependenciesModule,
+  ],
   controllers: [ClientAuthController, AdminAuthController],
-  providers: [ClientAuthService, AdminAuthService, CustomerAuthGuard, AdminAuthGuard, RolesGuard, AuthRateLimitService],
+  providers: [
+    ClientAuthService,
+    AdminAuthService,
+    CustomerAuthGuard,
+    AdminAuthGuard,
+    RolesGuard,
+    AuthRateLimitService,
+  ],
   exports: [CustomerAuthGuard, AdminAuthGuard, RolesGuard, AuthCoreModule],
 })
 export class AuthModule implements NestModule {
-  constructor(@Inject(AuthRateLimitService) private readonly limits: AuthRateLimitService) {}
+  constructor(
+    @Inject(AuthRateLimitService) private readonly limits: AuthRateLimitService,
+  ) {}
 
   configure(consumer: MiddlewareConsumer) {
-    const routes = (paths: string[]) => paths.map((path) => ({ path, method: RequestMethod.POST }));
-    consumer.apply(this.limits.login).forRoutes(...routes(["auth/register", "auth/login", "auth/google", "admin/auth/login"]));
-    consumer.apply(this.limits.refresh).forRoutes(...routes(["auth/refresh", "admin/auth/refresh"]));
-    consumer.apply(this.limits.recovery).forRoutes(...routes(["auth/password/forgot", "auth/password/otp/verify", "auth/password/reset"]));
+    const routes = (paths: string[]) =>
+      paths.map((path) => ({ path, method: RequestMethod.POST }));
+    consumer
+      .apply(this.limits.login)
+      .forRoutes(
+        ...routes([
+          "auth/register",
+          "auth/login",
+          "auth/google",
+          "admin/auth/login",
+        ]),
+      );
+    consumer
+      .apply(this.limits.refresh)
+      .forRoutes(...routes(["auth/refresh", "admin/auth/refresh"]));
+    consumer
+      .apply(this.limits.recovery)
+      .forRoutes(
+        ...routes([
+          "auth/password/forgot",
+          "auth/password/otp/verify",
+          "auth/password/reset",
+        ]),
+      );
   }
 }

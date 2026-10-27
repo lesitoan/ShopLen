@@ -34,9 +34,7 @@ export const adminOrderListQueryDto = z.object({
     })
     .refine(
       (value) =>
-        !value.startDate ||
-        !value.endDate ||
-        value.startDate <= value.endDate,
+        !value.startDate || !value.endDate || value.startDate <= value.endDate,
       {
         message: "startDate phải nhỏ hơn hoặc bằng endDate.",
         path: ["endDate"],

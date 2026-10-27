@@ -154,5 +154,5 @@ const adminCustomerDetailSelect = {
         },
       },
     },
-  }
+  },
 } satisfies Prisma.CustomerSelect;

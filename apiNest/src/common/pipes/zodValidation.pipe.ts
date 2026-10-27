@@ -2,7 +2,9 @@ import type { PipeTransform } from "@nestjs/common";
 import type { ZodTypeAny, output } from "zod";
 import { AppError } from "@/common/errors/appError.js";
 
-export class ZodValidationPipe<TSchema extends ZodTypeAny> implements PipeTransform {
+export class ZodValidationPipe<
+  TSchema extends ZodTypeAny,
+> implements PipeTransform {
   constructor(private readonly schema: TSchema) {}
 
   transform(value: unknown): output<TSchema> {

@@ -13,20 +13,27 @@ export function createRequestLogger(logger: Logger) {
       response.setHeader("x-request-id", id);
       return id;
     },
-    autoLogging: { ignore: (request) => (request.originalUrl || request.url) === "/health" },
+    autoLogging: {
+      ignore: (request) => (request.originalUrl || request.url) === "/health",
+    },
     customSuccessMessage: (request, response) =>
       `${request.method} ${request.originalUrl || request.url} ${response.statusCode} completed`,
     customErrorMessage: (request, response) =>
       `${request.method} ${request.originalUrl || request.url} ${response.statusCode} failed`,
     customSuccessObject: (request, response, value) => ({
-      requestId: request.id, method: request.method,
-      path: request.originalUrl || request.url, statusCode: response.statusCode,
+      requestId: request.id,
+      method: request.method,
+      path: request.originalUrl || request.url,
+      statusCode: response.statusCode,
       responseTime: value.responseTime,
     }),
     customErrorObject: (request, response, error, value) => ({
-      requestId: request.id, method: request.method,
-      path: request.originalUrl || request.url, statusCode: response.statusCode,
-      responseTime: value.responseTime, err: error,
+      requestId: request.id,
+      method: request.method,
+      path: request.originalUrl || request.url,
+      statusCode: response.statusCode,
+      responseTime: value.responseTime,
+      err: error,
     }),
   });
 }

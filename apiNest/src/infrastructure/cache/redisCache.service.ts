@@ -36,7 +36,11 @@ export class RedisCacheService {
     }
   }
 
-  private async writeJson<Value>(key: string, value: Value, ttlSeconds: number) {
+  private async writeJson<Value>(
+    key: string,
+    value: Value,
+    ttlSeconds: number,
+  ) {
     try {
       const redis = await this.redis.getClient();
       await redis.set(key, JSON.stringify(value), { EX: ttlSeconds });
@@ -75,7 +79,8 @@ export class RedisCacheService {
 
       if (!lockAcquired) {
         await wait(lockWaitMilliseconds);
-        const cachedValueCreatedByAnotherRequest = await this.readJson<Value>(key);
+        const cachedValueCreatedByAnotherRequest =
+          await this.readJson<Value>(key);
 
         if (cachedValueCreatedByAnotherRequest !== undefined) {
           return cachedValueCreatedByAnotherRequest;
@@ -96,7 +101,10 @@ export class RedisCacheService {
           const redis = await this.redis.getClient();
           await redis.del(lockKey);
         } catch (error) {
-          this.logging.logger.warn({ err: error, lockKey }, "Redis cache lock release failed");
+          this.logging.logger.warn(
+            { err: error, lockKey },
+            "Redis cache lock release failed",
+          );
         }
       }
     }
@@ -111,7 +119,10 @@ export class RedisCacheService {
       const redis = await this.redis.getClient();
       await redis.del(keys);
     } catch (error) {
-      this.logging.logger.warn({ err: error, keys }, "Redis cache invalidation failed");
+      this.logging.logger.warn(
+        { err: error, keys },
+        "Redis cache invalidation failed",
+      );
     }
   }
 }

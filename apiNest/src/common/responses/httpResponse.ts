@@ -4,7 +4,10 @@ export function successResponse<TData>(data: TData, message = "Thành công.") {
   return { success: true, message, ...(data ? { data } : {}) };
 }
 
-export function createdResponse<TData>(data: TData, message = "Tạo mới thành công.") {
+export function createdResponse<TData>(
+  data: TData,
+  message = "Tạo mới thành công.",
+) {
   return { success: true, message, data };
 }
 

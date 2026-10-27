@@ -16,7 +16,9 @@ export const adminBlogPostListQueryDto = z.object({
     search: blogSearchQueryDto,
     status: z.enum(["DRAFT", "PUBLISHED", "HIDDEN"]).optional(),
     tagId: z.string().uuid().optional(),
-    sort: z.enum(["NEWEST", "OLDEST", "VIEWS_DESC", "TITLE_ASC"]).default("NEWEST"),
+    sort: z
+      .enum(["NEWEST", "OLDEST", "VIEWS_DESC", "TITLE_ASC"])
+      .default("NEWEST"),
   }),
 });
 
@@ -37,11 +39,10 @@ export const createAdminBlogPostDto = z.object({
     isFeatured: z.boolean().default(false),
     showOnHome: z.boolean().default(false),
     readTimeMinutes: z.coerce.number().int().min(1).default(1),
-    publishedAt: z
-      .preprocess((val) => {
-        if (!val || val === "") return null;
-        return val;
-      }, z.string().datetime().nullable().optional()),
+    publishedAt: z.preprocess((val) => {
+      if (!val || val === "") return null;
+      return val;
+    }, z.string().datetime().nullable().optional()),
     metaTitle: z.string().trim().max(180).nullable().optional(),
     metaDescription: z.string().trim().max(300).nullable().optional(),
     thumbnailUrl: z
@@ -54,7 +55,7 @@ export const createAdminBlogPostDto = z.object({
           altText: z.string().max(255).optional(),
           isThumbnail: z.boolean().optional(),
           displayOrder: z.number().int().optional(),
-        })
+        }),
       )
       .optional(),
   }),
@@ -105,5 +106,9 @@ export type UpdateAdminBlogPostDto = z.infer<
   typeof updateAdminBlogPostDto
 >["body"];
 
-export type CreateAdminBlogTagDto = z.infer<typeof createAdminBlogTagDto>["body"];
-export type UpdateAdminBlogTagDto = z.infer<typeof updateAdminBlogTagDto>["body"];
+export type CreateAdminBlogTagDto = z.infer<
+  typeof createAdminBlogTagDto
+>["body"];
+export type UpdateAdminBlogTagDto = z.infer<
+  typeof updateAdminBlogTagDto
+>["body"];

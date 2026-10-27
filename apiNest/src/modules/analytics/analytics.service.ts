@@ -1,8 +1,4 @@
-import {
-  OrderStatus,
-  PaymentStatus,
-  Prisma,
-} from "@prisma/client";
+import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import {
   addDays,
   addHours,
@@ -34,11 +30,13 @@ function createDashboardRevenueBuckets(
   const end = addDays(startOfDay(parseISO(query.endDate)), 1);
 
   if (query.startDate === query.endDate) {
-    return eachHourOfInterval({ start, end: addHours(end, -1) }).map((date) => ({
-      label: format(date, "HH:mm"),
-      start: date,
-      end: addHours(date, 1),
-    }));
+    return eachHourOfInterval({ start, end: addHours(end, -1) }).map(
+      (date) => ({
+        label: format(date, "HH:mm"),
+        start: date,
+        end: addHours(date, 1),
+      }),
+    );
   }
 
   return eachDayOfInterval({ start, end: addDays(end, -1) }).map((date) => ({
@@ -290,7 +288,9 @@ export class AnalyticsService {
         },
       },
     });
-    const productById = new Map(products.map((product) => [product.id, product]));
+    const productById = new Map(
+      products.map((product) => [product.id, product]),
+    );
 
     return {
       items: topProductStats.flatMap((item, index) => {

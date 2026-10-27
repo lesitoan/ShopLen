@@ -9,5 +9,15 @@ import { AdminProductService } from "@/modules/products/services/adminProduct.se
 import { ProductRecommendationService } from "@/modules/products/services/productRecommendation.service.js";
 import { ProductHomeCacheService } from "@/modules/products/services/productHomeCache.service.js";
 
-@Module({ imports: [PrismaModule, CacheModule, AuthModule], controllers: [ClientProductController, AdminProductController], providers: [ClientProductService, AdminProductService, ProductRecommendationService, ProductHomeCacheService], exports: [ProductHomeCacheService] })
+@Module({
+  imports: [PrismaModule, CacheModule, AuthModule],
+  controllers: [ClientProductController, AdminProductController],
+  providers: [
+    ClientProductService,
+    AdminProductService,
+    ProductRecommendationService,
+    ProductHomeCacheService,
+  ],
+  exports: [ProductHomeCacheService],
+})
 export class ProductModule {}

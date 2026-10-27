@@ -12,7 +12,16 @@ import { AdminCustomerService } from "@/modules/customers/services/adminCustomer
 
 @Module({
   imports: [PrismaModule, CloudinaryModule, AuthModule],
-  controllers: [ClientCustomerController, CustomerAddressController, AdminCustomerController],
-  providers: [ClientCustomerService, CustomerAddressService, AdminCustomerService, AvatarUploadInterceptor],
+  controllers: [
+    ClientCustomerController,
+    CustomerAddressController,
+    AdminCustomerController,
+  ],
+  providers: [
+    ClientCustomerService,
+    CustomerAddressService,
+    AdminCustomerService,
+    AvatarUploadInterceptor,
+  ],
 })
 export class CustomerModule {}

@@ -7,7 +7,11 @@ import { TokenService } from "@/modules/auth/security/token.service.js";
 import { RefreshSessionService } from "@/modules/auth/services/refreshSession.service.js";
 import { AppError } from "@/common/errors/appError.js";
 import { comparePassword } from "@/modules/auth/security/hashPassword.js";
-import type { AdminAuthData, AdminLogoutInput, AdminRefreshTokenInput } from "@/modules/auth/types/adminAuth.type.js";
+import type {
+  AdminAuthData,
+  AdminLogoutInput,
+  AdminRefreshTokenInput,
+} from "@/modules/auth/types/adminAuth.type.js";
 import type { AdminLoginRequestDto } from "@/modules/auth/dto/adminAuth.dto.js";
 import { toAdminSession } from "@/modules/auth/mappers/adminAuthMapper.js";
 function ensureAdminActive(user: User) {
@@ -21,7 +25,8 @@ export class AdminAuthService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(EnvService) private readonly config: EnvService,
     @Inject(TokenService) private readonly tokens: TokenService,
-    @Inject(RefreshSessionService) private readonly sessions: RefreshSessionService,
+    @Inject(RefreshSessionService)
+    private readonly sessions: RefreshSessionService,
   ) {}
   private async createAdminAuthData(user: User): Promise<AdminAuthData> {
     const jti = randomUUID();
@@ -31,11 +36,15 @@ export class AdminAuthService {
       jti,
     });
     const refreshPayload = this.tokens.verifyAdminRefreshToken(refreshToken);
-    await this.sessions.create({
-      accountId: user.id,
-      actorType: "ADMIN",
-      jti,
-    }, refreshPayload.exp - Math.floor(Date.now() / 1000), this.config.values.MAX_ADMIN_SESSIONS);
+    await this.sessions.create(
+      {
+        accountId: user.id,
+        actorType: "ADMIN",
+        jti,
+      },
+      refreshPayload.exp - Math.floor(Date.now() / 1000),
+      this.config.values.MAX_ADMIN_SESSIONS,
+    );
     return {
       accessToken: this.tokens.signAdminAccessToken({
         sub: user.id,
@@ -51,12 +60,23 @@ export class AdminAuthService {
       where: { email: payload.email },
     });
     if (!user) {
-      throw new AppError("Email hoặc mật khẩu không đúng.", 401, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Email hoặc mật khẩu không đúng.",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
     ensureAdminActive(user);
-    const isPasswordValid = await comparePassword(payload.password, user.passwordHash);
+    const isPasswordValid = await comparePassword(
+      payload.password,
+      user.passwordHash,
+    );
     if (!isPasswordValid) {
-      throw new AppError("Email hoặc mật khẩu không đúng.", 401, "INVALID_CREDENTIALS");
+      throw new AppError(
+        "Email hoặc mật khẩu không đúng.",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
     const updatedUser = await this.prisma.user.update({
       where: { id: user.id },
@@ -73,12 +93,18 @@ export class AdminAuthService {
     return toAdminSession(user);
   }
   async refresh(payload: AdminRefreshTokenInput) {
-    const refreshPayload = this.tokens.verifyAdminRefreshToken(payload.refreshToken);
+    const refreshPayload = this.tokens.verifyAdminRefreshToken(
+      payload.refreshToken,
+    );
     const user = await this.prisma.user.findUnique({
       where: { id: refreshPayload.sub },
     });
     if (!user) {
-      throw new AppError("Refresh token không hợp lệ.", 401, "REFRESH_TOKEN_INVALID");
+      throw new AppError(
+        "Refresh token không hợp lệ.",
+        401,
+        "REFRESH_TOKEN_INVALID",
+      );
     }
     ensureAdminActive(user);
     await this.sessions.consume({
@@ -91,14 +117,17 @@ export class AdminAuthService {
   async logout(payload: AdminLogoutInput) {
     if (payload.refreshToken) {
       try {
-        const refreshPayload = this.tokens.verifyAdminRefreshToken(payload.refreshToken);
+        const refreshPayload = this.tokens.verifyAdminRefreshToken(
+          payload.refreshToken,
+        );
         await this.sessions.revoke({
           accountId: refreshPayload.sub,
           actorType: "ADMIN",
           jti: refreshPayload.jti,
         });
+      } catch {
+        return { loggedOut: true };
       }
-      catch { return { loggedOut: true }; }
     }
     return { loggedOut: true };
   }

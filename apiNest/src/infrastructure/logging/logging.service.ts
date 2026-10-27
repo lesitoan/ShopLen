@@ -10,10 +10,22 @@ export class LoggingService implements LoggerService {
     this.logger = createLogger(config.values);
   }
 
-  log(message: unknown) { this.logger.info(message); }
-  error(message: unknown) { this.logger.error(message); }
-  warn(message: unknown) { this.logger.warn(message); }
-  debug(message: unknown) { this.logger.debug(message); }
-  verbose(message: unknown) { this.logger.trace(message); }
-  fatal(message: unknown) { this.logger.fatal(message); }
+  log(message: unknown) {
+    this.logger.info(message);
+  }
+  error(message: unknown) {
+    this.logger.error(message);
+  }
+  warn(message: unknown) {
+    this.logger.warn(message);
+  }
+  debug(message: unknown) {
+    this.logger.debug(message);
+  }
+  verbose(message: unknown) {
+    this.logger.trace(message);
+  }
+  fatal(message: unknown) {
+    this.logger.fatal(message);
+  }
 }

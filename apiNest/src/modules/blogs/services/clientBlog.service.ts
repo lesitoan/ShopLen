@@ -4,7 +4,10 @@ import { PrismaService } from "@/infrastructure/prisma/prisma.service.js";
 import { BlogCacheService } from "@/modules/blogs/services/blogCache.service.js";
 import type { BlogPostListQueryDto } from "@/modules/blogs/dto/clientBlog.dto.js";
 
-import type { BlogPostListItem, BlogTagItem } from "@/modules/blogs/types/clientBlog.type.js";
+import type {
+  BlogPostListItem,
+  BlogTagItem,
+} from "@/modules/blogs/types/clientBlog.type.js";
 
 function formatThumbnail(images: BlogPostListItem["images"]) {
   const thumbnail = images[0] ?? null;
@@ -46,7 +49,9 @@ function formatPostListItem(post: BlogPostListItem) {
   };
 }
 
-function buildPostWhere(query: BlogPostListQueryDto): Prisma.BlogPostWhereInput {
+function buildPostWhere(
+  query: BlogPostListQueryDto,
+): Prisma.BlogPostWhereInput {
   const andFilters: Prisma.BlogPostWhereInput[] = [
     {
       status: "PUBLISHED",
@@ -94,11 +99,14 @@ function findBlogTags(prisma: PrismaService) {
   });
 }
 
-function findBlogPosts(prisma: PrismaService, args: {
-  where: Prisma.BlogPostWhereInput;
-  skip: number;
-  take: number;
-}) {
+function findBlogPosts(
+  prisma: PrismaService,
+  args: {
+    where: Prisma.BlogPostWhereInput;
+    skip: number;
+    take: number;
+  },
+) {
   return prisma.blogPost.findMany({
     where: args.where,
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
@@ -208,7 +216,9 @@ export class ClientBlogService {
     const isHomeCacheRequest =
       query.home && page === 1 && limit === 4 && !query.tag && !query.search;
 
-    return isHomeCacheRequest ? this.cache.getCachedHomeBlogPosts(loadPosts) : loadPosts();
+    return isHomeCacheRequest
+      ? this.cache.getCachedHomeBlogPosts(loadPosts)
+      : loadPosts();
   }
 
   async getFeaturedPost() {

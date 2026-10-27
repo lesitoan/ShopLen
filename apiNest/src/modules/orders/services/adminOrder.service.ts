@@ -20,10 +20,13 @@ import { AppError } from "@/common/errors/appError.js";
 export class AdminOrderService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(NotificationService) private readonly notifications: NotificationService,
+    @Inject(NotificationService)
+    private readonly notifications: NotificationService,
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
-  async listOrders(query: AdminOrderListQueryDto): Promise<AdminOrderListResponse> {
+  async listOrders(
+    query: AdminOrderListQueryDto,
+  ): Promise<AdminOrderListResponse> {
     const createdAt: Prisma.DateTimeFilter | undefined =
       query.startDate || query.endDate
         ? {
@@ -192,7 +195,11 @@ export class AdminOrderService {
         currentOrder.orderStatus !== OrderStatus.CANCELLED;
 
       const changed = await transaction.order.updateMany({
-        where: { id: orderId, orderStatus: currentOrder.orderStatus, paymentStatus: currentOrder.paymentStatus },
+        where: {
+          id: orderId,
+          orderStatus: currentOrder.orderStatus,
+          paymentStatus: currentOrder.paymentStatus,
+        },
         data: {
           orderStatus: payload.orderStatus,
           ...(paidAt
@@ -224,11 +231,17 @@ export class AdminOrderService {
       });
 
       if (changed.count !== 1) {
-        throw new AppError("Trạng thái đơn hàng đã thay đổi. Vui lòng tải lại.", 409, "ORDER_STATUS_INVALID");
+        throw new AppError(
+          "Trạng thái đơn hàng đã thay đổi. Vui lòng tải lại.",
+          409,
+          "ORDER_STATUS_INVALID",
+        );
       }
 
       if (shouldCancelOrder) {
-        for (const item of [...currentOrder.items].sort((first, second) => (first.productId ?? "").localeCompare(second.productId ?? ""))) {
+        for (const item of [...currentOrder.items].sort((first, second) =>
+          (first.productId ?? "").localeCompare(second.productId ?? ""),
+        )) {
           if (!item.productId) {
             continue;
           }
@@ -241,7 +254,6 @@ export class AdminOrderService {
           });
         }
       }
-
 
       if (paidAt) {
         await transaction.payment.updateMany({
@@ -292,7 +304,10 @@ export class AdminOrderService {
       };
     });
 
-    this.realtime.emitOrderStatusChanged(orderId, order.updatedOrder.orderStatus);
+    this.realtime.emitOrderStatusChanged(
+      orderId,
+      order.updatedOrder.orderStatus,
+    );
 
     if (order.paidAt) {
       this.realtime.emitOrderPaid(orderId);

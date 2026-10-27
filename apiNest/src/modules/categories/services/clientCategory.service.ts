@@ -9,21 +9,20 @@ export class ClientCategoryService {
     @Inject(CategoryCacheService) private readonly cache: CategoryCacheService,
   ) {}
   async listCategories() {
-    return this.cache.getCachedCategories(() => this.prisma.category.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: [
-        { displayOrder: "asc" },
-        { name: "asc" },
-      ],
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        slug: true,
-        description: true,
-        image: true,
-        displayOrder: true,
-      },
-    }));
+    return this.cache.getCachedCategories(() =>
+      this.prisma.category.findMany({
+        where: { status: "ACTIVE" },
+        orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          slug: true,
+          description: true,
+          image: true,
+          displayOrder: true,
+        },
+      }),
+    );
   }
 }

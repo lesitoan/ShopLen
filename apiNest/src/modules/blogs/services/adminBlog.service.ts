@@ -11,7 +11,14 @@ import type {
 } from "@/modules/blogs/dto/adminBlog.dto.js";
 import { AppError } from "@/common/errors/appError.js";
 
-function formatThumbnail(images: { id: string; url: string; altText: string | null; isThumbnail: boolean }[]) {
+function formatThumbnail(
+  images: {
+    id: string;
+    url: string;
+    altText: string | null;
+    isThumbnail: boolean;
+  }[],
+) {
   const thumb = images.find((i) => i.isThumbnail) ?? images[0] ?? null;
   return thumb
     ? {
@@ -80,8 +87,11 @@ export class AdminBlogService {
     const slug = body.slug
       ? body.slug
       : body.name
-      ? body.name.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-")
-      : undefined;
+        ? body.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "-")
+            .replace(/-+/g, "-")
+        : undefined;
 
     const tag = await this.prisma.blogTag.update({
       where: { id },
@@ -105,7 +115,7 @@ export class AdminBlogService {
     if (count > 0) {
       throw new AppError(
         `Không thể xóa chủ đề đang có ${count} bài viết liên kết.`,
-        400
+        400,
       );
     }
     const tag = await this.prisma.blogTag.delete({ where: { id } });
@@ -133,10 +143,10 @@ export class AdminBlogService {
       query.sort === "OLDEST"
         ? [{ createdAt: "asc" }]
         : query.sort === "VIEWS_DESC"
-        ? [{ viewCount: "desc" }]
-        : query.sort === "TITLE_ASC"
-        ? [{ title: "asc" }]
-        : [{ createdAt: "desc" }];
+          ? [{ viewCount: "desc" }]
+          : query.sort === "TITLE_ASC"
+            ? [{ title: "asc" }]
+            : [{ createdAt: "desc" }];
 
     const skip = (query.page - 1) * query.limit;
 
@@ -243,7 +253,9 @@ export class AdminBlogService {
   async createPost(body: CreateAdminBlogPostDto, authorUserId?: string) {
     let resolvedAuthorId = authorUserId;
     if (resolvedAuthorId) {
-      const exists = await this.prisma.user.findUnique({ where: { id: resolvedAuthorId } });
+      const exists = await this.prisma.user.findUnique({
+        where: { id: resolvedAuthorId },
+      });
       if (!exists) resolvedAuthorId = undefined;
     }
     if (!resolvedAuthorId) {
@@ -253,9 +265,14 @@ export class AdminBlogService {
       });
       resolvedAuthorId = adminUser?.id;
       if (!resolvedAuthorId) {
-        const anyUser = await this.prisma.user.findFirst({ select: { id: true } });
+        const anyUser = await this.prisma.user.findFirst({
+          select: { id: true },
+        });
         if (!anyUser) {
-          throw new AppError("Chưa có tài khoản nào trong hệ thống để gắn tác giả bài viết.", 400);
+          throw new AppError(
+            "Chưa có tài khoản nào trong hệ thống để gắn tác giả bài viết.",
+            400,
+          );
         }
         resolvedAuthorId = anyUser.id;
       }
@@ -380,11 +397,19 @@ export class AdminBlogService {
         ...(body.contentHtml ? { contentHtml: body.contentHtml } : {}),
         ...(resolvedTagId ? { tag: { connect: { id: resolvedTagId } } } : {}),
         ...(body.status ? { status: body.status } : {}),
-        ...(body.isFeatured !== undefined ? { isFeatured: body.isFeatured } : {}),
-        ...(body.showOnHome !== undefined ? { showOnHome: body.showOnHome } : {}),
-        ...(body.readTimeMinutes ? { readTimeMinutes: body.readTimeMinutes } : {}),
+        ...(body.isFeatured !== undefined
+          ? { isFeatured: body.isFeatured }
+          : {}),
+        ...(body.showOnHome !== undefined
+          ? { showOnHome: body.showOnHome }
+          : {}),
+        ...(body.readTimeMinutes
+          ? { readTimeMinutes: body.readTimeMinutes }
+          : {}),
         ...(body.publishedAt !== undefined
-          ? { publishedAt: body.publishedAt ? new Date(body.publishedAt) : null }
+          ? {
+              publishedAt: body.publishedAt ? new Date(body.publishedAt) : null,
+            }
           : {}),
         ...(body.metaTitle !== undefined ? { metaTitle: body.metaTitle } : {}),
         ...(body.metaDescription !== undefined

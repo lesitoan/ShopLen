@@ -4,10 +4,16 @@ import { successResponse } from "@/common/responses/httpResponse.js";
 
 @Controller("categories")
 export class ClientCategoryController {
-  constructor(@Inject(ClientCategoryService) private readonly service: ClientCategoryService) {}
+  constructor(
+    @Inject(ClientCategoryService)
+    private readonly service: ClientCategoryService,
+  ) {}
 
   @Get()
-  @Header("Cache-Control", "public, max-age=300, s-maxage=86400, stale-while-revalidate=86400")
+  @Header(
+    "Cache-Control",
+    "public, max-age=300, s-maxage=86400, stale-while-revalidate=86400",
+  )
   async list() {
     return successResponse(await this.service.listCategories());
   }

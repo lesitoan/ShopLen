@@ -23,7 +23,8 @@ import { AppError } from "@/common/errors/appError.js";
 export class AdminProductService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ProductHomeCacheService) private readonly homeCache: ProductHomeCacheService,
+    @Inject(ProductHomeCacheService)
+    private readonly homeCache: ProductHomeCacheService,
   ) {}
   async listProducts(
     query: AdminProductListQueryDto,
@@ -57,9 +58,17 @@ export class AdminProductService {
       query.sort === "OLDEST"
         ? [{ createdAt: "asc" }]
         : query.sort === "PRICE_DESC"
-          ? [{ salePrice: "desc" }, { originalPrice: "desc" }, { createdAt: "desc" }]
+          ? [
+              { salePrice: "desc" },
+              { originalPrice: "desc" },
+              { createdAt: "desc" },
+            ]
           : query.sort === "PRICE_ASC"
-            ? [{ salePrice: "asc" }, { originalPrice: "asc" }, { createdAt: "desc" }]
+            ? [
+                { salePrice: "asc" },
+                { originalPrice: "asc" },
+                { createdAt: "desc" },
+              ]
             : query.sort === "STOCK_DESC"
               ? [{ stockQuantity: "desc" }, { createdAt: "desc" }]
               : query.sort === "STOCK_ASC"
@@ -93,13 +102,16 @@ export class AdminProductService {
   ): Promise<AdminProductListItem> {
     await ensureCategoryExists(this.prisma, payload.categoryId);
 
-    const thumbnailIndex = payload.images.findIndex((image) => image.isThumbnail);
+    const thumbnailIndex = payload.images.findIndex(
+      (image) => image.isThumbnail,
+    );
     const fallbackThumbnailIndex = thumbnailIndex >= 0 ? thumbnailIndex : 0;
 
     try {
       const product = await this.prisma.product.create({
         data: {
-          code: payload.code || `SP${uuidv7().replaceAll("-", "").slice(0, 28)}`,
+          code:
+            payload.code || `SP${uuidv7().replaceAll("-", "").slice(0, 28)}`,
           name: payload.name,
           slug: payload.slug,
           categoryId: payload.categoryId,
@@ -197,9 +209,12 @@ export class AdminProductService {
       await ensureCategoryExists(this.prisma, payload.categoryId);
     }
 
-    const nextOriginalPrice = payload.originalPrice ?? existingProduct.originalPrice;
+    const nextOriginalPrice =
+      payload.originalPrice ?? existingProduct.originalPrice;
     const nextSalePrice =
-      payload.salePrice === undefined ? existingProduct.salePrice : payload.salePrice;
+      payload.salePrice === undefined
+        ? existingProduct.salePrice
+        : payload.salePrice;
 
     if (nextSalePrice !== null && nextSalePrice > nextOriginalPrice) {
       throw new AppError(
@@ -209,7 +224,8 @@ export class AdminProductService {
       );
     }
 
-    const thumbnailIndex = payload.images?.findIndex((image) => image.isThumbnail) ?? -1;
+    const thumbnailIndex =
+      payload.images?.findIndex((image) => image.isThumbnail) ?? -1;
     const fallbackThumbnailIndex = thumbnailIndex >= 0 ? thumbnailIndex : 0;
 
     try {

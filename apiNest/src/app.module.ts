@@ -14,5 +14,22 @@ import { UploadModule } from "@/modules/uploads/upload.module.js";
 import { OrderModule } from "@/modules/orders/order.module.js";
 import { PaymentModule } from "@/modules/payments/payment.module.js";
 
-@Module({ imports: [EnvModule, HealthModule, LoggingModule, AuthModule, CustomerModule, UserModule, CategoryModule, ProductModule, CartModule, BlogModule, UploadModule, OrderModule, PaymentModule, AnalyticsModule] })
+@Module({
+  imports: [
+    EnvModule,
+    HealthModule,
+    LoggingModule,
+    AuthModule,
+    CustomerModule,
+    UserModule,
+    CategoryModule,
+    ProductModule,
+    CartModule,
+    BlogModule,
+    UploadModule,
+    OrderModule,
+    PaymentModule,
+    AnalyticsModule,
+  ],
+})
 export class AppModule {}

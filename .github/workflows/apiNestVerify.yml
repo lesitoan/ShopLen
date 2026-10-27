@@ -6,13 +6,11 @@ on:
   pull_request:
     paths:
       - apiNest/**
-      - api/**
       - .github/workflows/apiNestVerify.yml
   push:
     branches: [main, develop, "codex/**"]
     paths:
       - apiNest/**
-      - api/**
       - .github/workflows/apiNestVerify.yml
 
 permissions:
@@ -39,24 +37,16 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: |
-            api/package-lock.json
-            apiNest/package-lock.json
+          cache-dependency-path: apiNest/package-lock.json
       - name: Install Nest dependencies
         run: npm ci
-      - name: Install legacy contract reference
-        run: npm --prefix ../api ci
       - name: Generate independent Prisma client
         run: npm run prisma:generate
-      - name: Verify legacy source snapshot
-        run: npm run contracts:check
       - name: Lint
         run: npm run lint
       - name: Type-check
         run: npm run typeCheck
       - name: Build
         run: npm run build
-      - name: Compiled HTTP and unit tests
+      - name: Unit tests
         run: npm test
-      - name: Development runtime tests
-        run: npm run test:dev

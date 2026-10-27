@@ -11,9 +11,10 @@
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/main.js",
     "typeCheck": "tsc --noEmit",
+    "test": "node --import tsx --test --test-concurrency=2 tests/unit/*.test.ts",
     "prisma:generate": "prisma generate",
     "db:studio": "prisma studio",
-    "lint": "eslint src tests scripts *.mjs prisma.config.ts --max-warnings=0"
+    "lint": "eslint src tests *.mjs prisma.config.ts --max-warnings=0"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

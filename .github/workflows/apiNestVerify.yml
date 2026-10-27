@@ -7,17 +7,21 @@ on:
     paths:
       - apiNest/**
       - .github/workflows/apiNestVerify.yml
+      - .github/workflows/apiNestImage.yml
+      - .github/scripts/smokeNestImage.sh
   push:
-    branches: [main, develop, "codex/**"]
+    branches: [main, develop, "codex/**", "toanls/**"]
     paths:
       - apiNest/**
       - .github/workflows/apiNestVerify.yml
+      - .github/workflows/apiNestImage.yml
+      - .github/scripts/smokeNestImage.sh
 
 permissions:
   contents: read
 
 concurrency:
-  group: nest-verify-${{ github.ref }}
+  group: nest-verify-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

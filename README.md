@@ -81,11 +81,11 @@ npm run typeCheck
 
 The storefront and admin dashboard are deployed by Vercel. The backend source is `apiNest`.
 
-- `apiNestVerify.yml` installs dependencies, generates Prisma, runs lint and type-checking, builds the backend, and runs unit tests. It supports pull requests, pushes to `main`, `develop` and `codex/**`, and manual runs.
-- `apiNestImage.yml` runs manually after verification, builds the Docker image, and checks container health, authentication boundaries and shutdown. Publishing is disabled by default; selecting `publish=true` publishes `ghcr.io/<owner>/shoplen-api-nest:<commit SHA>`.
+- `apiNestVerify.yml` installs dependencies, generates Prisma, runs lint and type-checking, builds the backend, and runs unit tests. It supports pull requests, pushes to `main`, `develop`, `codex/**` and `toanls/**`, and manual runs. Feature branches run verification without publishing an image.
+- `apiNestImage.yml` runs on pushes to `develop` and `main`, verifies the backend, builds a Linux amd64 image, and checks container health, authentication boundaries and shutdown. Only after these checks pass, it publishes `ghcr.io/<owner>/shoplen-api-nest:<commit SHA>` plus `:dev` for `develop` or `:production` for `main`. Manual runs default to build-only; selecting `publish=true` publishes the SHA image, and updates the corresponding channel tag only when running on `develop` or `main`.
 - `apiNest/docker-compose.staging.yml` is a deployment template using an immutable image reference. It starts the HTTP entrypoint and binds to loopback port 5002 by default.
 
-There is no automatic server deployment workflow. The current preview was loaded and started separately on the server; repository cleanup does not replace running containers or change Nginx routing. Runtime secrets remain outside the image and Git, with required variable names recorded in `apiNest/.env.example`.
+There is no automatic server deployment workflow. After a successful publish, redeploy the corresponding Portainer stack using `ghcr.io/<owner>/shoplen-api-nest:dev` for development or `ghcr.io/<owner>/shoplen-api-nest:production` for production, with image re-pull enabled. Preserve the stack's complete runtime environment and port mapping; run `node dist/mainWithWorkers.js` when replacing the API and its workers together. The separate preview was loaded and started manually; publishing an image does not replace running containers or change Nginx routing. Runtime secrets remain outside the image and Git, with required variable names recorded in `apiNest/.env.example`.
 
 ## Documentation
 

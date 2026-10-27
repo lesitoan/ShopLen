@@ -7,7 +7,10 @@ import type {
 import { CloudinaryService } from "@/infrastructure/cloudinary/cloudinary.service.js";
 import { toCustomerSession } from "@/modules/auth/mappers/clientAuthMapper.js";
 import { AppError } from "@/common/errors/appError.js";
-import { comparePassword, hashPassword } from "@/modules/auth/security/hashPassword.js";
+import {
+  comparePassword,
+  hashPassword,
+} from "@/modules/auth/security/hashPassword.js";
 import { RefreshSessionService } from "@/modules/auth/services/refreshSession.service.js";
 
 @Injectable()
@@ -15,10 +18,13 @@ export class ClientCustomerService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(CloudinaryService) private readonly cloudinary: CloudinaryService,
-    @Inject(RefreshSessionService) private readonly sessions: RefreshSessionService,
+    @Inject(RefreshSessionService)
+    private readonly sessions: RefreshSessionService,
   ) {}
   async getMe(customerId: string) {
-    const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+    });
 
     if (!customer || customer.status !== "ACTIVE") {
       throw new AppError(
@@ -52,10 +58,16 @@ export class ClientCustomerService {
 
   async updateAvatar(customerId: string, file?: Express.Multer.File) {
     if (!file) {
-      throw new AppError("Vui lòng chọn ảnh avatar.", 400, "AVATAR_FILE_REQUIRED");
+      throw new AppError(
+        "Vui lòng chọn ảnh avatar.",
+        400,
+        "AVATAR_FILE_REQUIRED",
+      );
     }
 
-    const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+    });
 
     if (!customer || customer.status !== "ACTIVE") {
       throw new AppError(
@@ -77,7 +89,9 @@ export class ClientCustomerService {
   }
 
   async changePassword(customerId: string, payload: ChangePasswordRequestDto) {
-    const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: customerId },
+    });
 
     if (!customer || customer.status !== "ACTIVE") {
       throw new AppError(

@@ -28,7 +28,7 @@ export const dashboardRevenueQueryDto = z.object({
       {
         message: "Khoảng thời gian thống kê tối đa là 1 tháng.",
         path: ["endDate"],
-      }
+      },
     ),
 });
 
@@ -41,9 +41,7 @@ export const topSellingProductsQueryDto = z.object({
     })
     .refine(
       (value) =>
-        !value.startDate ||
-        !value.endDate ||
-        value.startDate <= value.endDate,
+        !value.startDate || !value.endDate || value.startDate <= value.endDate,
       {
         message: "startDate phải nhỏ hơn hoặc bằng endDate.",
         path: ["endDate"],

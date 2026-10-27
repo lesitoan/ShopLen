@@ -13,5 +13,23 @@ import { NotificationProcessor } from "@/infrastructure/queues/notification.proc
 import { WorkerFactoryService } from "@/runtime/workerFactory.service.js";
 import { WorkersService } from "@/runtime/workers.service.js";
 
-@Module({ imports: [LifecycleModule, AppModule, EnvModule, LoggingModule, PrismaModule, NotificationModule, RealtimeModule, TelegramModule, ProductModule], providers: [OrderExpiryService, NotificationProcessor, WorkerFactoryService, WorkersService] })
+@Module({
+  imports: [
+    LifecycleModule,
+    AppModule,
+    EnvModule,
+    LoggingModule,
+    PrismaModule,
+    NotificationModule,
+    RealtimeModule,
+    TelegramModule,
+    ProductModule,
+  ],
+  providers: [
+    OrderExpiryService,
+    NotificationProcessor,
+    WorkerFactoryService,
+    WorkersService,
+  ],
+})
 export class RuntimeModule {}

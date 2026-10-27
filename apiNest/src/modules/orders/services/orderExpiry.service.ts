@@ -14,8 +14,10 @@ const ORDER_EXPIRY_REASON = "Đơn hàng đã hết hạn thanh toán.";
 export class OrderExpiryService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(NotificationService) private readonly notifications: NotificationService,
-    @Inject(ProductHomeCacheService) private readonly cache: ProductHomeCacheService,
+    @Inject(NotificationService)
+    private readonly notifications: NotificationService,
+    @Inject(ProductHomeCacheService)
+    private readonly cache: ProductHomeCacheService,
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
@@ -73,7 +75,9 @@ export class OrderExpiryService {
         const stockUpdates = [];
         const orderItems = order.items
           .filter((item) => item.productId !== null)
-          .sort((first, second) => first.productId!.localeCompare(second.productId!));
+          .sort((first, second) =>
+            first.productId!.localeCompare(second.productId!),
+          );
 
         for (const item of orderItems) {
           const product = await transaction.product.update({
@@ -103,7 +107,11 @@ export class OrderExpiryService {
     const expiredOrders = [];
 
     try {
-      for (let batchNumber = 0; batchNumber < MAX_BATCHES_PER_RUN; batchNumber += 1) {
+      for (
+        let batchNumber = 0;
+        batchNumber < MAX_BATCHES_PER_RUN;
+        batchNumber += 1
+      ) {
         const now = new Date();
         const orderIds = await this.prisma.order.findMany({
           where: {
@@ -139,7 +147,11 @@ export class OrderExpiryService {
     return expiredOrders.length;
   }
 
-  private async publishExpiredOrders(expiredOrders: Array<NonNullable<Awaited<ReturnType<OrderExpiryService["expireOrder"]>>>>) {
+  private async publishExpiredOrders(
+    expiredOrders: Array<
+      NonNullable<Awaited<ReturnType<OrderExpiryService["expireOrder"]>>>
+    >,
+  ) {
     if (expiredOrders.length === 0) {
       return;
     }

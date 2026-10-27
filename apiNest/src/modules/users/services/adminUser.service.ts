@@ -22,9 +22,12 @@ import { RefreshSessionService } from "@/modules/auth/services/refreshSession.se
 export class AdminUserService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(RefreshSessionService) private readonly sessions: RefreshSessionService,
+    @Inject(RefreshSessionService)
+    private readonly sessions: RefreshSessionService,
   ) {}
-  async listUsers(query: AdminUserListQueryDto): Promise<AdminUserListResponse> {
+  async listUsers(
+    query: AdminUserListQueryDto,
+  ): Promise<AdminUserListResponse> {
     const where: Prisma.UserWhereInput = {
       ...(query.status ? { status: query.status } : {}),
       ...(query.role ? { role: query.role } : {}),
@@ -70,7 +73,10 @@ export class AdminUserService {
     };
   }
 
-  async getUserDetail(userId: string, actor: AdminSession): Promise<AdminUserItem> {
+  async getUserDetail(
+    userId: string,
+    actor: AdminSession,
+  ): Promise<AdminUserItem> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: adminUserSelect,
@@ -98,7 +104,10 @@ export class AdminUserService {
     payload: CreateAdminUserDto,
     actor: AdminSession,
   ): Promise<AdminUserItem> {
-    if (actor.role !== UserRole.SUPER_ADMIN && payload.role === UserRole.ADMIN) {
+    if (
+      actor.role !== UserRole.SUPER_ADMIN &&
+      payload.role === UserRole.ADMIN
+    ) {
       throw new AppError(
         "Bạn không có quyền cấp vai trò admin.",
         403,

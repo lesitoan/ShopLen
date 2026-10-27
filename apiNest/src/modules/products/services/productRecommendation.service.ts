@@ -43,7 +43,11 @@ function calculatePriceScore(
 
   return Math.max(
     0,
-    1 - Math.abs(candidate.salePrice ?? candidate.originalPrice - referencePrice) / referencePrice,
+    1 -
+      Math.abs(
+        candidate.salePrice ?? candidate.originalPrice - referencePrice,
+      ) /
+        referencePrice,
   );
 }
 
@@ -59,7 +63,8 @@ function calculateColorScore(
   const sharedColorCount = [...candidateColors].filter((colorCode) =>
     referenceColors.has(colorCode),
   ).length;
-  const uniqueColorCount = new Set([...candidateColors, ...referenceColors]).size;
+  const uniqueColorCount = new Set([...candidateColors, ...referenceColors])
+    .size;
 
   return sharedColorCount / uniqueColorCount;
 }
@@ -87,8 +92,10 @@ function calculateSimilarityScore(
 
   return (
     categoryScore * PRODUCT_RECOMMENDATION_WEIGHTS.category +
-    calculatePriceScore(candidate, reference) * PRODUCT_RECOMMENDATION_WEIGHTS.price +
-    calculateColorScore(candidate, reference) * PRODUCT_RECOMMENDATION_WEIGHTS.color +
+    calculatePriceScore(candidate, reference) *
+      PRODUCT_RECOMMENDATION_WEIGHTS.price +
+    calculateColorScore(candidate, reference) *
+      PRODUCT_RECOMMENDATION_WEIGHTS.color +
     calculatePopularityScore(candidate.soldCount, maxSoldCount) *
       PRODUCT_RECOMMENDATION_WEIGHTS.popularity +
     calculateFreshnessScore(candidate.createdAt) *
@@ -146,7 +153,10 @@ function findReferenceProducts(prisma: PrismaService, productIds: string[]) {
   });
 }
 
-function findRecommendationCandidates(prisma: PrismaService, excludedProductIds: string[]) {
+function findRecommendationCandidates(
+  prisma: PrismaService,
+  excludedProductIds: string[],
+) {
   return prisma.product.findMany({
     where: {
       id: { notIn: excludedProductIds },
@@ -194,9 +204,7 @@ function findRecommendationCandidates(prisma: PrismaService, excludedProductIds:
 
 @Injectable()
 export class ProductRecommendationService {
-  constructor(
-    @Inject(PrismaService) private readonly prisma: PrismaService,
-  ) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
   async recommendByProductIds(
     productIds: string[],
     limit = DEFAULT_PRODUCT_RECOMMENDATION_LIMIT,
@@ -209,7 +217,9 @@ export class ProductRecommendationService {
 
     if (candidates.length === 0) return [];
 
-    const maxSoldCount = Math.max(...candidates.map((product) => product.soldCount));
+    const maxSoldCount = Math.max(
+      ...candidates.map((product) => product.soldCount),
+    );
     const scoredCandidates: Array<
       ScoredProductRecommendation<(typeof candidates)[number]>
     > = candidates.map((candidate) => {
@@ -231,7 +241,8 @@ export class ProductRecommendationService {
         (first, second) =>
           second.score - first.score ||
           second.product.soldCount - first.product.soldCount ||
-          second.product.createdAt.getTime() - first.product.createdAt.getTime(),
+          second.product.createdAt.getTime() -
+            first.product.createdAt.getTime(),
       )
       .slice(0, limit)
       .map(({ product }) => formatRecommendationItem(product));

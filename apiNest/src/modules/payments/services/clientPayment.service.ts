@@ -22,12 +22,15 @@ const ORDER_CODE_PATTERN = new RegExp(
   "i",
 );
 
-function buildVietQrUrl(env: EnvService["values"], params: {
-  accountNo: string;
-  bankCode: string;
-  amount: number;
-  transferContent: string;
-}) {
+function buildVietQrUrl(
+  env: EnvService["values"],
+  params: {
+    accountNo: string;
+    bankCode: string;
+    amount: number;
+    transferContent: string;
+  },
+) {
   const query = new URLSearchParams({
     acc: params.accountNo,
     bank: params.bankCode,
@@ -81,7 +84,8 @@ export class ClientPaymentService {
     @Inject(EnvService) private readonly config: EnvService,
     @Inject(LoggingService) private readonly logging: LoggingService,
     @Inject(EmailService) private readonly email: EmailService,
-    @Inject(NotificationService) private readonly notifications: NotificationService,
+    @Inject(NotificationService)
+    private readonly notifications: NotificationService,
   ) {}
   private async sendOrderPaidEmail(orderId: string) {
     const orderDetailUrl = this.config.values.FRONTEND_URL
@@ -118,7 +122,11 @@ export class ClientPaymentService {
   }
 
   async createPaymentQr(orderId: string) {
-    if (!this.config.values.BANK_ACCOUNT_NUMBER || !this.config.values.BANK_ACCOUNT_NAME || !this.config.values.BANK_CODE) {
+    if (
+      !this.config.values.BANK_ACCOUNT_NUMBER ||
+      !this.config.values.BANK_ACCOUNT_NAME ||
+      !this.config.values.BANK_CODE
+    ) {
       throw new AppError(
         "Chưa cấu hình thông tin ngân hàng.",
         500,
@@ -247,7 +255,8 @@ export class ClientPaymentService {
   }
 
   async handleSepayWebhook(payload: SepayWebhookDto) {
-    const transactionRef = payload.referenceCode ?? payload.id?.toString() ?? null;
+    const transactionRef =
+      payload.referenceCode ?? payload.id?.toString() ?? null;
     const orderCodeCandidates = getOrderCodeCandidates(payload);
 
     if (orderCodeCandidates.length === 0) {

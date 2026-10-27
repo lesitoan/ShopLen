@@ -4,5 +4,9 @@ import { AuthModule } from "@/modules/auth/auth.module.js";
 import { AdminUserController } from "@/modules/users/controllers/adminUser.controller.js";
 import { AdminUserService } from "@/modules/users/services/adminUser.service.js";
 
-@Module({ imports: [PrismaModule, AuthModule], controllers: [AdminUserController], providers: [AdminUserService] })
+@Module({
+  imports: [PrismaModule, AuthModule],
+  controllers: [AdminUserController],
+  providers: [AdminUserService],
+})
 export class UserModule {}

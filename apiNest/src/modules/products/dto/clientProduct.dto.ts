@@ -67,9 +67,7 @@ export const productSlugParamDto = z.object({
   }),
 });
 
-export type ProductListQueryDto = z.infer<
-  typeof productListQueryDto
->["query"];
+export type ProductListQueryDto = z.infer<typeof productListQueryDto>["query"];
 
 export const homeProductSectionsQueryDto = z.object({
   query: z.object({

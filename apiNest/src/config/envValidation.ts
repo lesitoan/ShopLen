@@ -9,7 +9,9 @@ const optionalUrlSchema = z
   .or(z.literal("").transform(() => undefined));
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   LOG_LEVEL: z
     .enum(["trace", "debug", "info", "warn", "error", "fatal", "silent"])
     .default("info"),
@@ -45,7 +47,9 @@ const envSchema = z.object({
   CLOUDINARY_UPLOAD_FOLDER: z.string().default("tiem-len"),
   FRONTEND_URL: optionalUrlSchema,
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().default("Tiệm Len Nhà Kiều <no-reply@tiemlennhakieu.io.vn>"),
+  RESEND_FROM_EMAIL: z
+    .string()
+    .default("Tiệm Len Nhà Kiều <no-reply@tiemlennhakieu.io.vn>"),
   TELEGRAM_ENABLED: z
     .enum(["true", "false"])
     .default("false")

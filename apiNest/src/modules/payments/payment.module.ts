@@ -7,5 +7,15 @@ import { NotificationModule } from "@/infrastructure/queues/notification.module.
 import { ClientPaymentController } from "@/modules/payments/controllers/clientPayment.controller.js";
 import { ClientPaymentService } from "@/modules/payments/services/clientPayment.service.js";
 
-@Module({ imports: [EnvModule, LoggingModule, PrismaModule, EmailModule, NotificationModule], controllers: [ClientPaymentController], providers: [ClientPaymentService] })
+@Module({
+  imports: [
+    EnvModule,
+    LoggingModule,
+    PrismaModule,
+    EmailModule,
+    NotificationModule,
+  ],
+  controllers: [ClientPaymentController],
+  providers: [ClientPaymentService],
+})
 export class PaymentModule {}

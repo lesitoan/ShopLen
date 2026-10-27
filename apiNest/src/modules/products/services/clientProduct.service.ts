@@ -11,13 +11,23 @@ import type { HomeProductSectionsQueryDto } from "@/modules/products/dto/clientP
 import type { ProductSort } from "@/modules/products/types/product.type.js";
 import { AppError } from "@/common/errors/appError.js";
 
-function getOrderBy(sort: ProductSort): Prisma.ProductOrderByWithRelationInput[] {
+function getOrderBy(
+  sort: ProductSort,
+): Prisma.ProductOrderByWithRelationInput[] {
   if (sort === "PRICE_ASC") {
-    return [{ salePrice: "asc" }, { originalPrice: "asc" }, { createdAt: "desc" }];
+    return [
+      { salePrice: "asc" },
+      { originalPrice: "asc" },
+      { createdAt: "desc" },
+    ];
   }
 
   if (sort === "PRICE_DESC") {
-    return [{ salePrice: "desc" }, { originalPrice: "desc" }, { createdAt: "desc" }];
+    return [
+      { salePrice: "desc" },
+      { originalPrice: "desc" },
+      { createdAt: "desc" },
+    ];
   }
 
   if (sort === "BEST_SELLING") {
@@ -165,12 +175,15 @@ function buildWhere(query: ProductListQueryDto): Prisma.ProductWhereInput {
   return { AND: andFilters };
 }
 
-function findProducts(prisma: PrismaService, args: {
-  where: Prisma.ProductWhereInput;
-  orderBy: Prisma.ProductOrderByWithRelationInput[];
-  skip: number;
-  take: number;
-}) {
+function findProducts(
+  prisma: PrismaService,
+  args: {
+    where: Prisma.ProductWhereInput;
+    orderBy: Prisma.ProductOrderByWithRelationInput[];
+    skip: number;
+    take: number;
+  },
+) {
   return prisma.product.findMany({
     where: args.where,
     orderBy: args.orderBy,
@@ -261,13 +274,14 @@ function findProductBySlug(prisma: PrismaService, slug: string) {
   });
 }
 
-
 @Injectable()
 export class ClientProductService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(ProductHomeCacheService) private readonly homeCache: ProductHomeCacheService,
-    @Inject(ProductRecommendationService) private readonly recommendations: ProductRecommendationService,
+    @Inject(ProductHomeCacheService)
+    private readonly homeCache: ProductHomeCacheService,
+    @Inject(ProductRecommendationService)
+    private readonly recommendations: ProductRecommendationService,
   ) {}
   async listHomeProductSections(query: HomeProductSectionsQueryDto) {
     const HOME_SECTION_CACHE_SIZE = 12;
@@ -341,11 +355,7 @@ export class ClientProductService {
     const product = await findProductBySlug(this.prisma, slug);
 
     if (!product) {
-      throw new AppError(
-        "Sản phẩm không tồn tại.",
-        404,
-        "PRODUCT_NOT_FOUND",
-      );
+      throw new AppError("Sản phẩm không tồn tại.", 404, "PRODUCT_NOT_FOUND");
     }
 
     const relatedProducts = await this.recommendations.recommendByProductIds(

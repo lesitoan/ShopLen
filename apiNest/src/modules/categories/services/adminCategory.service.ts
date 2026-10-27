@@ -155,7 +155,11 @@ export class AdminCategoryService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2025"
       ) {
-        throw new AppError("Không tìm thấy danh mục.", 404, "CATEGORY_NOT_FOUND");
+        throw new AppError(
+          "Không tìm thấy danh mục.",
+          404,
+          "CATEGORY_NOT_FOUND",
+        );
       }
 
       if (

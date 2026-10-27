@@ -8,5 +8,13 @@ import { ClientCategoryService } from "@/modules/categories/services/clientCateg
 import { AdminCategoryService } from "@/modules/categories/services/adminCategory.service.js";
 import { CategoryCacheService } from "@/modules/categories/services/categoryCache.service.js";
 
-@Module({ imports: [PrismaModule, CacheModule, AuthModule], controllers: [ClientCategoryController, AdminCategoryController], providers: [ClientCategoryService, AdminCategoryService, CategoryCacheService] })
+@Module({
+  imports: [PrismaModule, CacheModule, AuthModule],
+  controllers: [ClientCategoryController, AdminCategoryController],
+  providers: [
+    ClientCategoryService,
+    AdminCategoryService,
+    CategoryCacheService,
+  ],
+})
 export class CategoryModule {}

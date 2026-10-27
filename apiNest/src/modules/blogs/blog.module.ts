@@ -8,5 +8,9 @@ import { AuthModule } from "@/modules/auth/auth.module.js";
 import { AdminBlogController } from "@/modules/blogs/controllers/adminBlog.controller.js";
 import { AdminBlogService } from "@/modules/blogs/services/adminBlog.service.js";
 
-@Module({ imports: [PrismaModule, CacheModule, AuthModule], controllers: [ClientBlogController, AdminBlogController], providers: [ClientBlogService, AdminBlogService, BlogCacheService] })
+@Module({
+  imports: [PrismaModule, CacheModule, AuthModule],
+  controllers: [ClientBlogController, AdminBlogController],
+  providers: [ClientBlogService, AdminBlogService, BlogCacheService],
+})
 export class BlogModule {}

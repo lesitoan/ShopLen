@@ -49,7 +49,11 @@ function formatOrderPaidMessage(data: OrderPaidNotificationJobData) {
   }
 
   if (typeof data.totalAmount === "number") {
-    lines.splice(-1, 0, `Số tiền: ${escapeHtml(formatCurrency(data.totalAmount))}`);
+    lines.splice(
+      -1,
+      0,
+      `Số tiền: ${escapeHtml(formatCurrency(data.totalAmount))}`,
+    );
   }
 
   return lines.join("\n");
@@ -95,17 +99,24 @@ function formatOrderShippingAddressUpdatedMessage(
 @Injectable()
 export class TelegramService {
   private bot: Telegraf | undefined;
-  constructor(@Inject(EnvService) private readonly config: EnvService, @Inject(LoggingService) private readonly logging: LoggingService) {}
+  constructor(
+    @Inject(EnvService) private readonly config: EnvService,
+    @Inject(LoggingService) private readonly logging: LoggingService,
+  ) {}
 
   private isTelegramReady() {
     const env = this.config.values;
-    return Boolean(env.TELEGRAM_ENABLED && env.TELEGRAM_BOT_TOKEN && this.config.values.TELEGRAM_ADMIN_CHAT_ID);
+    return Boolean(
+      env.TELEGRAM_ENABLED &&
+      env.TELEGRAM_BOT_TOKEN &&
+      this.config.values.TELEGRAM_ADMIN_CHAT_ID,
+    );
   }
 
   private getTelegramBot() {
     const token = this.config.values.TELEGRAM_BOT_TOKEN;
     if (!token) return null;
-    return this.bot ??= new Telegraf(token);
+    return (this.bot ??= new Telegraf(token));
   }
 
   private async sendTelegramMessage(message: string) {
@@ -120,9 +131,13 @@ export class TelegramService {
       return { sent: false };
     }
 
-    await bot.telegram.sendMessage(this.config.values.TELEGRAM_ADMIN_CHAT_ID, message, {
-      parse_mode: "HTML",
-    });
+    await bot.telegram.sendMessage(
+      this.config.values.TELEGRAM_ADMIN_CHAT_ID,
+      message,
+      {
+        parse_mode: "HTML",
+      },
+    );
 
     return { sent: true };
   }
@@ -150,6 +165,8 @@ export class TelegramService {
   async notifyOrderShippingAddressUpdated(
     data: OrderShippingAddressUpdatedNotificationJobData,
   ) {
-    return this.sendTelegramMessage(formatOrderShippingAddressUpdatedMessage(data));
+    return this.sendTelegramMessage(
+      formatOrderShippingAddressUpdatedMessage(data),
+    );
   }
 }

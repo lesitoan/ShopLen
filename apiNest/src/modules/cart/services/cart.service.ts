@@ -89,9 +89,7 @@ function findCartProducts(prisma: PrismaService, ids: string[]) {
 
 @Injectable()
 export class CartService {
-  constructor(
-    @Inject(PrismaService) private readonly prisma: PrismaService,
-  ) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
   async listCartProducts(payload: CartProductListDto) {
     const ids = [...new Set(payload.ids)];
     const products = await findCartProducts(this.prisma, ids);

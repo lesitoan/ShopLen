@@ -1,4 +1,7 @@
-import type { AdminUserItem, AdminUserRecord } from "@/modules/users/types/adminUser.type.js";
+import type {
+  AdminUserItem,
+  AdminUserRecord,
+} from "@/modules/users/types/adminUser.type.js";
 
 function toIsoString(date: Date | null) {
   return date ? date.toISOString() : null;

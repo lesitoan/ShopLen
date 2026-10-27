@@ -9,8 +9,12 @@ import { REDIS_CLIENT } from "@/infrastructure/redis/redisTokens.js";
 @Module({
   imports: [LifecycleModule, EnvModule],
   providers: [
-    { provide: REDIS_CLIENT, inject: [EnvService], useFactory: (config: EnvService) =>
-      createClient({ url: config.values.REDIS_URL }) },
+    {
+      provide: REDIS_CLIENT,
+      inject: [EnvService],
+      useFactory: (config: EnvService) =>
+        createClient({ url: config.values.REDIS_URL }),
+    },
     RedisService,
   ],
   exports: [RedisService],

@@ -25,7 +25,11 @@ const ADMIN_UPLOAD_IMAGE_CONFIG: Record<
   },
   BLOG: {
     folderName: "blog",
-    allowedRoles: [UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.STAFF_CONTENT],
+    allowedRoles: [
+      UserRole.SUPER_ADMIN,
+      UserRole.ADMIN,
+      UserRole.STAFF_CONTENT,
+    ],
   },
   USER_AVATAR: {
     folderName: "users/avatars",
@@ -35,12 +39,18 @@ const ADMIN_UPLOAD_IMAGE_CONFIG: Record<
 
 @Injectable()
 export class AdminUploadService {
-  constructor(@Inject(CloudinaryService) private readonly cloudinary: CloudinaryService) {}
+  constructor(
+    @Inject(CloudinaryService) private readonly cloudinary: CloudinaryService,
+  ) {}
   async uploadImage(
     params: AdminUploadImageParams,
   ): Promise<AdminUploadImageResponse> {
     if (!params.file) {
-      throw new AppError("Vui lòng chọn ảnh cần tải lên.", 400, "IMAGE_REQUIRED");
+      throw new AppError(
+        "Vui lòng chọn ảnh cần tải lên.",
+        400,
+        "IMAGE_REQUIRED",
+      );
     }
 
     if (!params.adminUser) {
@@ -64,7 +74,11 @@ export class AdminUploadService {
     params: AdminUploadManyImagesParams,
   ): Promise<AdminUploadManyImagesResponse> {
     if (!params.files || params.files.length === 0) {
-      throw new AppError("Vui lòng chọn ảnh cần tải lên.", 400, "IMAGE_REQUIRED");
+      throw new AppError(
+        "Vui lòng chọn ảnh cần tải lên.",
+        400,
+        "IMAGE_REQUIRED",
+      );
     }
 
     if (!params.adminUser) {

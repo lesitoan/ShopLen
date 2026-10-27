@@ -47,13 +47,16 @@ const productImageDto = z.object({
 });
 
 const productImageInputDto = z.union([
-  z.string().url().transform((url) => ({
-    url,
-    publicId: null,
-    altText: null,
-    displayOrder: undefined,
-    isThumbnail: undefined,
-  })),
+  z
+    .string()
+    .url()
+    .transform((url) => ({
+      url,
+      publicId: null,
+      altText: null,
+      displayOrder: undefined,
+      isThumbnail: undefined,
+    })),
   productImageDto,
 ]);
 
@@ -61,7 +64,14 @@ const productOptionValueDto = z.object({
   code: z.string().trim().min(1).max(60),
   label: z.string().trim().min(1).max(120),
   colorHex: z
-    .union([z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/), z.literal(""), z.null()])
+    .union([
+      z
+        .string()
+        .trim()
+        .regex(/^#[0-9A-Fa-f]{6}$/),
+      z.literal(""),
+      z.null(),
+    ])
     .optional()
     .transform((value) => (value === "" ? null : value)),
   priceDiff: z.number().int().optional(),
@@ -131,7 +141,8 @@ export const createAdminProductDto = z
   )
   .refine(
     (value) => {
-      const optionTypes = value.body.options?.map((option) => option.optionType) ?? [];
+      const optionTypes =
+        value.body.options?.map((option) => option.optionType) ?? [];
       return optionTypes.length === new Set(optionTypes).size;
     },
     {
@@ -193,7 +204,8 @@ export const updateAdminProductDto = z
   )
   .refine(
     (value) => {
-      const optionTypes = value.body.options?.map((option) => option.optionType) ?? [];
+      const optionTypes =
+        value.body.options?.map((option) => option.optionType) ?? [];
       return optionTypes.length === new Set(optionTypes).size;
     },
     {

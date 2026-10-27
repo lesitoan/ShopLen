@@ -12,10 +12,7 @@ export class CustomerAddressService {
   async listAddresses(customerId: string) {
     return this.prisma.customerAddress.findMany({
       where: { customerId },
-      orderBy: [
-        { isDefault: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
       select: {
         id: true,
         fullName: true,

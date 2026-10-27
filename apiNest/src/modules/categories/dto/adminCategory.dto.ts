@@ -19,7 +19,9 @@ export const adminCategoryListQueryDto = z.object({
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),
     search: categorySearchQueryDto,
-    sort: z.enum(["NEWEST", "OLDEST", "NAME_ASC", "NAME_DESC"]).default("NEWEST"),
+    sort: z
+      .enum(["NEWEST", "OLDEST", "NAME_ASC", "NAME_DESC"])
+      .default("NEWEST"),
   }),
 });
 

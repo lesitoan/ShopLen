@@ -9,6 +9,8 @@ const optionalUrlSchema = z
   .or(z.literal("").transform(() => undefined));
 
 const envSchema = z.object({
+  AI_SERVICE_URL: optionalUrlSchema,
+  AI_INTERNAL_KEY: z.preprocess((value) => value === "" ? undefined : value, z.string().min(32).optional()),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),

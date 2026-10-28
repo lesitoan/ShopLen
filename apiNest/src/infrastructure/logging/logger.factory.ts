@@ -11,6 +11,7 @@ export function createLogger(
     redact: {
       paths: [
         "req.headers.authorization",
+        'req.headers["x-internal-key"]',
         "req.headers.cookie",
         "res.headers.set-cookie",
         "*.password",

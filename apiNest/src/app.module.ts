@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AiModule } from "@/modules/ai/ai.module.js";
 import { AnalyticsModule } from "@/modules/analytics/analytics.module.js";
 import { EnvModule } from "@/config/env.module.js";
 import { HealthModule } from "@/modules/health/health.module.js";
@@ -16,6 +17,7 @@ import { PaymentModule } from "@/modules/payments/payment.module.js";
 
 @Module({
   imports: [
+    AiModule,
     EnvModule,
     HealthModule,
     LoggingModule,
